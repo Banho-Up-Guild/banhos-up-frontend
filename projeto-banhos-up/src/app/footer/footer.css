@@ -1,3 +1,4 @@
+
 :host {
   display: block;
 }
@@ -62,6 +63,7 @@
   flex-direction: column;
   gap: 13px;
   font-size: 0.78rem;
+  min-width: 0;
 }
 
 .footer__coluna h3 {
@@ -125,35 +127,95 @@
   transform: none;
 }
 
-.footer__pagamento,
-.footer__selos {
+/* =========================================
+   FORMAS DE PAGAMENTO
+========================================= */
+
+.footer__pagamento {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
 }
+
+/* Força os três meios de pagamento na horizontal */
+.footer__pagamentos {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  width: max-content !important;
+  max-width: 100%;
+}
+
+/* Cada forma de pagamento tem largura compacta */
+.footer__pagamentos span {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 54px !important;
+  min-width: 54px !important;
+  max-width: 54px !important;
+  min-height: 32px;
+
+  box-sizing: border-box !important;
+  padding: 6px 2px !important;
+
+  border-radius: 5px;
+  background: #ffffff;
+  color: #013e73;
+
+  font-size: 0.57rem !important;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* =========================================
+   SEGURANÇA E CERTIFICAÇÕES
+========================================= */
 
 .footer__pagamento h3:nth-of-type(2) {
   margin-top: 12px;
 }
 
-.footer__pagamentos span,
-.footer__selos span {
-  min-width: 58px;
-  padding: 8px;
-  display: grid;
-  place-items: center;
-  border-radius: 5px;
-  background: #ffffff;
-  color: #013e73;
-  font-size: 0.63rem;
-  font-weight: 600;
-  text-align: center;
+.footer__selos {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: max-content;
+  max-width: 100%;
 }
 
 .footer__selos span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   min-width: 82px;
+  min-height: 32px;
+  box-sizing: border-box;
+  padding: 8px;
+
+  border-radius: 5px;
+  background: #ffffff;
   color: #277744;
+
+  font-size: 0.63rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
 }
+
+/* =========================================
+   MARCA
+========================================= */
 
 .footer__marca {
   margin-top: 28px;
@@ -172,6 +234,9 @@
   line-height: 1.35;
 }
 
+/* =========================================
+   TABLETS
+========================================= */
 
 @media (max-width: 850px) {
   .footer__conteudo {
@@ -179,6 +244,10 @@
     row-gap: 38px;
   }
 }
+
+/* =========================================
+   CELULARES
+========================================= */
 
 @media (max-width: 600px) {
   .footer {

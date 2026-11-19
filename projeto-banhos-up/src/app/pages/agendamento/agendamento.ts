@@ -1,3 +1,4 @@
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -60,7 +61,7 @@ export class Agendamento {
   estado = '';
   cidade = '';
 
-  lojaSelecionada: number | null = 1;
+  lojaSelecionada: number | null = null;
 
   lojas: Loja[] = [
     {
@@ -140,8 +141,11 @@ export class Agendamento {
     }
   ];
 
+  // SERVIÇOS INDEPENDENTES POR PET
+  // Os dois pets começam obrigatoriamente com Banho.
   servicosPorPet: Record<number, string[]> = {
-    1: ['banho']
+    1: ['banho'],
+    2: ['banho']
   };
 
   // PROFISSIONAIS
@@ -163,7 +167,7 @@ export class Agendamento {
   );
 
   dataSelecionada = '';
-  horarioSelecionado = '09:00';
+  horarioSelecionado = '';
 
   horarios = [
     '09:00',
@@ -182,6 +186,7 @@ export class Agendamento {
   confirmado = false;
 
   // GETTERS
+
   get petsAtivos(): Pet[] {
     return this.pets.filter(p =>
       this.petsSelecionados.includes(p.id)
@@ -249,30 +254,63 @@ export class Agendamento {
     });
   }
 
+  // GARANTE QUE TODO PET TENHA BANHO SELECIONADO
+
+  private garantirBanho(petId: number): void {
+
+    const atuais = this.servicosPorPet[petId] || [];
+
+    if (!atuais.includes('banho')) {
+      this.servicosPorPet[petId] = [
+        'banho',
+        ...atuais
+      ];
+    }
+  }
+
   // NAVEGAÇÃO
+
+  podeAvancar(): boolean {
+
+    switch (this.etapa) {
+
+      case 0:
+        return this.petsSelecionados.length > 0;
+
+      case 1:
+        return this.lojaSelecionada !== null;
+
+      case 2:
+        return this.petsAtivos.length > 0 &&
+          this.petsAtivos.every(pet =>
+            this.servicosPet(pet.id).includes('banho')
+          );
+
+      case 3:
+        // Escolha do profissional é opcional.
+        return true;
+
+      case 4:
+        return !!this.dataSelecionada &&
+          !!this.horarioSelecionado;
+
+      default:
+        return false;
+    }
+  }
+
   avancar(): void {
-    if (this.etapa === 0 && this.petsSelecionados.length === 0) {
+
+    if (!this.podeAvancar()) {
       return;
     }
 
-    if (this.etapa === 1 && !this.lojaSelecionada) {
-      return;
-    }
-
-    if (
-      this.etapa === 2 &&
-      this.petsAtivos.some(p =>
-        !(this.servicosPorPet[p.id] || []).includes('banho')
-      )
-    ) {
-      return;
-    }
-
-    if (
-      this.etapa === 4 &&
-      (!this.dataSelecionada || !this.horarioSelecionado)
-    ) {
-      return;
+    if (this.etapa === 1) {
+      // Antes de entrar na etapa de serviços,
+      // garante Banho para todos os pets selecionados.
+      this.petsAtivos.forEach(pet => {
+        this.garantirBanho(pet.id);
+      });
     }
 
     if (this.etapa < 5) {
@@ -287,7 +325,11 @@ export class Agendamento {
   }
 
   // SELEÇÃO DE PETS
+
   alternarPet(id: number): void {
+
+    this.garantirBanho(id);
+
     this.petsSelecionados =
       this.petsSelecionados.includes(id)
         ? this.petsSelecionados.filter(x => x !== id)
@@ -295,6 +337,7 @@ export class Agendamento {
   }
 
   adicionarPet(): void {
+
     if (!this.novoPet.nome.trim()) {
       return;
     }
@@ -326,17 +369,35 @@ export class Agendamento {
   }
 
   // SERVIÇOS
+
   servicosPet(id: number): string[] {
-    return this.servicosPorPet[id] || [];
+
+    // Se o registro estiver ausente ou incompleto,
+    // o método corrige antes de retornar.
+    this.garantirBanho(id);
+
+    return this.servicosPorPet[id];
   }
 
   alternarServico(petId: number, servico: Servico): void {
-    const atuais = [...this.servicosPet(petId)];
 
-    if (servico.obrigatorio) {
+    this.garantirBanho(petId);
+
+    const atuais = [...this.servicosPorPet[petId]];
+
+    // O Banho nunca pode ser desmarcado.
+    // Caso esteja ausente, ele será adicionado.
+    if (servico.id === 'banho' || servico.obrigatorio) {
+
+      this.servicosPorPet[petId] = [
+        'banho',
+        ...atuais.filter(id => id !== 'banho')
+      ];
+
       return;
     }
 
+    // Os serviços opcionais podem ser alterados normalmente.
     this.servicosPorPet[petId] =
       atuais.includes(servico.id)
         ? atuais.filter(x => x !== servico.id)
@@ -372,6 +433,7 @@ export class Agendamento {
   }
 
   // CALENDÁRIO
+
   mudarMes(delta: number): void {
     this.mesAtual = new Date(
       this.mesAtual.getFullYear(),
@@ -381,6 +443,7 @@ export class Agendamento {
   }
 
   selecionarDia(dia: number): void {
+
     const d = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth(),
@@ -396,6 +459,8 @@ export class Agendamento {
 
     this.dataSelecionada =
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    this.horarioSelecionado = '';
   }
 
   diaSelecionado(dia: number): boolean {
@@ -404,6 +469,7 @@ export class Agendamento {
   }
 
   diaPassado(dia: number): boolean {
+
     const d = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth(),
@@ -417,6 +483,7 @@ export class Agendamento {
   }
 
   // CONFIRMAÇÃO
+
   confirmar(): void {
     if (this.termosAceitos) {
       this.confirmado = true;

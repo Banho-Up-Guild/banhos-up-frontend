@@ -1,3 +1,4 @@
+
 <main class="agendamento">
 
   <!-- CABEÇALHO -->
@@ -57,6 +58,7 @@
 
           <button
             class="botao botao--primario"
+            type="button"
             (click)="confirmado = false; etapa = 0">
 
             Fazer novo agendamento
@@ -150,6 +152,7 @@
 
               <button
                 class="botao botao--primario"
+                type="button"
                 (click)="adicionarPet()">
 
                 Adicionar pet
@@ -221,11 +224,12 @@
                 <button
                   class="loja-card"
                   [class.selecionado]="lojaSelecionada === loja.id"
+                  [attr.aria-pressed]="lojaSelecionada === loja.id"
                   (click)="lojaSelecionada = loja.id"
                   type="button">
 
-                  <span class="radio">
-                    {{ lojaSelecionada === loja.id ? '●' : '' }}
+                  <span class="radio" aria-hidden="true">
+                    <span class="radio__ponto"></span>
                   </span>
 
                   <span>
@@ -298,10 +302,11 @@
                     type="button"
                     class="servico-card"
                     [class.selecionado]="servicosPet(pet.id).includes(servico.id)"
+                    [attr.aria-pressed]="servicosPet(pet.id).includes(servico.id)"
                     (click)="alternarServico(pet.id, servico)">
 
-                    <span class="radio">
-                      {{ servicosPet(pet.id).includes(servico.id) ? '●' : '' }}
+                    <span class="radio" aria-hidden="true">
+                      <span class="radio__ponto"></span>
                     </span>
 
                     <span class="servico-info">
@@ -611,11 +616,7 @@
               class="botao botao--primario"
               type="button"
               (click)="avancar()"
-              [disabled]="
-                (etapa === 0 && !petsSelecionados.length) ||
-                (etapa === 1 && !lojaSelecionada) ||
-                (etapa === 4 && !dataSelecionada)
-              ">
+              [disabled]="!podeAvancar()">
 
               Continuar <span>→</span>
 
