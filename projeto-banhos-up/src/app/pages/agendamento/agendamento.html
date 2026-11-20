@@ -69,7 +69,9 @@
 
       } @else {
 
-        <!-- ETAPA 1: PETS -->
+        <!-- ====================================
+             ETAPA 1: PETS
+        ===================================== -->
         @if (etapa === 0) {
 
           <p class="sobretitulo">Meus pets</p>
@@ -170,7 +172,9 @@
 
         }
 
-        <!-- ETAPA 2: LOJAS -->
+        <!-- ====================================
+             ETAPA 2: LOJAS
+        ===================================== -->
         @if (etapa === 1) {
 
           <p class="sobretitulo">Lojas</p>
@@ -219,32 +223,84 @@
                 Lojas disponíveis
               </p>
 
-              @for (loja of lojas; track loja.id) {
+              <!-- ESTADO DE CARREGAMENTO -->
+              @if (carregandoLojas) {
 
-                <button
-                  class="loja-card"
-                  [class.selecionado]="lojaSelecionada === loja.id"
-                  [attr.aria-pressed]="lojaSelecionada === loja.id"
-                  (click)="lojaSelecionada = loja.id"
-                  type="button">
+                <div class="aviso" role="status">
+                  Carregando lojas disponíveis...
+                </div>
 
-                  <span class="radio" aria-hidden="true">
-                    <span class="radio__ponto"></span>
-                  </span>
+              }
 
-                  <span>
+              <!-- ESTADO DE ERRO -->
+              @if (erroLojas) {
 
-                    <strong>{{ loja.nome }}</strong>
+                <div class="aviso" role="alert">
 
-                    <small>
-                      {{ loja.endereco }}<br>
-                      {{ loja.cidade }} - {{ loja.estado }},
-                      {{ loja.cep }}
-                    </small>
+                  <p>{{ erroLojas }}</p>
 
-                  </span>
+                  <button
+                    type="button"
+                    class="botao botao--secundario"
+                    (click)="carregarLojas()">
 
-                </button>
+                    Tentar novamente
+
+                  </button>
+
+                </div>
+
+              }
+
+              <!-- NENHUMA LOJA DISPONÍVEL -->
+              @if (
+                !carregandoLojas &&
+                !erroLojas &&
+                lojas.length === 0
+              ) {
+
+                <div class="aviso">
+                  Nenhuma loja ativa foi encontrada.
+                </div>
+
+              }
+
+              <!-- LISTA RECEBIDA DO SPRING BOOT -->
+              @if (
+                !carregandoLojas &&
+                !erroLojas &&
+                lojas.length > 0
+              ) {
+
+                @for (loja of lojas; track loja.id) {
+
+                  <button
+                    class="loja-card"
+                    [class.selecionado]="lojaSelecionada === loja.id"
+                    [attr.aria-pressed]="lojaSelecionada === loja.id"
+                    type="button"
+                    (click)="lojaSelecionada = loja.id">
+
+                    <span class="radio" aria-hidden="true"></span>
+
+                    <span>
+
+                      <strong>{{ loja.nome }}</strong>
+
+                      <small>
+                        {{ loja.endereco }}<br />
+
+                        {{ loja.bairro }},
+                        {{ loja.cidade }} -
+                        {{ loja.estado }},
+                        {{ formatarCep(loja.cep) }}
+                      </small>
+
+                    </span>
+
+                  </button>
+
+                }
 
               }
 
@@ -263,7 +319,9 @@
 
         }
 
-        <!-- ETAPA 3: SERVIÇOS -->
+        <!-- ====================================
+             ETAPA 3: SERVIÇOS
+        ===================================== -->
         @if (etapa === 2) {
 
           <p class="sobretitulo">Serviços</p>
@@ -305,9 +363,7 @@
                     [attr.aria-pressed]="servicosPet(pet.id).includes(servico.id)"
                     (click)="alternarServico(pet.id, servico)">
 
-                    <span class="radio" aria-hidden="true">
-                      <span class="radio__ponto"></span>
-                    </span>
+                    <span class="radio" aria-hidden="true"></span>
 
                     <span class="servico-info">
 
@@ -349,7 +405,9 @@
 
         }
 
-        <!-- ETAPA 4: PROFISSIONAIS -->
+        <!-- ====================================
+             ETAPA 4: PROFISSIONAIS
+        ===================================== -->
         @if (etapa === 3) {
 
           <p class="sobretitulo">Profissionais</p>
@@ -384,7 +442,9 @@
 
         }
 
-        <!-- ETAPA 5: DATA E HORÁRIO -->
+        <!-- ====================================
+             ETAPA 5: DATA E HORÁRIO
+        ===================================== -->
         @if (etapa === 4) {
 
           <p class="sobretitulo">Disponibilidade</p>
@@ -480,7 +540,9 @@
 
         }
 
-        <!-- ETAPA 6: RESUMO -->
+        <!-- ====================================
+             ETAPA 6: RESUMO
+        ===================================== -->
         @if (etapa === 5) {
 
           <p class="sobretitulo">Confira os dados</p>
@@ -499,7 +561,10 @@
 
               <strong>
                 {{ lojaAtual?.endereco }},
-                {{ lojaAtual?.cidade }} - {{ lojaAtual?.estado }}
+                {{ lojaAtual?.bairro }},
+                {{ lojaAtual?.cidade }} -
+                {{ lojaAtual?.estado }},
+                {{ formatarCep(lojaAtual?.cep || '') }}
               </strong>
             </div>
 
@@ -594,7 +659,9 @@
 
         }
 
-        <!-- BOTÕES DE NAVEGAÇÃO -->
+        <!-- ====================================
+             BOTÕES DE NAVEGAÇÃO
+        ===================================== -->
         <div class="acoes">
 
           @if (etapa > 0) {

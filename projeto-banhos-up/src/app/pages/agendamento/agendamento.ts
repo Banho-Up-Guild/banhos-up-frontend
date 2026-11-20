@@ -1,33 +1,13 @@
 
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 
-type Pet = {
-  id: number;
-  nome: string;
-  especie: 'Cachorro' | 'Gato';
-  porte: string;
-};
-
-type Servico = {
-  id: string;
-  nome: string;
-  preco: number;
-  duracao: number;
-  descricao?: string;
-  obrigatorio?: boolean;
-  grupo: string;
-};
-
-type Loja = {
-  id: number;
-  nome: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-};
+import { Pet, Servico } from '../../models/agendamento.model';
+import { Loja } from '../../models/loja.model';
+import { LojaService } from '../../services/loja.service';
 
 @Component({
   selector: 'app-agendamento',
@@ -36,14 +16,31 @@ type Loja = {
   templateUrl: './agendamento.html',
   styleUrl: './agendamento.css',
 })
-export class Agendamento {
+export class Agendamento implements OnInit {
+
+  private readonly lojaService = inject(LojaService);
 
   etapa = 0;
 
+  // =========================================
   // PETS
+  // Dados locais provisórios.
+  // Futuramente serão recebidos da API.
+  // =========================================
+
   pets: Pet[] = [
-    { id: 1, nome: 'Pet 1', especie: 'Cachorro', porte: 'Médio' },
-    { id: 2, nome: 'Pet 2', especie: 'Gato', porte: 'Pequeno' },
+    {
+      id: 1,
+      nome: 'Pet 1',
+      especie: 'Cachorro',
+      porte: 'Médio'
+    },
+    {
+      id: 2,
+      nome: 'Pet 2',
+      especie: 'Gato',
+      porte: 'Pequeno'
+    }
   ];
 
   petsSelecionados: number[] = [1];
@@ -56,33 +53,29 @@ export class Agendamento {
 
   mostrarNovoPet = false;
 
+  // =========================================
   // LOJAS
+  // Dados recebidos do Spring Boot.
+  // =========================================
+
+  lojas: Loja[] = [];
+
+  lojaSelecionada: number | null = null;
+
+  carregandoLojas = false;
+
+  erroLojas: string | null = null;
+
   cep = '';
   estado = '';
   cidade = '';
 
-  lojaSelecionada: number | null = null;
-
-  lojas: Loja[] = [
-    {
-      id: 1,
-      nome: 'BanhosUp Diadema',
-      endereco: 'Rua Juruá, 79',
-      cidade: 'Taboão, Diadema',
-      estado: 'SP',
-      cep: '09932-220'
-    },
-    {
-      id: 2,
-      nome: 'BanhosUp Embu-Guaçu',
-      endereco: 'Estrada da Olaria, 6713',
-      cidade: 'Chácara dos Amigos, Embu-Guaçu',
-      estado: 'SP',
-      cep: '06909-720'
-    }
-  ];
-
+  // =========================================
   // SERVIÇOS
+  // Dados locais provisórios.
+  // Futuramente serão recebidos da API.
+  // =========================================
+
   servicos: Servico[] = [
     {
       id: 'banho',
@@ -141,15 +134,19 @@ export class Agendamento {
     }
   ];
 
-  // SERVIÇOS INDEPENDENTES POR PET
-  // Os dois pets começam obrigatoriamente com Banho.
-  servicosPorPet: Record<number, string[]> = {
+  // Cada pet possui seus próprios serviços.
+  servicosPorPet: Record<number, (string | number)[]> = {
     1: ['banho'],
     2: ['banho']
   };
 
+  // =========================================
   // PROFISSIONAIS
-  profissionais = [
+  // Dados locais provisórios.
+  // Futuramente serão recebidos da API.
+  // =========================================
+
+  profissionais: string[] = [
     'Sem preferência de profissional',
     'Gabriel Ramon Evangelista Ramos',
     'Eryka Karolyna Marçal dos Santos',
@@ -157,9 +154,15 @@ export class Agendamento {
   ];
 
   profissionalPorPet: Record<number, string> = {};
+
   observacoes: Record<number, string> = {};
 
+  // =========================================
   // DATA E HORÁRIO
+  // Dados locais provisórios.
+  // Futuramente serão recebidos da API.
+  // =========================================
+
   mesAtual = new Date(
     new Date().getFullYear(),
     new Date().getMonth(),
@@ -167,9 +170,10 @@ export class Agendamento {
   );
 
   dataSelecionada = '';
+
   horarioSelecionado = '';
 
-  horarios = [
+  horarios: string[] = [
     '09:00',
     '09:30',
     '10:00',
@@ -183,37 +187,143 @@ export class Agendamento {
   ];
 
   termosAceitos = false;
+
   confirmado = false;
 
+  // =========================================
+  // INICIALIZAÇÃO
+  // =========================================
+
+  ngOnInit(): void {
+
+    // Busca as lojas reais do backend.
+    this.carregarLojas();
+
+  }
+
+  // =========================================
+  // INTEGRAÇÃO COM O BACKEND
+  // =========================================
+
+  carregarLojas(): void {
+
+    this.carregandoLojas = true;
+    this.erroLojas = null;
+
+    this.lojaService.listarLojas(true)
+
+      .pipe(
+        finalize(() => {
+          this.carregandoLojas = false;
+        })
+      )
+
+      .subscribe({
+
+        next: (dados: Loja[]) => {
+
+          // O backend já filtra as lojas ativas.
+          // Mantemos uma segunda verificação no frontend.
+          this.lojas = dados.filter(loja => loja.ativa);
+
+          // Limpa uma seleção anterior se a loja
+          // não estiver mais disponível.
+          if (
+            this.lojaSelecionada !== null &&
+            !this.lojas.some(
+              loja => loja.id === this.lojaSelecionada
+            )
+          ) {
+            this.lojaSelecionada = null;
+          }
+
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          console.error(
+            'Erro ao carregar as lojas:',
+            erro
+          );
+
+          this.lojas = [];
+          this.lojaSelecionada = null;
+
+          if (erro.status === 0) {
+
+            this.erroLojas =
+              'Não foi possível conectar ao servidor. Verifique se o Spring Boot está funcionando.';
+
+          } else {
+
+            this.erroLojas =
+              `Erro ao carregar as lojas. Código HTTP: ${erro.status}.`;
+
+          }
+
+        }
+
+      });
+
+  }
+
+  // Formata o CEP que vem do backend.
+  // O banco armazena somente números.
+
+  formatarCep(cep: string): string {
+
+    const numeros = cep.replace(/\D/g, '');
+
+    if (numeros.length !== 8) {
+      return cep;
+    }
+
+    return `${numeros.substring(0, 5)}-${numeros.substring(5)}`;
+
+  }
+
+  // =========================================
   // GETTERS
+  // =========================================
 
   get petsAtivos(): Pet[] {
-    return this.pets.filter(p =>
-      this.petsSelecionados.includes(p.id)
+
+    return this.pets.filter(pet =>
+      this.petsSelecionados.includes(pet.id)
     );
+
   }
 
   get lojaAtual(): Loja | undefined {
-    return this.lojas.find(l =>
-      l.id === this.lojaSelecionada
+
+    return this.lojas.find(loja =>
+      loja.id === this.lojaSelecionada
     );
+
   }
 
   get total(): number {
+
     return this.petsAtivos.reduce(
-      (s, p) => s + this.precoPet(p.id),
+      (soma, pet) => soma + this.precoPet(pet.id),
       0
     );
+
   }
 
   get duracaoTotal(): number {
+
     return Math.max(
       30,
-      ...this.petsAtivos.map(p => this.duracaoPet(p.id))
+      ...this.petsAtivos.map(pet =>
+        this.duracaoPet(pet.id)
+      )
     );
+
   }
 
   get diasMes(): (number | null)[] {
+
     const primeiro = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth(),
@@ -228,76 +338,94 @@ export class Agendamento {
 
     return [
       ...Array(primeiro).fill(null),
-      ...Array.from({ length: total }, (_, i) => i + 1)
+      ...Array.from(
+        { length: total },
+        (_, i) => i + 1
+      )
     ];
+
   }
 
   get tituloMes(): string {
-    return this.mesAtual.toLocaleDateString('pt-BR', {
-      month: 'long',
-      year: 'numeric'
-    });
+
+    return this.mesAtual.toLocaleDateString(
+      'pt-BR',
+      {
+        month: 'long',
+        year: 'numeric'
+      }
+    );
+
   }
 
   get dataFormatada(): string {
+
     if (!this.dataSelecionada) {
       return 'Selecione uma data';
     }
 
     return new Date(
       `${this.dataSelecionada}T12:00:00`
-    ).toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    ).toLocaleDateString(
+      'pt-BR',
+      {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }
+    );
+
   }
 
-  // GARANTE QUE TODO PET TENHA BANHO SELECIONADO
-
-  private garantirBanho(petId: number): void {
-
-    const atuais = this.servicosPorPet[petId] || [];
-
-    if (!atuais.includes('banho')) {
-      this.servicosPorPet[petId] = [
-        'banho',
-        ...atuais
-      ];
-    }
-  }
-
-  // NAVEGAÇÃO
+  // =========================================
+  // VALIDAÇÃO DAS ETAPAS
+  // =========================================
 
   podeAvancar(): boolean {
 
     switch (this.etapa) {
 
       case 0:
+
         return this.petsSelecionados.length > 0;
 
       case 1:
-        return this.lojaSelecionada !== null;
+
+        return !this.carregandoLojas &&
+          this.lojaSelecionada !== null &&
+          this.lojas.some(
+            loja => loja.id === this.lojaSelecionada
+          );
 
       case 2:
+
         return this.petsAtivos.length > 0 &&
           this.petsAtivos.every(pet =>
             this.servicosPet(pet.id).includes('banho')
           );
 
       case 3:
-        // Escolha do profissional é opcional.
+
+        // O profissional é opcional.
         return true;
 
       case 4:
+
         return !!this.dataSelecionada &&
           !!this.horarioSelecionado;
 
       default:
+
         return false;
+
     }
+
   }
+
+  // =========================================
+  // NAVEGAÇÃO
+  // =========================================
 
   avancar(): void {
 
@@ -306,25 +434,30 @@ export class Agendamento {
     }
 
     if (this.etapa === 1) {
-      // Antes de entrar na etapa de serviços,
-      // garante Banho para todos os pets selecionados.
+
       this.petsAtivos.forEach(pet => {
         this.garantirBanho(pet.id);
       });
+
     }
 
     if (this.etapa < 5) {
       this.etapa++;
     }
+
   }
 
   voltar(): void {
+
     if (this.etapa > 0) {
       this.etapa--;
     }
+
   }
 
+  // =========================================
   // SELEÇÃO DE PETS
+  // =========================================
 
   alternarPet(id: number): void {
 
@@ -334,6 +467,7 @@ export class Agendamento {
       this.petsSelecionados.includes(id)
         ? this.petsSelecionados.filter(x => x !== id)
         : [...this.petsSelecionados, id];
+
   }
 
   adicionarPet(): void {
@@ -344,7 +478,7 @@ export class Agendamento {
 
     const id = Math.max(
       0,
-      ...this.pets.map(p => p.id)
+      ...this.pets.map(pet => pet.id)
     ) + 1;
 
     this.pets.push({
@@ -366,134 +500,213 @@ export class Agendamento {
     };
 
     this.mostrarNovoPet = false;
+
   }
 
+  // =========================================
   // SERVIÇOS
+  // =========================================
 
-  servicosPet(id: number): string[] {
+  private garantirBanho(petId: number): void {
 
-    // Se o registro estiver ausente ou incompleto,
-    // o método corrige antes de retornar.
-    this.garantirBanho(id);
+    const atuais = this.servicosPorPet[petId] || [];
 
-    return this.servicosPorPet[id];
-  }
-
-  alternarServico(petId: number, servico: Servico): void {
-
-    this.garantirBanho(petId);
-
-    const atuais = [...this.servicosPorPet[petId]];
-
-    // O Banho nunca pode ser desmarcado.
-    // Caso esteja ausente, ele será adicionado.
-    if (servico.id === 'banho' || servico.obrigatorio) {
+    if (!atuais.includes('banho')) {
 
       this.servicosPorPet[petId] = [
         'banho',
-        ...atuais.filter(id => id !== 'banho')
+        ...atuais
       ];
 
-      return;
     }
 
-    // Os serviços opcionais podem ser alterados normalmente.
+  }
+
+  servicosPet(id: number): (string | number)[] {
+
+    this.garantirBanho(id);
+
+    return this.servicosPorPet[id];
+
+  }
+
+  alternarServico(
+    petId: number,
+    servico: Servico
+  ): void {
+
+    this.garantirBanho(petId);
+
+    const atuais = [
+      ...this.servicosPorPet[petId]
+    ];
+
+    // Banho é obrigatório e nunca pode ser removido.
+    if (
+      servico.id === 'banho' ||
+      servico.obrigatorio
+    ) {
+
+      this.garantirBanho(petId);
+
+      return;
+
+    }
+
+    // Serviços opcionais.
     this.servicosPorPet[petId] =
       atuais.includes(servico.id)
-        ? atuais.filter(x => x !== servico.id)
+        ? atuais.filter(id => id !== servico.id)
         : [...atuais, servico.id];
+
   }
 
   precoPet(id: number): number {
+
     return this.servicos
-      .filter(s => this.servicosPet(id).includes(s.id))
-      .reduce((v, s) => v + s.preco, 0);
+
+      .filter(servico =>
+        this.servicosPet(id).includes(servico.id)
+      )
+
+      .reduce(
+        (valor, servico) => valor + servico.preco,
+        0
+      );
+
   }
 
   duracaoPet(id: number): number {
+
     return this.servicos
-      .filter(s => this.servicosPet(id).includes(s.id))
-      .reduce((v, s) => v + s.duracao, 0);
+
+      .filter(servico =>
+        this.servicosPet(id).includes(servico.id)
+      )
+
+      .reduce(
+        (valor, servico) => valor + servico.duracao,
+        0
+      );
+
   }
 
-  precoServico(id: string): number {
-    return this.servicos.find(s => s.id === id)?.preco || 0;
+  precoServico(id: string | number): number {
+
+    return this.servicos.find(
+      servico => servico.id === id
+    )?.preco || 0;
+
   }
 
-  nomeServico(id: string): string {
-    return this.servicos.find(s => s.id === id)?.nome || '';
+  nomeServico(id: string | number): string {
+
+    return this.servicos.find(
+      servico => servico.id === id
+    )?.nome || '';
+
   }
 
   grupoServicos(): string[] {
-    return [...new Set(this.servicos.map(s => s.grupo))];
+
+    return [
+      ...new Set(
+        this.servicos.map(servico => servico.grupo)
+      )
+    ];
+
   }
 
   servicosDoGrupo(grupo: string): Servico[] {
-    return this.servicos.filter(s => s.grupo === grupo);
+
+    return this.servicos.filter(
+      servico => servico.grupo === grupo
+    );
+
   }
 
+  // =========================================
   // CALENDÁRIO
+  // =========================================
 
   mudarMes(delta: number): void {
+
     this.mesAtual = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth() + delta,
       1
     );
+
   }
 
   selecionarDia(dia: number): void {
 
-    const d = new Date(
+    const data = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth(),
       dia
     );
 
     const hoje = new Date();
+
     hoje.setHours(0, 0, 0, 0);
 
-    if (d < hoje) {
+    if (data < hoje) {
       return;
     }
 
     this.dataSelecionada =
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
 
     this.horarioSelecionado = '';
+
   }
 
   diaSelecionado(dia: number): boolean {
+
     return this.dataSelecionada ===
       `${this.mesAtual.getFullYear()}-${String(this.mesAtual.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
   }
 
   diaPassado(dia: number): boolean {
 
-    const d = new Date(
+    const data = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth(),
       dia
     );
 
     const hoje = new Date();
+
     hoje.setHours(0, 0, 0, 0);
 
-    return d < hoje;
+    return data < hoje;
+
   }
 
+  // =========================================
   // CONFIRMAÇÃO
+  // =========================================
 
   confirmar(): void {
+
     if (this.termosAceitos) {
       this.confirmado = true;
     }
+
   }
 
   formatar(valor: number): string {
-    return valor.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
+
+    return valor.toLocaleString(
+      'pt-BR',
+      {
+        style: 'currency',
+        currency: 'BRL'
+      }
+    );
+
   }
+
 }
