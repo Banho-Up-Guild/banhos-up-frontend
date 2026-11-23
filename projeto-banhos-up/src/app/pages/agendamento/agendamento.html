@@ -33,6 +33,7 @@
 
           <span>{{ nome }}</span>
         </button>
+
       }
 
     </aside>
@@ -511,8 +512,22 @@
 
                   <button
                     type="button"
-                    [disabled]="diaPassado(dia) || carregandoCalendario || !!erroCalendario"
+                    [disabled]="
+                      diaPassado(dia) ||
+                      carregandoCalendario ||
+                      !!erroCalendario ||
+                      diaSemHorariosDisponiveis(dia)
+                    "
                     [class.selecionado]="diaSelecionado(dia)"
+                    [attr.aria-disabled]="
+                      diaPassado(dia) ||
+                      diaSemHorariosDisponiveis(dia)
+                    "
+                    [attr.title]="
+                      diaSemHorariosDisponiveis(dia)
+                        ? 'Não há horários disponíveis neste dia'
+                        : null
+                    "
                     (click)="selecionarDia(dia)">
 
                     {{ dia }}

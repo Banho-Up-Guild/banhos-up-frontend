@@ -1,11 +1,22 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 
-import { Pet, Servico, CalendarioAgendamentoResponse } from '../../models/agendamento.model';
+import {
+  Pet,
+  Servico,
+  CalendarioAgendamentoResponse
+} from '../../models/agendamento.model';
+
 import { Loja } from '../../models/loja.model';
 
 import { LojaService } from '../../services/loja.service';
@@ -21,7 +32,11 @@ import { AgendamentoApiService } from '../../services/agendamento-api.service';
 export class Agendamento implements OnInit {
 
   private readonly lojaService = inject(LojaService);
+
   private readonly agendamentoApi = inject(AgendamentoApiService);
+
+  // Atualiza a interface após as respostas assíncronas.
+  private readonly cdr = inject(ChangeDetectorRef);
 
   etapa = 0;
 
@@ -57,7 +72,7 @@ export class Agendamento implements OnInit {
 
   // =========================================
   // LOJAS
-  // Integração já preparada com a API.
+  // Integração com a API do Spring Boot.
   // =========================================
 
   lojas: Loja[] = [];
@@ -171,8 +186,8 @@ export class Agendamento implements OnInit {
 
   horarioSelecionado = '';
 
-  // Estes horários ainda são provisórios.
-  // A API atual informa somente os horários ocupados.
+  // Horários provisórios.
+  // O backend atual informa somente os horários ocupados.
   horarios: string[] = [
     '09:00',
     '09:30',
@@ -215,21 +230,32 @@ export class Agendamento implements OnInit {
   carregarLojas(): void {
 
     this.carregandoLojas = true;
+
     this.erroLojas = null;
+
+    this.cdr.markForCheck();
 
     this.lojaService.listarLojas(true)
 
       .pipe(
+
         finalize(() => {
+
           this.carregandoLojas = false;
+
+          this.cdr.markForCheck();
+
         })
+
       )
 
       .subscribe({
 
         next: (dados: Loja[]) => {
 
-          this.lojas = dados.filter(loja => loja.ativa);
+          this.lojas = dados.filter(
+            loja => loja.ativa
+          );
 
           if (
             this.lojaSelecionada !== null &&
@@ -237,8 +263,12 @@ export class Agendamento implements OnInit {
               loja => loja.id === this.lojaSelecionada
             )
           ) {
+
             this.lojaSelecionada = null;
+
           }
+
+          this.cdr.markForCheck();
 
         },
 
@@ -250,11 +280,14 @@ export class Agendamento implements OnInit {
           );
 
           this.lojas = [];
+
           this.lojaSelecionada = null;
 
           this.erroLojas = erro.status === 0
             ? 'Não foi possível conectar ao servidor.'
             : `Erro ao carregar lojas. HTTP ${erro.status}.`;
+
+          this.cdr.markForCheck();
 
         }
 
@@ -281,35 +314,79 @@ export class Agendamento implements OnInit {
   carregarCalendario(): void {
 
     this.carregandoCalendario = true;
+
     this.erroCalendario = null;
+
+    this.cdr.markForCheck();
 
     const yearMonth =
       `${this.mesAtual.getFullYear()}-${String(
         this.mesAtual.getMonth() + 1
       ).padStart(2, '0')}`;
 
+    console.log(
+      'Consultando calendário:',
+      yearMonth
+    );
+
     this.agendamentoApi.listarCalendario(yearMonth)
 
       .pipe(
+
         finalize(() => {
+
           this.carregandoCalendario = false;
+
+          console.log(
+            'Consulta do calendário finalizada:',
+            yearMonth
+          );
+
+          this.cdr.markForCheck();
+
         })
+
       )
 
       .subscribe({
 
         next: (dados) => {
 
+          console.log(
+            'Calendário recebido do backend:',
+            dados
+          );
+
           this.calendarioAgendamentos = dados || [];
 
-          // Caso o horário selecionado tenha sido ocupado
-          // por outro agendamento, remove a seleção.
+          // Verifica se a data selecionada continua disponível.
+          if (this.dataSelecionada) {
+
+            const diaSelecionado = Number(
+              this.dataSelecionada.substring(8, 10)
+            );
+
+            if (this.diaSemHorariosDisponiveis(diaSelecionado)) {
+
+              this.dataSelecionada = '';
+
+              this.horarioSelecionado = '';
+
+            }
+
+          }
+
+          // Verifica se o horário selecionado continua disponível.
           if (
             this.horarioSelecionado &&
             this.horarioIndisponivel(this.horarioSelecionado)
           ) {
+
             this.horarioSelecionado = '';
+
           }
+
+          this.cdr.markForCheck();
 
         },
 
@@ -321,11 +398,14 @@ export class Agendamento implements OnInit {
           );
 
           this.calendarioAgendamentos = [];
+
           this.horarioSelecionado = '';
 
           this.erroCalendario = erro.status === 0
             ? 'Não foi possível conectar ao servidor para consultar os horários.'
             : `Erro ao carregar disponibilidade. HTTP ${erro.status}.`;
+
+          this.cdr.markForCheck();
 
         }
 
@@ -345,22 +425,37 @@ export class Agendamento implements OnInit {
 
   }
 
-  horarioOcupado(hora: string): boolean {
+  // Monta uma data no formato YYYY-MM-DD.
+  private montarDataISO(dia: number): string {
 
-    if (!this.dataSelecionada) {
-      return false;
-    }
+    const ano = this.mesAtual.getFullYear();
 
-    const agendamentoDoDia =
-      this.calendarioAgendamentos.find(
-        item => item.date === this.dataSelecionada
+    const mes = String(
+      this.mesAtual.getMonth() + 1
+    ).padStart(2, '0');
+
+    const diaFormatado = String(dia).padStart(2, '0');
+
+    return `${ano}-${mes}-${diaFormatado}`;
+
+  }
+
+  // Verifica se determinado horário está ocupado em uma data.
+  private horarioOcupadoNaData(
+    data: string,
+    hora: string
+  ): boolean {
+
+    const agendamentosDoDia =
+      this.calendarioAgendamentos.filter(
+        item => item.date === data
       );
 
-    if (!agendamentoDoDia) {
-      return false;
-    }
+    const horariosOcupados = agendamentosDoDia.flatMap(
+      item => item.hours || []
+    );
 
-    return agendamentoDoDia.hours.some(
+    return horariosOcupados.some(
       horaBackend =>
         this.normalizarHora(horaBackend) ===
         this.normalizarHora(hora)
@@ -368,20 +463,114 @@ export class Agendamento implements OnInit {
 
   }
 
+  // Verifica se um horário já passou considerando a data informada.
+  private horarioPassadoNaData(
+    data: string,
+    hora: string
+  ): boolean {
+
+    const [ano, mes, dia] = data
+      .split('-')
+      .map(Number);
+
+    const [horas, minutos] = hora
+      .split(':')
+      .map(Number);
+
+    const horarioEscolhido = new Date(
+      ano,
+      mes - 1,
+      dia,
+      horas,
+      minutos,
+      0,
+      0
+    );
+
+    return horarioEscolhido.getTime() <= Date.now();
+
+  }
+
+  // Verifica se TODOS os horários daquele dia estão indisponíveis.
+  diaSemHorariosDisponiveis(dia: number): boolean {
+
+    if (
+      this.carregandoCalendario ||
+      this.erroCalendario
+    ) {
+      return false;
+    }
+
+    if (this.horarios.length === 0) {
+      return true;
+    }
+
+    const data = this.montarDataISO(dia);
+
+    return this.horarios.every(hora => {
+
+      const ocupado = this.horarioOcupadoNaData(
+        data,
+        hora
+      );
+
+      const passou = this.horarioPassadoNaData(
+        data,
+        hora
+      );
+
+      return ocupado || passou;
+
+    });
+
+  }
+
+  // Verifica se a data já passou.
+  diaPassado(dia: number): boolean {
+
+    const data = new Date(
+      this.mesAtual.getFullYear(),
+      this.mesAtual.getMonth(),
+      dia
+    );
+
+    const hoje = new Date();
+
+    hoje.setHours(0, 0, 0, 0);
+
+    return data < hoje;
+
+  }
+
+  // Verifica se o horário está ocupado na data selecionada.
+  horarioOcupado(hora: string): boolean {
+
+    if (!this.dataSelecionada) {
+      return false;
+    }
+
+    return this.horarioOcupadoNaData(
+      this.dataSelecionada,
+      hora
+    );
+
+  }
+
+  // Verifica se o horário selecionado já passou.
   horarioPassado(hora: string): boolean {
 
     if (!this.dataSelecionada) {
       return false;
     }
 
-    const horarioEscolhido = new Date(
-      `${this.dataSelecionada}T${hora}:00`
+    return this.horarioPassadoNaData(
+      this.dataSelecionada,
+      hora
     );
-
-    return horarioEscolhido <= new Date();
 
   }
 
+  // Verifica se um horário pode ser selecionado.
   horarioIndisponivel(hora: string): boolean {
 
     return !this.dataSelecionada ||
@@ -678,6 +867,7 @@ export class Agendamento implements OnInit {
       ...this.servicosPorPet[petId]
     ];
 
+    // O Banho é obrigatório e nunca pode ser removido.
     if (
       servico.id === 'banho' ||
       servico.obrigatorio
@@ -689,6 +879,7 @@ export class Agendamento implements OnInit {
 
     }
 
+    // Serviços opcionais podem ser adicionados ou removidos.
     this.servicosPorPet[petId] =
       atuais.includes(servico.id)
         ? atuais.filter(id => id !== servico.id)
@@ -768,8 +959,9 @@ export class Agendamento implements OnInit {
       1
     );
 
-    // Ao mudar o mês, limpa a data e horário anteriores.
+    // Limpa a data e o horário anteriores.
     this.dataSelecionada = '';
+
     this.horarioSelecionado = '';
 
     // Consulta a disponibilidade do novo mês.
@@ -779,22 +971,17 @@ export class Agendamento implements OnInit {
 
   selecionarDia(dia: number): void {
 
-    const data = new Date(
-      this.mesAtual.getFullYear(),
-      this.mesAtual.getMonth(),
-      dia
-    );
-
-    const hoje = new Date();
-
-    hoje.setHours(0, 0, 0, 0);
-
-    if (data < hoje) {
+    // Não permite selecionar dias indisponíveis.
+    if (
+      this.diaPassado(dia) ||
+      this.carregandoCalendario ||
+      !!this.erroCalendario ||
+      this.diaSemHorariosDisponiveis(dia)
+    ) {
       return;
     }
 
-    this.dataSelecionada =
-      `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+    this.dataSelecionada = this.montarDataISO(dia);
 
     this.horarioSelecionado = '';
 
@@ -802,24 +989,7 @@ export class Agendamento implements OnInit {
 
   diaSelecionado(dia: number): boolean {
 
-    return this.dataSelecionada ===
-      `${this.mesAtual.getFullYear()}-${String(this.mesAtual.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-
-  }
-
-  diaPassado(dia: number): boolean {
-
-    const data = new Date(
-      this.mesAtual.getFullYear(),
-      this.mesAtual.getMonth(),
-      dia
-    );
-
-    const hoje = new Date();
-
-    hoje.setHours(0, 0, 0, 0);
-
-    return data < hoje;
+    return this.dataSelecionada === this.montarDataISO(dia);
 
   }
 
