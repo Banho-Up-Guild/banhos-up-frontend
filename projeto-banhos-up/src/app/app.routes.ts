@@ -14,6 +14,12 @@ export const routes: Routes = [
       import('./pages/agendamento/agendamento').then((m) => m.Agendamento),
   },
   {
+  path: 'login',
+  title: 'BanhosUp! | Login',
+  loadComponent: () =>
+    import('./pages/login/login').then((m) => m.Login),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

@@ -20,4 +20,12 @@ describe('Login', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should toggle password visibility', () => {
+    expect(component.mostrarSenha()).toBe(false);
+
+    component.alternarVisibilidadeSenha();
+
+    expect(component.mostrarSenha()).toBe(true);
+  });
 });

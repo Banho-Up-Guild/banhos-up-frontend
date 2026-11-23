@@ -1,1 +1,90 @@
-<p>login works!</p>
+<app-header-v2></app-header-v2>
+
+<main class="login">
+
+  <h1 class="login_titulo">Acessar ou criar conta</h1>
+
+  <section class="login_card">
+
+    <h2 class="login_subtitulo">Acesse sua conta</h2>
+
+    <form class="login_formulario">
+
+      <!-- E-mail ou CPF -->
+      <div class="login_campo">
+        <label for="email-cpf">E-mail ou CPF</label>
+
+        <input
+          type="text"
+          id="email-cpf"
+          name="emailCpf"
+          placeholder="Digite seu e-mail ou CPF"
+          autocomplete="username"
+        />
+      </div>
+
+      <!-- Senha -->
+      <div class="login_campo">
+        <label for="senha">Senha</label>
+
+        <div class="login_senha-container">
+
+          <input
+            [type]="mostrarSenha() ? 'text' : 'password'"
+            id="senha"
+            name="senha"
+            placeholder="Sua senha"
+            autocomplete="current-password"
+          />
+
+          <button
+            type="button"
+            class="login_senha-botao"
+            (click)="alternarVisibilidadeSenha()"
+            [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
+            [attr.aria-pressed]="mostrarSenha()"
+          >
+            @if (mostrarSenha()) {
+              <svg lucideEyeOff class="login_icone-senha"></svg>
+            } @else {
+              <svg lucideEye class="login_icone-senha"></svg>
+            }
+          </button>
+
+        </div>
+
+        <a routerLink="/recuperar-senha" class="login_esqueci-senha">
+          Esqueci a senha
+        </a>
+
+      </div>
+
+      <!-- Botão entrar -->
+      <button type="submit" class="login_entrar">
+        ENTRAR
+      </button>
+
+    </form>
+
+    <!-- Separador -->
+    <div class="login_separador">
+      <span></span>
+      <strong>OU</strong>
+      <span></span>
+    </div>
+
+    <!-- Cadastro -->
+    <a routerLink="/cadastro" class="login_cadastro">
+      Criar minha conta
+    </a>
+
+  </section>
+
+  <!-- Rodapé -->
+  <footer class="login_footer">
+    <p>Copyright© 2026 Banhos UP S/A</p>
+    <p>Todos os direitos reservados</p>
+  </footer>
+
+</main>
+
