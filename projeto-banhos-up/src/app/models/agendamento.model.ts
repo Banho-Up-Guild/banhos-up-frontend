@@ -1,7 +1,6 @@
 
 export type EspeciePet = 'Cachorro' | 'Gato';
 
-// Dados do pet recebidos da API.
 export interface Pet {
   id: number;
   nome: string;
@@ -9,7 +8,6 @@ export interface Pet {
   porte: string;
 }
 
-// Dados dos serviços recebidos da API.
 export interface Servico {
   id: string | number;
   nome: string;
@@ -20,19 +18,45 @@ export interface Servico {
   grupo: string;
 }
 
-// Dados dos profissionais recebidos da API.
 export interface Profissional {
   id: number;
   nome: string;
 }
 
-// Disponibilidade retornada pela API.
 export interface Disponibilidade {
   data: string;
   horarios: string[];
 }
 
-// Dados de cada pet dentro de um agendamento.
+// Resposta real do GET /appointments/calendar.
+export interface CalendarioAgendamentoResponse {
+  date: string;
+  hours: string[];
+}
+
+// Enum existente em StatusAppointments.java.
+export type StatusAgendamento =
+  | 'CONFIRMED'
+  | 'CANCELED'
+  | 'AWAITING_CONFIRMATION';
+
+// Request real aceito pelo AppointmentsRequestDTO.java.
+export interface CriarAgendamentoRequest {
+  dateTimeAppointment: string;
+  status: StatusAgendamento;
+  observation: string;
+}
+
+// Resposta da entidade Appointments.
+export interface AgendamentoResponse {
+  id: number;
+  dateTimeAppointment: string;
+  status: StatusAgendamento;
+  observation: string;
+}
+
+// Estrutura planejada para quando o backend
+// aceitar o agendamento completo.
 export interface PetAgendamentoRequest {
   petId: number;
   servicoIds: (string | number)[];
@@ -40,8 +64,7 @@ export interface PetAgendamentoRequest {
   observacoes?: string;
 }
 
-// Estrutura inicial proposta para enviar um agendamento.
-export interface AgendamentoRequest {
+export interface AgendamentoCompletoRequest {
   lojaId: number;
   data: string;
   horario: string;

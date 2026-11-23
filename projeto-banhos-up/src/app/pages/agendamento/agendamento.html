@@ -223,7 +223,6 @@
                 Lojas disponíveis
               </p>
 
-              <!-- ESTADO DE CARREGAMENTO -->
               @if (carregandoLojas) {
 
                 <div class="aviso" role="status">
@@ -232,7 +231,6 @@
 
               }
 
-              <!-- ESTADO DE ERRO -->
               @if (erroLojas) {
 
                 <div class="aviso" role="alert">
@@ -252,7 +250,6 @@
 
               }
 
-              <!-- NENHUMA LOJA DISPONÍVEL -->
               @if (
                 !carregandoLojas &&
                 !erroLojas &&
@@ -265,7 +262,6 @@
 
               }
 
-              <!-- LISTA RECEBIDA DO SPRING BOOT -->
               @if (
                 !carregandoLojas &&
                 !erroLojas &&
@@ -306,7 +302,6 @@
 
             </div>
 
-            <!-- REPRESENTAÇÃO VISUAL DO MAPA -->
             <div class="mapa-fake">
 
               <span>⌖</span>
@@ -473,6 +468,33 @@
 
             </div>
 
+            @if (carregandoCalendario) {
+
+              <div class="aviso" role="status">
+                Consultando os horários ocupados...
+              </div>
+
+            }
+
+            @if (erroCalendario) {
+
+              <div class="aviso" role="alert">
+
+                <p>{{ erroCalendario }}</p>
+
+                <button
+                  type="button"
+                  class="botao botao--secundario"
+                  (click)="carregarCalendario()">
+
+                  Tentar novamente
+
+                </button>
+
+              </div>
+
+            }
+
             <div class="dias-semana">
 
               @for (d of ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']; track $index) {
@@ -489,7 +511,7 @@
 
                   <button
                     type="button"
-                    [disabled]="diaPassado(dia)"
+                    [disabled]="diaPassado(dia) || carregandoCalendario || !!erroCalendario"
                     [class.selecionado]="diaSelecionado(dia)"
                     (click)="selecionarDia(dia)">
 
@@ -517,24 +539,49 @@
               Tempo total aproximado: {{ duracaoTotal }} minutos
             </p>
 
-            <div class="horarios-grid">
+            @if (!dataSelecionada) {
 
-              @for (hora of horarios; track hora) {
+              <p class="ajuda">
+                Selecione uma data para consultar os horários.
+              </p>
 
-                <button
-                  type="button"
-                  [class.selecionado]="horarioSelecionado === hora"
-                  (click)="horarioSelecionado = hora">
+            }
 
-                  {{ hora }}
+            @if (dataSelecionada && carregandoCalendario) {
 
-                  <small>{{ duracaoTotal }} min</small>
+              <p class="ajuda">
+                Atualizando disponibilidade...
+              </p>
 
-                </button>
+            }
 
-              }
+            @if (dataSelecionada && !carregandoCalendario && !erroCalendario) {
 
-            </div>
+              <div class="horarios-grid">
+
+                @for (hora of horarios; track hora) {
+
+                  <button
+                    type="button"
+                    [disabled]="horarioIndisponivel(hora)"
+                    [class.selecionado]="horarioSelecionado === hora"
+                    [style.opacity]="horarioIndisponivel(hora) ? '0.45' : '1'"
+                    [style.cursor]="horarioIndisponivel(hora) ? 'not-allowed' : 'pointer'"
+                    (click)="selecionarHorario(hora)">
+
+                    {{ hora }}
+
+                    <small>
+                      {{ textoSituacaoHorario(hora) }}
+                    </small>
+
+                  </button>
+
+                }
+
+              </div>
+
+            }
 
           </div>
 

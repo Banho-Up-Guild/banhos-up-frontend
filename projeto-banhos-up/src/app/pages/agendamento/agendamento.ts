@@ -5,9 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 
-import { Pet, Servico } from '../../models/agendamento.model';
+import { Pet, Servico, CalendarioAgendamentoResponse } from '../../models/agendamento.model';
 import { Loja } from '../../models/loja.model';
+
 import { LojaService } from '../../services/loja.service';
+import { AgendamentoApiService } from '../../services/agendamento-api.service';
 
 @Component({
   selector: 'app-agendamento',
@@ -19,13 +21,13 @@ import { LojaService } from '../../services/loja.service';
 export class Agendamento implements OnInit {
 
   private readonly lojaService = inject(LojaService);
+  private readonly agendamentoApi = inject(AgendamentoApiService);
 
   etapa = 0;
 
   // =========================================
   // PETS
   // Dados locais provisórios.
-  // Futuramente serão recebidos da API.
   // =========================================
 
   pets: Pet[] = [
@@ -55,7 +57,7 @@ export class Agendamento implements OnInit {
 
   // =========================================
   // LOJAS
-  // Dados recebidos do Spring Boot.
+  // Integração já preparada com a API.
   // =========================================
 
   lojas: Loja[] = [];
@@ -73,7 +75,6 @@ export class Agendamento implements OnInit {
   // =========================================
   // SERVIÇOS
   // Dados locais provisórios.
-  // Futuramente serão recebidos da API.
   // =========================================
 
   servicos: Servico[] = [
@@ -134,7 +135,7 @@ export class Agendamento implements OnInit {
     }
   ];
 
-  // Cada pet possui seus próprios serviços.
+  // Cada pet possui sua própria lista de serviços.
   servicosPorPet: Record<number, (string | number)[]> = {
     1: ['banho'],
     2: ['banho']
@@ -143,7 +144,6 @@ export class Agendamento implements OnInit {
   // =========================================
   // PROFISSIONAIS
   // Dados locais provisórios.
-  // Futuramente serão recebidos da API.
   // =========================================
 
   profissionais: string[] = [
@@ -158,9 +158,7 @@ export class Agendamento implements OnInit {
   observacoes: Record<number, string> = {};
 
   // =========================================
-  // DATA E HORÁRIO
-  // Dados locais provisórios.
-  // Futuramente serão recebidos da API.
+  // CALENDÁRIO - INTEGRAÇÃO COM A API
   // =========================================
 
   mesAtual = new Date(
@@ -173,6 +171,8 @@ export class Agendamento implements OnInit {
 
   horarioSelecionado = '';
 
+  // Estes horários ainda são provisórios.
+  // A API atual informa somente os horários ocupados.
   horarios: string[] = [
     '09:00',
     '09:30',
@@ -186,6 +186,12 @@ export class Agendamento implements OnInit {
     '14:30'
   ];
 
+  calendarioAgendamentos: CalendarioAgendamentoResponse[] = [];
+
+  carregandoCalendario = false;
+
+  erroCalendario: string | null = null;
+
   termosAceitos = false;
 
   confirmado = false;
@@ -196,13 +202,14 @@ export class Agendamento implements OnInit {
 
   ngOnInit(): void {
 
-    // Busca as lojas reais do backend.
     this.carregarLojas();
+
+    this.carregarCalendario();
 
   }
 
   // =========================================
-  // INTEGRAÇÃO COM O BACKEND
+  // INTEGRAÇÃO COM A API DE LOJAS
   // =========================================
 
   carregarLojas(): void {
@@ -222,12 +229,8 @@ export class Agendamento implements OnInit {
 
         next: (dados: Loja[]) => {
 
-          // O backend já filtra as lojas ativas.
-          // Mantemos uma segunda verificação no frontend.
           this.lojas = dados.filter(loja => loja.ativa);
 
-          // Limpa uma seleção anterior se a loja
-          // não estiver mais disponível.
           if (
             this.lojaSelecionada !== null &&
             !this.lojas.some(
@@ -242,33 +245,22 @@ export class Agendamento implements OnInit {
         error: (erro: HttpErrorResponse) => {
 
           console.error(
-            'Erro ao carregar as lojas:',
+            'Erro ao carregar lojas:',
             erro
           );
 
           this.lojas = [];
           this.lojaSelecionada = null;
 
-          if (erro.status === 0) {
-
-            this.erroLojas =
-              'Não foi possível conectar ao servidor. Verifique se o Spring Boot está funcionando.';
-
-          } else {
-
-            this.erroLojas =
-              `Erro ao carregar as lojas. Código HTTP: ${erro.status}.`;
-
-          }
+          this.erroLojas = erro.status === 0
+            ? 'Não foi possível conectar ao servidor.'
+            : `Erro ao carregar lojas. HTTP ${erro.status}.`;
 
         }
 
       });
 
   }
-
-  // Formata o CEP que vem do backend.
-  // O banco armazena somente números.
 
   formatarCep(cep: string): string {
 
@@ -279,6 +271,148 @@ export class Agendamento implements OnInit {
     }
 
     return `${numeros.substring(0, 5)}-${numeros.substring(5)}`;
+
+  }
+
+  // =========================================
+  // INTEGRAÇÃO COM O CALENDÁRIO DO BACKEND
+  // =========================================
+
+  carregarCalendario(): void {
+
+    this.carregandoCalendario = true;
+    this.erroCalendario = null;
+
+    const yearMonth =
+      `${this.mesAtual.getFullYear()}-${String(
+        this.mesAtual.getMonth() + 1
+      ).padStart(2, '0')}`;
+
+    this.agendamentoApi.listarCalendario(yearMonth)
+
+      .pipe(
+        finalize(() => {
+          this.carregandoCalendario = false;
+        })
+      )
+
+      .subscribe({
+
+        next: (dados) => {
+
+          this.calendarioAgendamentos = dados || [];
+
+          // Caso o horário selecionado tenha sido ocupado
+          // por outro agendamento, remove a seleção.
+          if (
+            this.horarioSelecionado &&
+            this.horarioIndisponivel(this.horarioSelecionado)
+          ) {
+            this.horarioSelecionado = '';
+          }
+
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          console.error(
+            'Erro ao consultar calendário:',
+            erro
+          );
+
+          this.calendarioAgendamentos = [];
+          this.horarioSelecionado = '';
+
+          this.erroCalendario = erro.status === 0
+            ? 'Não foi possível conectar ao servidor para consultar os horários.'
+            : `Erro ao carregar disponibilidade. HTTP ${erro.status}.`;
+
+        }
+
+      });
+
+  }
+
+  // =========================================
+  // VERIFICAÇÃO DE HORÁRIOS
+  // =========================================
+
+  private normalizarHora(hora: string): string {
+
+    // O backend pode devolver 09:00:00.
+    // O frontend utiliza 09:00.
+    return hora.substring(0, 5);
+
+  }
+
+  horarioOcupado(hora: string): boolean {
+
+    if (!this.dataSelecionada) {
+      return false;
+    }
+
+    const agendamentoDoDia =
+      this.calendarioAgendamentos.find(
+        item => item.date === this.dataSelecionada
+      );
+
+    if (!agendamentoDoDia) {
+      return false;
+    }
+
+    return agendamentoDoDia.hours.some(
+      horaBackend =>
+        this.normalizarHora(horaBackend) ===
+        this.normalizarHora(hora)
+    );
+
+  }
+
+  horarioPassado(hora: string): boolean {
+
+    if (!this.dataSelecionada) {
+      return false;
+    }
+
+    const horarioEscolhido = new Date(
+      `${this.dataSelecionada}T${hora}:00`
+    );
+
+    return horarioEscolhido <= new Date();
+
+  }
+
+  horarioIndisponivel(hora: string): boolean {
+
+    return !this.dataSelecionada ||
+      this.carregandoCalendario ||
+      !!this.erroCalendario ||
+      this.horarioOcupado(hora) ||
+      this.horarioPassado(hora);
+
+  }
+
+  textoSituacaoHorario(hora: string): string {
+
+    if (this.horarioOcupado(hora)) {
+      return 'Horário ocupado';
+    }
+
+    if (this.horarioPassado(hora)) {
+      return 'Horário indisponível';
+    }
+
+    return `${this.duracaoTotal} min`;
+
+  }
+
+  selecionarHorario(hora: string): void {
+
+    if (this.horarioIndisponivel(hora)) {
+      return;
+    }
+
+    this.horarioSelecionado = hora;
 
   }
 
@@ -407,13 +541,16 @@ export class Agendamento implements OnInit {
 
       case 3:
 
-        // O profissional é opcional.
+        // O profissional continua sendo opcional.
         return true;
 
       case 4:
 
-        return !!this.dataSelecionada &&
-          !!this.horarioSelecionado;
+        return !this.carregandoCalendario &&
+          !this.erroCalendario &&
+          !!this.dataSelecionada &&
+          !!this.horarioSelecionado &&
+          !this.horarioIndisponivel(this.horarioSelecionado);
 
       default:
 
@@ -541,7 +678,6 @@ export class Agendamento implements OnInit {
       ...this.servicosPorPet[petId]
     ];
 
-    // Banho é obrigatório e nunca pode ser removido.
     if (
       servico.id === 'banho' ||
       servico.obrigatorio
@@ -553,7 +689,6 @@ export class Agendamento implements OnInit {
 
     }
 
-    // Serviços opcionais.
     this.servicosPorPet[petId] =
       atuais.includes(servico.id)
         ? atuais.filter(id => id !== servico.id)
@@ -564,11 +699,9 @@ export class Agendamento implements OnInit {
   precoPet(id: number): number {
 
     return this.servicos
-
       .filter(servico =>
         this.servicosPet(id).includes(servico.id)
       )
-
       .reduce(
         (valor, servico) => valor + servico.preco,
         0
@@ -579,11 +712,9 @@ export class Agendamento implements OnInit {
   duracaoPet(id: number): number {
 
     return this.servicos
-
       .filter(servico =>
         this.servicosPet(id).includes(servico.id)
       )
-
       .reduce(
         (valor, servico) => valor + servico.duracao,
         0
@@ -637,6 +768,13 @@ export class Agendamento implements OnInit {
       1
     );
 
+    // Ao mudar o mês, limpa a data e horário anteriores.
+    this.dataSelecionada = '';
+    this.horarioSelecionado = '';
+
+    // Consulta a disponibilidade do novo mês.
+    this.carregarCalendario();
+
   }
 
   selecionarDia(dia: number): void {
@@ -687,6 +825,9 @@ export class Agendamento implements OnInit {
 
   // =========================================
   // CONFIRMAÇÃO
+  // Ainda é demonstrativa.
+  // O POST não é chamado até o backend
+  // aceitar os dados completos do agendamento.
   // =========================================
 
   confirmar(): void {
@@ -696,6 +837,10 @@ export class Agendamento implements OnInit {
     }
 
   }
+
+  // =========================================
+  // FORMATAÇÃO DE VALORES
+  // =========================================
 
   formatar(valor: number): string {
 
