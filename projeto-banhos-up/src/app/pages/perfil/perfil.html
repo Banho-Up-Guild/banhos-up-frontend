@@ -1,1 +1,99 @@
-<p>perfil works!</p>
+<app-header-v2></app-header-v2>
+
+<main class="perfil">
+
+  <aside class="perfil_menu">
+
+    <div class="perfil_usuario">
+
+      <div class="perfil_avatar">
+        <svg class="icone_usuario" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4"></circle>
+          <path d="M4.5 21c.8-4.1 3.4-6.2 7.5-6.2s6.7 2.1 7.5 6.2"></path>
+        </svg>
+      </div>
+
+      <div class="perfil_saudacao">
+        <span>Olá,</span>
+        <strong>User.</strong>
+      </div>
+
+    </div>
+
+    <nav class="perfil_navegacao">
+
+      <a
+        routerLink="meus-dados"
+        routerLinkActive="ativo"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="perfil_item"
+      >
+        <svg class="icone_usuario" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4"></circle>
+          <path d="M4.5 21c.8-4.1 3.4-6.2 7.5-6.2s6.7 2.1 7.5 6.2"></path>
+        </svg>
+
+        <span>Meus dados</span>
+
+        <svg lucideChevronRight class="perfil_seta"></svg>
+      </a>
+
+      <a
+        routerLink="agendamentos"
+        routerLinkActive="ativo"
+        class="perfil_item"
+      >
+        <svg class="header__icone" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7v5l3.5 2"></path>
+        </svg>
+
+        <span>Meus agendamentos</span>
+
+        <svg lucideChevronRight class="perfil_seta"></svg>
+      </a>
+
+      <a
+        routerLink="pets"
+        routerLinkActive="ativo"
+        class="perfil_item"
+      >
+        <svg lucidePawPrint class="perfil_icone"></svg>
+
+        <span>Meus pets</span>
+
+        <svg lucideChevronRight class="perfil_seta"></svg>
+      </a>
+
+      <a
+        routerLink="alterar-senha"
+        routerLinkActive="ativo"
+        class="perfil_item"
+      >
+        <svg lucideShield class="perfil_icone"></svg>
+
+        <span>Alterar senha</span>
+
+        <svg lucideChevronRight class="perfil_seta"></svg>
+      </a>
+
+      <a
+        routerLink="/home"
+        class="perfil_item"
+      >
+        <svg lucideSquareArrowRightExit class="perfil_icone"></svg>
+
+        <span>Sair da conta</span>
+
+        <svg lucideChevronRight class="perfil_seta"></svg>
+      </a>
+
+    </nav>
+
+  </aside>
+
+  <section class="perfil_conteudo">
+    <router-outlet></router-outlet>
+  </section>
+
+</main>

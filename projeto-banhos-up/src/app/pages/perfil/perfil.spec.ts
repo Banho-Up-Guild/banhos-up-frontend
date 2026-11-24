@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Perfil } from './perfil';
 
 describe('Perfil', () => {
@@ -9,15 +8,14 @@ describe('Perfil', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Perfil]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(Perfil);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('deve criar o componente', () => {
     expect(component).toBeTruthy();
   });
 });
