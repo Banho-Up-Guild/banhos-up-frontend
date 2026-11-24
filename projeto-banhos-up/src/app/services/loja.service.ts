@@ -40,4 +40,26 @@ export class LojaService {
     );
   }
 
+  // LISTAR FUNCIONÁRIOS DE UMA LOJA
+  listarFuncionariosPorLoja(idStore: number): Observable<(string | {
+    id?: number;
+    employeeId?: number;
+    nome?: string;
+    name?: string;
+  })[]> {
+
+    const params = new HttpParams()
+      .set('idStore', String(idStore));
+
+    return this.http.get<(string | {
+      id?: number;
+      employeeId?: number;
+      nome?: string;
+      name?: string;
+    })[]>(
+      `${environment.apiUrl}/users/store_employee`,
+      { params }
+    );
+  }
+
 }
