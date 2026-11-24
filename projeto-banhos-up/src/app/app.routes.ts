@@ -14,6 +14,12 @@ export const routes: Routes = [
       import('./pages/agendamento/agendamento').then((m) => m.Agendamento),
   },
   {
+    path: 'cadastro',
+    title: 'BanhosUp! | Cadastro',
+    loadComponent: () =>
+      import('./pages/cadastro/cadastro').then((m) => m.Cadastro),
+  },
+  {
   path: 'login',
   title: 'BanhosUp! | Login',
   loadComponent: () =>
