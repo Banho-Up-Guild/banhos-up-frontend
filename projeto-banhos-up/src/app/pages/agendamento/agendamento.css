@@ -1,10 +1,7 @@
 
 /* =====================================================
    BANHOS UP! — AGENDAMENTO
-   CSS COMPLETO
 ===================================================== */
-
-/* CONFIGURAÇÕES GERAIS */
 
 :host {
   display: block;
@@ -27,9 +24,7 @@
   overflow-x: hidden;
 }
 
-/* =====================================================
-   CABEÇALHO
-===================================================== */
+/* CABEÇALHO */
 
 .topo-agendamento {
   width: 100%;
@@ -69,39 +64,28 @@
   cursor: default;
 }
 
-/* =====================================================
-   LAYOUT PRINCIPAL
-===================================================== */
+/* LAYOUT PRINCIPAL */
 
 .layout-agendamento {
   width: 100%;
   max-width: 1600px;
   min-height: calc(100vh - 85px);
-
   margin: 0 auto;
   padding: 65px 35px 80px;
-
   position: relative;
   display: block;
 }
 
-/* =====================================================
-   CONTEÚDO DAS ETAPAS
-===================================================== */
-
 .conteudo-etapa {
   width: min(760px, calc(100% - 260px));
-
   margin-left: auto;
   margin-right: auto;
-
   min-width: 0;
   padding: 0;
-
   position: relative;
 }
 
-/* Títulos */
+/* TÍTULOS */
 
 .conteudo-etapa h2 {
   font-size: 27px;
@@ -136,107 +120,72 @@
   line-height: 1.6;
 }
 
-/* =====================================================
-   BARRA DE PROGRESSO
-===================================================== */
+/* BARRA DE PROGRESSO */
 
 .progresso {
   position: absolute;
-
   right: 45px;
   top: 65px;
-
   width: 190px;
-
   display: flex;
   flex-direction: column;
-
   z-index: 5;
 }
 
-/* Linha vertical */
-
 .progresso::before {
   content: "";
-
   position: absolute;
-
   right: 9px;
   top: 10px;
   bottom: 10px;
-
   width: 2px;
-
   background: #d9d9d9;
   z-index: 0;
 }
 
-/* Botões das etapas */
-
 .progresso > button {
   appearance: none;
   -webkit-appearance: none;
-
   position: relative;
   z-index: 1;
-
   width: 100%;
   min-height: 96px;
-
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
   justify-content: flex-start;
-
   gap: 14px;
-
   padding: 0;
-
   border: none;
   background: transparent;
-
   cursor: pointer;
   font-family: inherit;
 }
 
-/* Texto à esquerda da bolinha */
-
 .progresso > button > span:last-child {
   flex: 1;
   text-align: right;
-
   white-space: nowrap;
-
   font-size: 15px;
   font-weight: 400;
   color: #171717;
 }
 
-/* Bolinhas */
-
 .progresso__ponto {
   flex-shrink: 0;
-
   width: 22px;
   height: 22px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 50%;
-
   background: #d9d9d9;
-
   color: white;
   font-size: 13px;
   font-weight: 700;
-
   position: relative;
   z-index: 2;
 }
-
-/* Etapa atual */
 
 .progresso > button.ativo .progresso__ponto {
   background: #064b82;
@@ -247,8 +196,6 @@
   font-weight: 700;
 }
 
-/* Etapas concluídas */
-
 .progresso > button.concluido .progresso__ponto {
   background: #064b82;
   color: white;
@@ -258,57 +205,41 @@
   color: #064b82;
 }
 
-/* Linha azul até a etapa atual */
-
 .progresso::after {
   content: "";
-
   position: absolute;
-
   right: 9px;
   top: 10px;
-
   width: 2px;
-
   height: calc((var(--etapa-atual, 0) * 96px));
-
   background: #064b82;
   z-index: 0;
   pointer-events: none;
 }
 
-/* =====================================================
-   ETAPA PETS
-===================================================== */
+/* PETS */
 
 .pets-lista {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 28px;
-
   margin: 45px 0 30px;
 }
 
 .pet-opcao {
   appearance: none;
   -webkit-appearance: none;
-
   width: 138px;
   min-height: 175px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-
   gap: 10px;
-
   padding: 0;
-
   border: none;
   background: transparent;
-
   cursor: pointer;
   font-family: inherit;
   color: #111;
@@ -317,19 +248,13 @@
 .pet-avatar {
   width: 110px;
   height: 110px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 50%;
-
   background: #e9e9e9;
-
   font-size: 43px;
-
   border: 3px solid transparent;
-
   transition: 0.2s ease;
 }
 
@@ -355,32 +280,24 @@
 .novo-pet .mais {
   width: 110px;
   height: 110px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border: 3px solid #064b82;
   border-radius: 50%;
-
   color: #064b82;
   font-size: 48px;
   font-weight: 400;
 }
 
-/* =====================================================
-   FORMULÁRIOS
-===================================================== */
+/* FORMULÁRIOS */
 
 .painel-form {
   width: 100%;
   padding: 25px;
-
   border: 1px solid #dddddd;
   border-radius: 12px;
-
   margin: 25px 0;
-
   background: #ffffff;
 }
 
@@ -390,7 +307,6 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
-
   font-size: 15px;
   font-weight: 500;
 }
@@ -400,18 +316,13 @@ select,
 textarea {
   width: 100%;
   min-height: 48px;
-
   padding: 12px 15px;
-
   border: 1px solid #bdbdbd;
   border-radius: 8px;
-
   background: #ffffff;
-
   font-family: inherit;
   font-size: 15px;
   color: #111;
-
   outline: none;
 }
 
@@ -434,9 +345,7 @@ textarea {
   margin-top: 20px;
 }
 
-/* =====================================================
-   ETAPA LOJAS
-===================================================== */
+/* ETAPA LOJAS */
 
 .lojas-layout {
   display: grid;
@@ -454,75 +363,97 @@ textarea {
   margin: 35px 0 15px;
 }
 
+/* LOJAS EM FORMATO DE LISTA */
+
 .loja-card {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
-
+  min-height: 76px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
-
-  padding: 18px;
-
-  margin-bottom: 15px;
-
-  border: 1px solid #cccccc;
-  border-radius: 10px;
-
+  padding: 13px 16px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #dedede;
+  border-radius: 0;
   background: #ffffff;
-
   text-align: left;
   cursor: pointer;
-
   font-family: inherit;
-  transition: 0.2s ease;
+  transition: background 0.2s ease;
+}
+
+.loja-card:first-of-type {
+  border-top: 1px solid #dedede;
+}
+
+.loja-card:hover {
+  background: #f7fbfe;
 }
 
 .loja-card.selecionado {
-  border-color: #1597e5;
   background: #f1f9fe;
 }
 
 .loja-card strong {
   display: block;
   font-size: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
+  color: #080808;
 }
 
 .loja-card small {
   display: block;
   color: #555;
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.55;
 }
+
+/* CÍRCULO DE SELEÇÃO */
 
 .radio {
   width: 25px;
   height: 25px;
   min-width: 25px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border: 1.5px solid #888;
+  border: 1.5px solid #888888;
   border-radius: 50%;
+  background: #ffffff;
+  flex-shrink: 0;
 
-  color: #1597e5;
-  font-size: 15px;
+  /* Esconde qualquer pontinho textual antigo do HTML */
+  color: transparent;
+  font-size: 0;
+
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
+
+/* Quando selecionado, TODO o círculo fica azul */
+.loja-card.selecionado .radio,
+.servico-card.selecionado .radio {
+  background: #1597e5 !important;
+  border: 1.5px solid #1597e5 !important;
+}
+
+/* Não precisamos mais do pontinho interno */
+.radio__ponto {
+  display: none !important;
+}
+
+/* MAPA */
 
 .mapa-fake {
   min-height: 300px;
-
   border-radius: 12px;
-
   background: #91d6f5;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   color: #ffffff;
   text-align: center;
   gap: 15px;
@@ -532,18 +463,14 @@ textarea {
   font-size: 70px;
 }
 
-/* =====================================================
-   ETAPA SERVIÇOS
-===================================================== */
+/* ETAPA SERVIÇOS */
 
 .abas-pets {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-
   padding-bottom: 18px;
   margin-bottom: 25px;
-
   border-bottom: 1px solid #cccccc;
 }
 
@@ -551,12 +478,9 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-
   padding: 10px 16px;
-
   border-radius: 30px;
   background: #f1f1f1;
-
   font-size: 15px;
   font-weight: 600;
 }
@@ -576,46 +500,43 @@ textarea {
   font-weight: 400;
 }
 
+/* SERVIÇOS EM FORMATO DE LISTA */
+
 .servico-card {
   appearance: none;
   -webkit-appearance: none;
-
   width: 100%;
-  min-height: 64px;
-
+  min-height: 72px;
   display: flex;
   align-items: center;
   gap: 13px;
-
-  padding: 13px;
-
-  margin-bottom: 12px;
-
-  border: 1px solid #bdbdbd;
-  border-radius: 9px;
-
+  padding: 14px 16px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #dedede;
+  border-radius: 0;
   background: #ffffff;
-
   text-align: left;
   cursor: pointer;
-
   font-family: inherit;
-  transition: 0.2s ease;
+  transition: background 0.2s ease;
+}
+
+.servico-card:first-of-type {
+  border-top: 1px solid #dedede;
 }
 
 .servico-card:hover {
-  border-color: #064b82;
+  background: #f7fbfe;
 }
 
 .servico-card.selecionado {
-  border-color: #1597e5;
   background: #f1f9fe;
 }
 
 .servico-info {
   flex: 1;
   min-width: 0;
-
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -640,16 +561,12 @@ textarea {
 .subtotal {
   display: flex;
   justify-content: space-between;
-
   padding: 15px 0;
-
   border-top: 1px solid #ddd;
   font-size: 15px;
 }
 
-/* =====================================================
-   ETAPA PROFISSIONAIS
-===================================================== */
+/* ETAPA PROFISSIONAIS */
 
 .profissional-pet {
   margin-top: 25px;
@@ -662,15 +579,11 @@ textarea {
 
 .radio-linha {
   min-height: 55px;
-
   display: flex;
   align-items: center;
   gap: 14px;
-
   padding: 12px;
-
   border-bottom: 1px solid #dedede;
-
   cursor: pointer;
   font-size: 15px;
 }
@@ -681,17 +594,13 @@ textarea {
   accent-color: #1597e5;
 }
 
-/* =====================================================
-   ETAPA DATA E HORÁRIO
-===================================================== */
+/* ETAPA DATA E HORÁRIO */
 
 .calendario {
   width: 100%;
   padding: 22px;
-
   border: 1px solid #dddddd;
   border-radius: 12px;
-
   margin-top: 30px;
 }
 
@@ -704,13 +613,10 @@ textarea {
 .calendario__topo button {
   width: 40px;
   height: 40px;
-
   border: 1px solid #ddd;
   border-radius: 8px;
-
   background: #ffffff;
   color: #064b82;
-
   font-size: 24px;
   cursor: pointer;
 }
@@ -720,7 +626,6 @@ textarea {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
-
   text-align: center;
 }
 
@@ -731,12 +636,9 @@ textarea {
 
 .dias-grid button {
   min-height: 42px;
-
   border: none;
   border-radius: 8px;
-
   background: #f5f5f5;
-
   cursor: pointer;
   font-family: inherit;
 }
@@ -764,18 +666,14 @@ textarea {
 
 .horarios-grid button {
   min-height: 65px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-
   border: 1px solid #cccccc;
   border-radius: 9px;
-
   background: white;
-
   cursor: pointer;
   font-family: inherit;
 }
@@ -791,14 +689,11 @@ textarea {
   color: #888;
 }
 
-/* =====================================================
-   ETAPA RESUMO
-===================================================== */
+/* ETAPA RESUMO */
 
 .resumo {
   width: 100%;
   padding: 20px 0 25px;
-
   border-bottom: 1px solid #bdbdbd;
   margin-bottom: 25px;
 }
@@ -808,9 +703,7 @@ textarea {
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-
   margin-bottom: 17px;
-
   font-size: 14px;
 }
 
@@ -829,12 +722,9 @@ textarea {
 
 .resumo-pet {
   width: 100%;
-
   padding: 20px;
-
   border: 1px solid #bdbdbd;
   border-radius: 12px;
-
   margin-bottom: 20px;
 }
 
@@ -846,7 +736,6 @@ textarea {
   display: flex;
   justify-content: space-between;
   gap: 15px;
-
   font-size: 14px;
 }
 
@@ -862,45 +751,31 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   padding: 18px 0;
-
   border-top: 1px solid #bdbdbd;
-
   font-size: 16px;
 }
 
-/* =====================================================
-   AVISOS
-===================================================== */
+/* AVISOS */
 
 .aviso {
   width: 100%;
-
   padding: 15px 18px;
-
   margin: 20px 0;
-
   border: 1px solid #1597e5;
   border-radius: 8px;
-
   background: #91d6f5;
-
   color: #064b82;
-
   font-size: 13px;
   line-height: 1.5;
 }
 
-/* =====================================================
-   TERMOS
-===================================================== */
+/* TERMOS */
 
 .termos {
   display: flex;
   align-items: center;
   gap: 10px;
-
   font-size: 14px;
   margin: 20px 0;
   cursor: pointer;
@@ -912,31 +787,23 @@ textarea {
   accent-color: #1597e5;
 }
 
-/* =====================================================
-   BOTÕES
-===================================================== */
+/* BOTÕES */
 
 .acoes {
   display: flex;
   align-items: center;
   justify-content: center;
-
   gap: 12px;
-
   margin-top: 35px;
 }
 
 .botao {
   min-height: 48px;
-
   padding: 0 28px;
-
   border-radius: 8px;
-
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
-
   cursor: pointer;
   transition: 0.2s ease;
 }
@@ -971,9 +838,7 @@ textarea {
   font-size: 18px;
 }
 
-/* =====================================================
-   CONFIRMAÇÃO
-===================================================== */
+/* CONFIRMAÇÃO */
 
 .sucesso {
   width: 100%;
@@ -984,18 +849,13 @@ textarea {
 .sucesso__icone {
   width: 75px;
   height: 75px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   margin: 0 auto 25px;
-
   border-radius: 50%;
-
   background: #e5f5eb;
   color: #208b4b;
-
   font-size: 38px;
 }
 
@@ -1003,12 +863,9 @@ textarea {
   margin-bottom: 15px;
 }
 
-/* =====================================================
-   RESPONSIVIDADE — NOTEBOOKS
-===================================================== */
+/* RESPONSIVIDADE — NOTEBOOKS */
 
 @media (max-width: 1200px) {
-
   .progresso {
     right: 20px;
     width: 165px;
@@ -1021,15 +878,11 @@ textarea {
   .progresso > button {
     min-height: 85px;
   }
-
 }
 
-/* =====================================================
-   RESPONSIVIDADE — TABLETS
-===================================================== */
+/* RESPONSIVIDADE — TABLETS */
 
 @media (max-width: 850px) {
-
   .topo-agendamento {
     min-height: 75px;
   }
@@ -1051,35 +904,24 @@ textarea {
     position: relative;
     top: auto;
     right: auto;
-
     width: 100%;
     max-width: 650px;
-
     margin: 0 auto 45px;
-  }
-
-  .progresso::before {
-    display: none;
-  }
-
-  .progresso::after {
-    display: none;
-  }
-
-  .progresso {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
   }
 
+  .progresso::before,
+  .progresso::after {
+    display: none;
+  }
+
   .progresso > button {
     min-height: auto;
-
     flex-direction: column-reverse;
     justify-content: center;
-
     gap: 8px;
-
     padding: 8px 2px;
   }
 
@@ -1095,15 +937,11 @@ textarea {
   .mapa-fake {
     min-height: 180px;
   }
-
 }
 
-/* =====================================================
-   RESPONSIVIDADE — CELULARES
-===================================================== */
+/* RESPONSIVIDADE — CELULARES */
 
 @media (max-width: 520px) {
-
   .topo-agendamento {
     padding: 15px 45px;
   }
@@ -1182,4 +1020,16 @@ textarea {
     padding: 0 20px;
   }
 
+  .loja-card {
+    padding: 12px;
+  }
+
+  .servico-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .preco {
+    font-size: 13px;
+  }
 }

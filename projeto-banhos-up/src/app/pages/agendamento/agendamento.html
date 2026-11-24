@@ -1,3 +1,4 @@
+
 <main class="agendamento">
 
   <!-- CABEÇALHO -->
@@ -32,6 +33,7 @@
 
           <span>{{ nome }}</span>
         </button>
+
       }
 
     </aside>
@@ -57,6 +59,7 @@
 
           <button
             class="botao botao--primario"
+            type="button"
             (click)="confirmado = false; etapa = 0">
 
             Fazer novo agendamento
@@ -67,7 +70,9 @@
 
       } @else {
 
-        <!-- ETAPA 1: PETS -->
+        <!-- ====================================
+             ETAPA 1: PETS
+        ===================================== -->
         @if (etapa === 0) {
 
           <p class="sobretitulo">Meus pets</p>
@@ -150,6 +155,7 @@
 
               <button
                 class="botao botao--primario"
+                type="button"
                 (click)="adicionarPet()">
 
                 Adicionar pet
@@ -167,7 +173,9 @@
 
         }
 
-        <!-- ETAPA 2: LOJAS -->
+        <!-- ====================================
+             ETAPA 2: LOJAS
+        ===================================== -->
         @if (etapa === 1) {
 
           <p class="sobretitulo">Lojas</p>
@@ -216,37 +224,85 @@
                 Lojas disponíveis
               </p>
 
-              @for (loja of lojas; track loja.id) {
+              @if (carregandoLojas) {
 
-                <button
-                  class="loja-card"
-                  [class.selecionado]="lojaSelecionada === loja.id"
-                  (click)="lojaSelecionada = loja.id"
-                  type="button">
+                <div class="aviso" role="status">
+                  Carregando lojas disponíveis...
+                </div>
 
-                  <span class="radio">
-                    {{ lojaSelecionada === loja.id ? '●' : '' }}
-                  </span>
+              }
 
-                  <span>
+              @if (erroLojas) {
 
-                    <strong>{{ loja.nome }}</strong>
+                <div class="aviso" role="alert">
 
-                    <small>
-                      {{ loja.endereco }}<br>
-                      {{ loja.cidade }} - {{ loja.estado }},
-                      {{ loja.cep }}
-                    </small>
+                  <p>{{ erroLojas }}</p>
 
-                  </span>
+                  <button
+                    type="button"
+                    class="botao botao--secundario"
+                    (click)="carregarLojas()">
 
-                </button>
+                    Tentar novamente
+
+                  </button>
+
+                </div>
+
+              }
+
+              @if (
+                !carregandoLojas &&
+                !erroLojas &&
+                lojas.length === 0
+              ) {
+
+                <div class="aviso">
+                  Nenhuma loja ativa foi encontrada.
+                </div>
+
+              }
+
+              @if (
+                !carregandoLojas &&
+                !erroLojas &&
+                lojas.length > 0
+              ) {
+
+                @for (loja of lojas; track loja.id) {
+
+                  <button
+                    class="loja-card"
+                    [class.selecionado]="lojaSelecionada === loja.id"
+                    [attr.aria-pressed]="lojaSelecionada === loja.id"
+                    type="button"
+                    (click)="lojaSelecionada = loja.id">
+
+                    <span class="radio" aria-hidden="true"></span>
+
+                    <span>
+
+                      <strong>{{ loja.nome }}</strong>
+
+                      <small>
+                        {{ loja.endereco }}<br />
+
+                        {{ loja.bairro }},
+                        {{ loja.cidade }} -
+                        {{ loja.estado }},
+                        {{ formatarCep(loja.cep) }}
+                      </small>
+
+                    </span>
+
+                  </button>
+
+                }
 
               }
 
             </div>
 
-            <!-- REPRESENTAÇÃO VISUAL DO MAPA -->
             <div class="mapa-fake">
 
               <span>⌖</span>
@@ -259,7 +315,9 @@
 
         }
 
-        <!-- ETAPA 3: SERVIÇOS -->
+        <!-- ====================================
+             ETAPA 3: SERVIÇOS
+        ===================================== -->
         @if (etapa === 2) {
 
           <p class="sobretitulo">Serviços</p>
@@ -298,11 +356,10 @@
                     type="button"
                     class="servico-card"
                     [class.selecionado]="servicosPet(pet.id).includes(servico.id)"
+                    [attr.aria-pressed]="servicosPet(pet.id).includes(servico.id)"
                     (click)="alternarServico(pet.id, servico)">
 
-                    <span class="radio">
-                      {{ servicosPet(pet.id).includes(servico.id) ? '●' : '' }}
-                    </span>
+                    <span class="radio" aria-hidden="true"></span>
 
                     <span class="servico-info">
 
@@ -344,7 +401,9 @@
 
         }
 
-        <!-- ETAPA 4: PROFISSIONAIS -->
+        <!-- ====================================
+             ETAPA 4: PROFISSIONAIS
+        ===================================== -->
         @if (etapa === 3) {
 
           <p class="sobretitulo">Profissionais</p>
@@ -379,7 +438,9 @@
 
         }
 
-        <!-- ETAPA 5: DATA E HORÁRIO -->
+        <!-- ====================================
+             ETAPA 5: DATA E HORÁRIO
+        ===================================== -->
         @if (etapa === 4) {
 
           <p class="sobretitulo">Disponibilidade</p>
@@ -408,6 +469,33 @@
 
             </div>
 
+            @if (carregandoCalendario) {
+
+              <div class="aviso" role="status">
+                Consultando os horários ocupados...
+              </div>
+
+            }
+
+            @if (erroCalendario) {
+
+              <div class="aviso" role="alert">
+
+                <p>{{ erroCalendario }}</p>
+
+                <button
+                  type="button"
+                  class="botao botao--secundario"
+                  (click)="carregarCalendario()">
+
+                  Tentar novamente
+
+                </button>
+
+              </div>
+
+            }
+
             <div class="dias-semana">
 
               @for (d of ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']; track $index) {
@@ -424,8 +512,22 @@
 
                   <button
                     type="button"
-                    [disabled]="diaPassado(dia)"
+                    [disabled]="
+                      diaPassado(dia) ||
+                      carregandoCalendario ||
+                      !!erroCalendario ||
+                      diaSemHorariosDisponiveis(dia)
+                    "
                     [class.selecionado]="diaSelecionado(dia)"
+                    [attr.aria-disabled]="
+                      diaPassado(dia) ||
+                      diaSemHorariosDisponiveis(dia)
+                    "
+                    [attr.title]="
+                      diaSemHorariosDisponiveis(dia)
+                        ? 'Não há horários disponíveis neste dia'
+                        : null
+                    "
                     (click)="selecionarDia(dia)">
 
                     {{ dia }}
@@ -452,30 +554,57 @@
               Tempo total aproximado: {{ duracaoTotal }} minutos
             </p>
 
-            <div class="horarios-grid">
+            @if (!dataSelecionada) {
 
-              @for (hora of horarios; track hora) {
+              <p class="ajuda">
+                Selecione uma data para consultar os horários.
+              </p>
 
-                <button
-                  type="button"
-                  [class.selecionado]="horarioSelecionado === hora"
-                  (click)="horarioSelecionado = hora">
+            }
 
-                  {{ hora }}
+            @if (dataSelecionada && carregandoCalendario) {
 
-                  <small>{{ duracaoTotal }} min</small>
+              <p class="ajuda">
+                Atualizando disponibilidade...
+              </p>
 
-                </button>
+            }
 
-              }
+            @if (dataSelecionada && !carregandoCalendario && !erroCalendario) {
 
-            </div>
+              <div class="horarios-grid">
+
+                @for (hora of horarios; track hora) {
+
+                  <button
+                    type="button"
+                    [disabled]="horarioIndisponivel(hora)"
+                    [class.selecionado]="horarioSelecionado === hora"
+                    [style.opacity]="horarioIndisponivel(hora) ? '0.45' : '1'"
+                    [style.cursor]="horarioIndisponivel(hora) ? 'not-allowed' : 'pointer'"
+                    (click)="selecionarHorario(hora)">
+
+                    {{ hora }}
+
+                    <small>
+                      {{ textoSituacaoHorario(hora) }}
+                    </small>
+
+                  </button>
+
+                }
+
+              </div>
+
+            }
 
           </div>
 
         }
 
-        <!-- ETAPA 6: RESUMO -->
+        <!-- ====================================
+             ETAPA 6: RESUMO
+        ===================================== -->
         @if (etapa === 5) {
 
           <p class="sobretitulo">Confira os dados</p>
@@ -494,7 +623,10 @@
 
               <strong>
                 {{ lojaAtual?.endereco }},
-                {{ lojaAtual?.cidade }} - {{ lojaAtual?.estado }}
+                {{ lojaAtual?.bairro }},
+                {{ lojaAtual?.cidade }} -
+                {{ lojaAtual?.estado }},
+                {{ formatarCep(lojaAtual?.cep || '') }}
               </strong>
             </div>
 
@@ -589,7 +721,9 @@
 
         }
 
-        <!-- BOTÕES DE NAVEGAÇÃO -->
+        <!-- ====================================
+             BOTÕES DE NAVEGAÇÃO
+        ===================================== -->
         <div class="acoes">
 
           @if (etapa > 0) {
@@ -611,11 +745,7 @@
               class="botao botao--primario"
               type="button"
               (click)="avancar()"
-              [disabled]="
-                (etapa === 0 && !petsSelecionados.length) ||
-                (etapa === 1 && !lojaSelecionada) ||
-                (etapa === 4 && !dataSelecionada)
-              ">
+              [disabled]="!podeAvancar()">
 
               Continuar <span>→</span>
 

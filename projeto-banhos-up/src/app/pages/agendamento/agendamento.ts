@@ -1,32 +1,26 @@
-import { Component } from '@angular/core';
+
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 
-type Pet = {
-  id: number;
-  nome: string;
-  especie: 'Cachorro' | 'Gato';
-  porte: string;
-};
+import {
+  Pet,
+  Servico,
+  CalendarioAgendamentoResponse
+} from '../../models/agendamento.model';
 
-type Servico = {
-  id: string;
-  nome: string;
-  preco: number;
-  duracao: number;
-  descricao?: string;
-  obrigatorio?: boolean;
-  grupo: string;
-};
+import { Loja } from '../../models/loja.model';
 
-type Loja = {
-  id: number;
-  nome: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-};
+import { LojaService } from '../../services/loja.service';
+import { AgendamentoApiService } from '../../services/agendamento-api.service';
 
 @Component({
   selector: 'app-agendamento',
@@ -35,14 +29,35 @@ type Loja = {
   templateUrl: './agendamento.html',
   styleUrl: './agendamento.css',
 })
-export class Agendamento {
+export class Agendamento implements OnInit {
+
+  private readonly lojaService = inject(LojaService);
+
+  private readonly agendamentoApi = inject(AgendamentoApiService);
+
+  // Atualiza a interface após as respostas assíncronas.
+  private readonly cdr = inject(ChangeDetectorRef);
 
   etapa = 0;
 
+  // =========================================
   // PETS
+  // Dados locais provisórios.
+  // =========================================
+
   pets: Pet[] = [
-    { id: 1, nome: 'Pet 1', especie: 'Cachorro', porte: 'Médio' },
-    { id: 2, nome: 'Pet 2', especie: 'Gato', porte: 'Pequeno' },
+    {
+      id: 1,
+      nome: 'Pet 1',
+      especie: 'Cachorro',
+      porte: 'Médio'
+    },
+    {
+      id: 2,
+      nome: 'Pet 2',
+      especie: 'Gato',
+      porte: 'Pequeno'
+    }
   ];
 
   petsSelecionados: number[] = [1];
@@ -55,33 +70,28 @@ export class Agendamento {
 
   mostrarNovoPet = false;
 
+  // =========================================
   // LOJAS
+  // Integração com a API do Spring Boot.
+  // =========================================
+
+  lojas: Loja[] = [];
+
+  lojaSelecionada: number | null = null;
+
+  carregandoLojas = false;
+
+  erroLojas: string | null = null;
+
   cep = '';
   estado = '';
   cidade = '';
 
-  lojaSelecionada: number | null = 1;
-
-  lojas: Loja[] = [
-    {
-      id: 1,
-      nome: 'BanhosUp Diadema',
-      endereco: 'Rua Juruá, 79',
-      cidade: 'Taboão, Diadema',
-      estado: 'SP',
-      cep: '09932-220'
-    },
-    {
-      id: 2,
-      nome: 'BanhosUp Embu-Guaçu',
-      endereco: 'Estrada da Olaria, 6713',
-      cidade: 'Chácara dos Amigos, Embu-Guaçu',
-      estado: 'SP',
-      cep: '06909-720'
-    }
-  ];
-
+  // =========================================
   // SERVIÇOS
+  // Dados locais provisórios.
+  // =========================================
+
   servicos: Servico[] = [
     {
       id: 'banho',
@@ -140,12 +150,18 @@ export class Agendamento {
     }
   ];
 
-  servicosPorPet: Record<number, string[]> = {
-    1: ['banho']
+  // Cada pet possui sua própria lista de serviços.
+  servicosPorPet: Record<number, (string | number)[]> = {
+    1: ['banho'],
+    2: ['banho']
   };
 
+  // =========================================
   // PROFISSIONAIS
-  profissionais = [
+  // Dados locais provisórios.
+  // =========================================
+
+  profissionais: string[] = [
     'Sem preferência de profissional',
     'Gabriel Ramon Evangelista Ramos',
     'Eryka Karolyna Marçal dos Santos',
@@ -153,9 +169,13 @@ export class Agendamento {
   ];
 
   profissionalPorPet: Record<number, string> = {};
+
   observacoes: Record<number, string> = {};
 
-  // DATA E HORÁRIO
+  // =========================================
+  // CALENDÁRIO - INTEGRAÇÃO COM A API
+  // =========================================
+
   mesAtual = new Date(
     new Date().getFullYear(),
     new Date().getMonth(),
@@ -163,9 +183,12 @@ export class Agendamento {
   );
 
   dataSelecionada = '';
-  horarioSelecionado = '09:00';
 
-  horarios = [
+  horarioSelecionado = '';
+
+  // Horários provisórios.
+  // O backend atual informa somente os horários ocupados.
+  horarios: string[] = [
     '09:00',
     '09:30',
     '10:00',
@@ -178,37 +201,452 @@ export class Agendamento {
     '14:30'
   ];
 
+  calendarioAgendamentos: CalendarioAgendamentoResponse[] = [];
+
+  carregandoCalendario = false;
+
+  erroCalendario: string | null = null;
+
   termosAceitos = false;
+
   confirmado = false;
 
-  // GETTERS
-  get petsAtivos(): Pet[] {
-    return this.pets.filter(p =>
-      this.petsSelecionados.includes(p.id)
+  // =========================================
+  // INICIALIZAÇÃO
+  // =========================================
+
+  ngOnInit(): void {
+
+    this.carregarLojas();
+
+    this.carregarCalendario();
+
+  }
+
+  // =========================================
+  // INTEGRAÇÃO COM A API DE LOJAS
+  // =========================================
+
+  carregarLojas(): void {
+
+    this.carregandoLojas = true;
+
+    this.erroLojas = null;
+
+    this.cdr.markForCheck();
+
+    this.lojaService.listarLojas(true)
+
+      .pipe(
+
+        finalize(() => {
+
+          this.carregandoLojas = false;
+
+          this.cdr.markForCheck();
+
+        })
+
+      )
+
+      .subscribe({
+
+        next: (dados: Loja[]) => {
+
+          this.lojas = dados.filter(
+            loja => loja.ativa
+          );
+
+          if (
+            this.lojaSelecionada !== null &&
+            !this.lojas.some(
+              loja => loja.id === this.lojaSelecionada
+            )
+          ) {
+
+            this.lojaSelecionada = null;
+
+          }
+
+          this.cdr.markForCheck();
+
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          console.error(
+            'Erro ao carregar lojas:',
+            erro
+          );
+
+          this.lojas = [];
+
+          this.lojaSelecionada = null;
+
+          this.erroLojas = erro.status === 0
+            ? 'Não foi possível conectar ao servidor.'
+            : `Erro ao carregar lojas. HTTP ${erro.status}.`;
+
+          this.cdr.markForCheck();
+
+        }
+
+      });
+
+  }
+
+  formatarCep(cep: string): string {
+
+    const numeros = cep.replace(/\D/g, '');
+
+    if (numeros.length !== 8) {
+      return cep;
+    }
+
+    return `${numeros.substring(0, 5)}-${numeros.substring(5)}`;
+
+  }
+
+  // =========================================
+  // INTEGRAÇÃO COM O CALENDÁRIO DO BACKEND
+  // =========================================
+
+  carregarCalendario(): void {
+
+    this.carregandoCalendario = true;
+
+    this.erroCalendario = null;
+
+    this.cdr.markForCheck();
+
+    const yearMonth =
+      `${this.mesAtual.getFullYear()}-${String(
+        this.mesAtual.getMonth() + 1
+      ).padStart(2, '0')}`;
+
+    console.log(
+      'Consultando calendário:',
+      yearMonth
     );
+
+    this.agendamentoApi.listarCalendario(yearMonth)
+
+      .pipe(
+
+        finalize(() => {
+
+          this.carregandoCalendario = false;
+
+          console.log(
+            'Consulta do calendário finalizada:',
+            yearMonth
+          );
+
+          this.cdr.markForCheck();
+
+        })
+
+      )
+
+      .subscribe({
+
+        next: (dados) => {
+
+          console.log(
+            'Calendário recebido do backend:',
+            dados
+          );
+
+          this.calendarioAgendamentos = dados || [];
+
+          // Verifica se a data selecionada continua disponível.
+          if (this.dataSelecionada) {
+
+            const diaSelecionado = Number(
+              this.dataSelecionada.substring(8, 10)
+            );
+
+            if (this.diaSemHorariosDisponiveis(diaSelecionado)) {
+
+              this.dataSelecionada = '';
+
+              this.horarioSelecionado = '';
+
+            }
+
+          }
+
+          // Verifica se o horário selecionado continua disponível.
+          if (
+            this.horarioSelecionado &&
+            this.horarioIndisponivel(this.horarioSelecionado)
+          ) {
+
+            this.horarioSelecionado = '';
+
+          }
+
+          this.cdr.markForCheck();
+
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          console.error(
+            'Erro ao consultar calendário:',
+            erro
+          );
+
+          this.calendarioAgendamentos = [];
+
+          this.horarioSelecionado = '';
+
+          this.erroCalendario = erro.status === 0
+            ? 'Não foi possível conectar ao servidor para consultar os horários.'
+            : `Erro ao carregar disponibilidade. HTTP ${erro.status}.`;
+
+          this.cdr.markForCheck();
+
+        }
+
+      });
+
+  }
+
+  // =========================================
+  // VERIFICAÇÃO DE HORÁRIOS
+  // =========================================
+
+  private normalizarHora(hora: string): string {
+
+    // O backend pode devolver 09:00:00.
+    // O frontend utiliza 09:00.
+    return hora.substring(0, 5);
+
+  }
+
+  // Monta uma data no formato YYYY-MM-DD.
+  private montarDataISO(dia: number): string {
+
+    const ano = this.mesAtual.getFullYear();
+
+    const mes = String(
+      this.mesAtual.getMonth() + 1
+    ).padStart(2, '0');
+
+    const diaFormatado = String(dia).padStart(2, '0');
+
+    return `${ano}-${mes}-${diaFormatado}`;
+
+  }
+
+  // Verifica se determinado horário está ocupado em uma data.
+  private horarioOcupadoNaData(
+    data: string,
+    hora: string
+  ): boolean {
+
+    const agendamentosDoDia =
+      this.calendarioAgendamentos.filter(
+        item => item.date === data
+      );
+
+    const horariosOcupados = agendamentosDoDia.flatMap(
+      item => item.hours || []
+    );
+
+    return horariosOcupados.some(
+      horaBackend =>
+        this.normalizarHora(horaBackend) ===
+        this.normalizarHora(hora)
+    );
+
+  }
+
+  // Verifica se um horário já passou considerando a data informada.
+  private horarioPassadoNaData(
+    data: string,
+    hora: string
+  ): boolean {
+
+    const [ano, mes, dia] = data
+      .split('-')
+      .map(Number);
+
+    const [horas, minutos] = hora
+      .split(':')
+      .map(Number);
+
+    const horarioEscolhido = new Date(
+      ano,
+      mes - 1,
+      dia,
+      horas,
+      minutos,
+      0,
+      0
+    );
+
+    return horarioEscolhido.getTime() <= Date.now();
+
+  }
+
+  // Verifica se TODOS os horários daquele dia estão indisponíveis.
+  diaSemHorariosDisponiveis(dia: number): boolean {
+
+    if (
+      this.carregandoCalendario ||
+      this.erroCalendario
+    ) {
+      return false;
+    }
+
+    if (this.horarios.length === 0) {
+      return true;
+    }
+
+    const data = this.montarDataISO(dia);
+
+    return this.horarios.every(hora => {
+
+      const ocupado = this.horarioOcupadoNaData(
+        data,
+        hora
+      );
+
+      const passou = this.horarioPassadoNaData(
+        data,
+        hora
+      );
+
+      return ocupado || passou;
+
+    });
+
+  }
+
+  // Verifica se a data já passou.
+  diaPassado(dia: number): boolean {
+
+    const data = new Date(
+      this.mesAtual.getFullYear(),
+      this.mesAtual.getMonth(),
+      dia
+    );
+
+    const hoje = new Date();
+
+    hoje.setHours(0, 0, 0, 0);
+
+    return data < hoje;
+
+  }
+
+  // Verifica se o horário está ocupado na data selecionada.
+  horarioOcupado(hora: string): boolean {
+
+    if (!this.dataSelecionada) {
+      return false;
+    }
+
+    return this.horarioOcupadoNaData(
+      this.dataSelecionada,
+      hora
+    );
+
+  }
+
+  // Verifica se o horário selecionado já passou.
+  horarioPassado(hora: string): boolean {
+
+    if (!this.dataSelecionada) {
+      return false;
+    }
+
+    return this.horarioPassadoNaData(
+      this.dataSelecionada,
+      hora
+    );
+
+  }
+
+  // Verifica se um horário pode ser selecionado.
+  horarioIndisponivel(hora: string): boolean {
+
+    return !this.dataSelecionada ||
+      this.carregandoCalendario ||
+      !!this.erroCalendario ||
+      this.horarioOcupado(hora) ||
+      this.horarioPassado(hora);
+
+  }
+
+  textoSituacaoHorario(hora: string): string {
+
+    if (this.horarioOcupado(hora)) {
+      return 'Horário ocupado';
+    }
+
+    if (this.horarioPassado(hora)) {
+      return 'Horário indisponível';
+    }
+
+    return `${this.duracaoTotal} min`;
+
+  }
+
+  selecionarHorario(hora: string): void {
+
+    if (this.horarioIndisponivel(hora)) {
+      return;
+    }
+
+    this.horarioSelecionado = hora;
+
+  }
+
+  // =========================================
+  // GETTERS
+  // =========================================
+
+  get petsAtivos(): Pet[] {
+
+    return this.pets.filter(pet =>
+      this.petsSelecionados.includes(pet.id)
+    );
+
   }
 
   get lojaAtual(): Loja | undefined {
-    return this.lojas.find(l =>
-      l.id === this.lojaSelecionada
+
+    return this.lojas.find(loja =>
+      loja.id === this.lojaSelecionada
     );
+
   }
 
   get total(): number {
+
     return this.petsAtivos.reduce(
-      (s, p) => s + this.precoPet(p.id),
+      (soma, pet) => soma + this.precoPet(pet.id),
       0
     );
+
   }
 
   get duracaoTotal(): number {
+
     return Math.max(
       30,
-      ...this.petsAtivos.map(p => this.duracaoPet(p.id))
+      ...this.petsAtivos.map(pet =>
+        this.duracaoPet(pet.id)
+      )
     );
+
   }
 
   get diasMes(): (number | null)[] {
+
     const primeiro = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth(),
@@ -223,85 +661,150 @@ export class Agendamento {
 
     return [
       ...Array(primeiro).fill(null),
-      ...Array.from({ length: total }, (_, i) => i + 1)
+      ...Array.from(
+        { length: total },
+        (_, i) => i + 1
+      )
     ];
+
   }
 
   get tituloMes(): string {
-    return this.mesAtual.toLocaleDateString('pt-BR', {
-      month: 'long',
-      year: 'numeric'
-    });
+
+    return this.mesAtual.toLocaleDateString(
+      'pt-BR',
+      {
+        month: 'long',
+        year: 'numeric'
+      }
+    );
+
   }
 
   get dataFormatada(): string {
+
     if (!this.dataSelecionada) {
       return 'Selecione uma data';
     }
 
     return new Date(
       `${this.dataSelecionada}T12:00:00`
-    ).toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    ).toLocaleDateString(
+      'pt-BR',
+      {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }
+    );
+
   }
 
+  // =========================================
+  // VALIDAÇÃO DAS ETAPAS
+  // =========================================
+
+  podeAvancar(): boolean {
+
+    switch (this.etapa) {
+
+      case 0:
+
+        return this.petsSelecionados.length > 0;
+
+      case 1:
+
+        return !this.carregandoLojas &&
+          this.lojaSelecionada !== null &&
+          this.lojas.some(
+            loja => loja.id === this.lojaSelecionada
+          );
+
+      case 2:
+
+        return this.petsAtivos.length > 0 &&
+          this.petsAtivos.every(pet =>
+            this.servicosPet(pet.id).includes('banho')
+          );
+
+      case 3:
+
+        // O profissional continua sendo opcional.
+        return true;
+
+      case 4:
+
+        return !this.carregandoCalendario &&
+          !this.erroCalendario &&
+          !!this.dataSelecionada &&
+          !!this.horarioSelecionado &&
+          !this.horarioIndisponivel(this.horarioSelecionado);
+
+      default:
+
+        return false;
+
+    }
+
+  }
+
+  // =========================================
   // NAVEGAÇÃO
+  // =========================================
+
   avancar(): void {
-    if (this.etapa === 0 && this.petsSelecionados.length === 0) {
+
+    if (!this.podeAvancar()) {
       return;
     }
 
-    if (this.etapa === 1 && !this.lojaSelecionada) {
-      return;
-    }
+    if (this.etapa === 1) {
 
-    if (
-      this.etapa === 2 &&
-      this.petsAtivos.some(p =>
-        !(this.servicosPorPet[p.id] || []).includes('banho')
-      )
-    ) {
-      return;
-    }
+      this.petsAtivos.forEach(pet => {
+        this.garantirBanho(pet.id);
+      });
 
-    if (
-      this.etapa === 4 &&
-      (!this.dataSelecionada || !this.horarioSelecionado)
-    ) {
-      return;
     }
 
     if (this.etapa < 5) {
       this.etapa++;
     }
+
   }
 
   voltar(): void {
+
     if (this.etapa > 0) {
       this.etapa--;
     }
+
   }
 
+  // =========================================
   // SELEÇÃO DE PETS
+  // =========================================
+
   alternarPet(id: number): void {
+
+    this.garantirBanho(id);
+
     this.petsSelecionados =
       this.petsSelecionados.includes(id)
         ? this.petsSelecionados.filter(x => x !== id)
         : [...this.petsSelecionados, id];
+
   }
 
   adicionarPet(): void {
+
     if (!this.novoPet.nome.trim()) {
       return;
     }
 
     const id = Math.max(
       0,
-      ...this.pets.map(p => p.id)
+      ...this.pets.map(pet => pet.id)
     ) + 1;
 
     this.pets.push({
@@ -323,110 +826,202 @@ export class Agendamento {
     };
 
     this.mostrarNovoPet = false;
+
   }
 
+  // =========================================
   // SERVIÇOS
-  servicosPet(id: number): string[] {
-    return this.servicosPorPet[id] || [];
-  }
+  // =========================================
 
-  alternarServico(petId: number, servico: Servico): void {
-    const atuais = [...this.servicosPet(petId)];
+  private garantirBanho(petId: number): void {
 
-    if (servico.obrigatorio) {
-      return;
+    const atuais = this.servicosPorPet[petId] || [];
+
+    if (!atuais.includes('banho')) {
+
+      this.servicosPorPet[petId] = [
+        'banho',
+        ...atuais
+      ];
+
     }
 
+  }
+
+  servicosPet(id: number): (string | number)[] {
+
+    this.garantirBanho(id);
+
+    return this.servicosPorPet[id];
+
+  }
+
+  alternarServico(
+    petId: number,
+    servico: Servico
+  ): void {
+
+    this.garantirBanho(petId);
+
+    const atuais = [
+      ...this.servicosPorPet[petId]
+    ];
+
+    // O Banho é obrigatório e nunca pode ser removido.
+    if (
+      servico.id === 'banho' ||
+      servico.obrigatorio
+    ) {
+
+      this.garantirBanho(petId);
+
+      return;
+
+    }
+
+    // Serviços opcionais podem ser adicionados ou removidos.
     this.servicosPorPet[petId] =
       atuais.includes(servico.id)
-        ? atuais.filter(x => x !== servico.id)
+        ? atuais.filter(id => id !== servico.id)
         : [...atuais, servico.id];
+
   }
 
   precoPet(id: number): number {
+
     return this.servicos
-      .filter(s => this.servicosPet(id).includes(s.id))
-      .reduce((v, s) => v + s.preco, 0);
+      .filter(servico =>
+        this.servicosPet(id).includes(servico.id)
+      )
+      .reduce(
+        (valor, servico) => valor + servico.preco,
+        0
+      );
+
   }
 
   duracaoPet(id: number): number {
+
     return this.servicos
-      .filter(s => this.servicosPet(id).includes(s.id))
-      .reduce((v, s) => v + s.duracao, 0);
+      .filter(servico =>
+        this.servicosPet(id).includes(servico.id)
+      )
+      .reduce(
+        (valor, servico) => valor + servico.duracao,
+        0
+      );
+
   }
 
-  precoServico(id: string): number {
-    return this.servicos.find(s => s.id === id)?.preco || 0;
+  precoServico(id: string | number): number {
+
+    return this.servicos.find(
+      servico => servico.id === id
+    )?.preco || 0;
+
   }
 
-  nomeServico(id: string): string {
-    return this.servicos.find(s => s.id === id)?.nome || '';
+  nomeServico(id: string | number): string {
+
+    return this.servicos.find(
+      servico => servico.id === id
+    )?.nome || '';
+
   }
 
   grupoServicos(): string[] {
-    return [...new Set(this.servicos.map(s => s.grupo))];
+
+    return [
+      ...new Set(
+        this.servicos.map(servico => servico.grupo)
+      )
+    ];
+
   }
 
   servicosDoGrupo(grupo: string): Servico[] {
-    return this.servicos.filter(s => s.grupo === grupo);
+
+    return this.servicos.filter(
+      servico => servico.grupo === grupo
+    );
+
   }
 
+  // =========================================
   // CALENDÁRIO
+  // =========================================
+
   mudarMes(delta: number): void {
+
     this.mesAtual = new Date(
       this.mesAtual.getFullYear(),
       this.mesAtual.getMonth() + delta,
       1
     );
+
+    // Limpa a data e o horário anteriores.
+    this.dataSelecionada = '';
+
+    this.horarioSelecionado = '';
+
+    // Consulta a disponibilidade do novo mês.
+    this.carregarCalendario();
+
   }
 
   selecionarDia(dia: number): void {
-    const d = new Date(
-      this.mesAtual.getFullYear(),
-      this.mesAtual.getMonth(),
-      dia
-    );
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    if (d < hoje) {
+    // Não permite selecionar dias indisponíveis.
+    if (
+      this.diaPassado(dia) ||
+      this.carregandoCalendario ||
+      !!this.erroCalendario ||
+      this.diaSemHorariosDisponiveis(dia)
+    ) {
       return;
     }
 
-    this.dataSelecionada =
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    this.dataSelecionada = this.montarDataISO(dia);
+
+    this.horarioSelecionado = '';
+
   }
 
   diaSelecionado(dia: number): boolean {
-    return this.dataSelecionada ===
-      `${this.mesAtual.getFullYear()}-${String(this.mesAtual.getMonth() + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
+    return this.dataSelecionada === this.montarDataISO(dia);
+
   }
 
-  diaPassado(dia: number): boolean {
-    const d = new Date(
-      this.mesAtual.getFullYear(),
-      this.mesAtual.getMonth(),
-      dia
-    );
-
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    return d < hoje;
-  }
-
+  // =========================================
   // CONFIRMAÇÃO
+  // Ainda é demonstrativa.
+  // O POST não é chamado até o backend
+  // aceitar os dados completos do agendamento.
+  // =========================================
+
   confirmar(): void {
+
     if (this.termosAceitos) {
       this.confirmado = true;
     }
+
   }
 
+  // =========================================
+  // FORMATAÇÃO DE VALORES
+  // =========================================
+
   formatar(valor: number): string {
-    return valor.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
+
+    return valor.toLocaleString(
+      'pt-BR',
+      {
+        style: 'currency',
+        currency: 'BRL'
+      }
+    );
+
   }
+
 }
