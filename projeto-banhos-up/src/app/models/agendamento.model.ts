@@ -21,6 +21,7 @@ export interface Servico {
 export interface Profissional {
   id: number;
   nome: string;
+  fotoUrl?: string;
 }
 
 export interface Disponibilidade {
