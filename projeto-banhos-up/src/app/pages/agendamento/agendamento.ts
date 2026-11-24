@@ -362,7 +362,11 @@ export class Agendamento implements OnInit {
 
             return {
               id: item.id ?? item.employeeId ?? 0,
-              nome: item.nome ?? item.name ?? ''
+              nome: item.nome ?? item.name ?? '',
+              fotoUrl: item.fotoUrl ??
+                item.avatarUrl ??
+                item.profileImageUrl ??
+                item.imageUrl
             };
 
           }).filter(profissional =>
@@ -403,6 +407,19 @@ export class Agendamento implements OnInit {
     return this.profissionais.find(
       profissional => profissional.id === profissionalId
     )?.nome || 'Profissional selecionado';
+
+  }
+
+  get profissionalAtual(): Profissional | undefined {
+
+    if (this.profissionalSelecionadoId === 0) {
+      return undefined;
+    }
+
+    return this.profissionais.find(
+      profissional =>
+        profissional.id === this.profissionalSelecionadoId
+    );
 
   }
 

@@ -46,6 +46,10 @@ export class LojaService {
     employeeId?: number;
     nome?: string;
     name?: string;
+    fotoUrl?: string;
+    avatarUrl?: string;
+    profileImageUrl?: string;
+    imageUrl?: string;
   })[]> {
 
     const params = new HttpParams()
@@ -56,6 +60,10 @@ export class LojaService {
       employeeId?: number;
       nome?: string;
       name?: string;
+      fotoUrl?: string;
+      avatarUrl?: string;
+      profileImageUrl?: string;
+      imageUrl?: string;
     })[]>(
       `${environment.apiUrl}/users/store_employee`,
       { params }
