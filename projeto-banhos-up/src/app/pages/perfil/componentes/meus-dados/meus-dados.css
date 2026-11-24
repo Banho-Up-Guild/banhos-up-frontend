@@ -1,0 +1,294 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.meus-dados {
+  width: 100%;
+  max-width: 900px;
+  color: #013e73;
+}
+
+.meus-dados_cabecalho {
+  margin-bottom: 24px;
+}
+
+.meus-dados_cabecalho h2 {
+  margin: 0 0 5px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.meus-dados_cabecalho p {
+  margin: 0;
+  color: #477397;
+  font-size: 0.85rem;
+}
+
+.meus-dados_formulario {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 17px 10px;
+}
+
+.campo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  color: #013e73;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.campo input,
+.campo select {
+  width: 100%;
+  height: 39px;
+  min-width: 0;
+  padding: 0 9px;
+
+  border: 1px solid #a8bfd3;
+  border-radius: 5px;
+  outline: none;
+
+  background: #ffffff;
+  color: #315d7f;
+
+  font-family: inherit;
+  font-size: 0.8rem;
+
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-color: #013e73;
+  box-shadow: 0 0 0 2px rgba(1, 62, 115, 0.08);
+}
+
+.campo input::placeholder {
+  color: #a0b4c5;
+}
+
+.campo select {
+  cursor: pointer;
+}
+
+.campo-erro {
+  border-color: #d93025 !important;
+}
+
+.mensagem-erro {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #d93025;
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.mensagem-erro svg {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  stroke-width: 2;
+}
+
+/* Organização dos campos */
+
+.campo_nome {
+  grid-column: span 8;
+}
+
+.campo_cpf {
+  grid-column: span 4;
+}
+
+.campo_email {
+  grid-column: span 8;
+}
+
+.campo_genero {
+  grid-column: span 4;
+}
+
+.campo_nascimento {
+  grid-column: span 4;
+}
+
+.campo_ddd-celular {
+  grid-column: span 1;
+}
+
+.campo_celular {
+  grid-column: span 2;
+}
+
+.campo_ddd-telefone {
+  grid-column: span 1;
+}
+
+.campo_telefone {
+  grid-column: span 2;
+}
+
+.formulario_acoes {
+  grid-column: 1 / -1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: 10px;
+}
+
+.botao_salvar {
+  width: 145px;
+  min-height: 42px;
+
+  border: none;
+  border-radius: 5px;
+
+  background: #d9d9d9;
+  color: #777777;
+
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.botao_salvar.botao-habilitado {
+  background: #013e73;
+  color: #ffffff;
+}
+
+.botao_salvar.botao-habilitado:hover {
+  background: #075b9b;
+}
+
+.mensagem-sucesso {
+  margin: 0;
+  color: #168348;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* TABLET */
+
+@media (max-width: 768px) {
+  .meus-dados_formulario {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .campo_nome,
+  .campo_email {
+    grid-column: span 4;
+  }
+
+  .campo_cpf,
+  .campo_genero {
+    grid-column: span 2;
+  }
+
+  .campo_nascimento {
+    grid-column: span 3;
+  }
+
+  .campo_ddd-celular {
+    grid-column: span 1;
+  }
+
+  .campo_celular {
+    grid-column: span 2;
+  }
+
+  .campo_ddd-telefone {
+    grid-column: span 1;
+  }
+
+  .campo_telefone {
+    grid-column: span 3;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .meus-dados_formulario {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
+
+  .campo_nome,
+  .campo_email {
+    grid-column: span 2;
+  }
+
+  .campo_cpf,
+  .campo_genero {
+    grid-column: span 1;
+  }
+
+  .campo_nascimento {
+    grid-column: span 2;
+  }
+
+  .campo_ddd-celular,
+  .campo_ddd-telefone {
+    grid-column: span 1;
+  }
+
+  .campo_celular,
+  .campo_telefone {
+    grid-column: span 1;
+  }
+
+  .campo label {
+    font-size: 0.78rem;
+  }
+
+  .campo input,
+  .campo select {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .campo_nascimento {
+    grid-column: span 2;
+  }
+
+  .campo_ddd-celular,
+  .campo_ddd-telefone {
+    grid-column: span 1;
+  }
+
+  .campo_celular,
+  .campo_telefone {
+    grid-column: span 1;
+  }
+}
+
+.perfil_footer {
+  margin-top: 60px;
+
+  color: #111111;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.perfil_footer p {
+  margin: 2px 0;
+}
