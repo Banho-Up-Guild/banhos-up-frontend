@@ -28,11 +28,21 @@ export class AgendamentoApiService {
 
   // CONSULTAR CALENDÁRIO DE AGENDAMENTOS
   listarCalendario(
-    yearMonth: string
+    yearMonth: string,
+    idStore?: number | null,
+    employeeId?: number | null
   ): Observable<CalendarioAgendamentoResponse[]> {
 
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('yearMonth', yearMonth);
+
+    if (idStore !== null && idStore !== undefined) {
+      params = params.set('idStore', String(idStore));
+    }
+
+    if (employeeId !== null && employeeId !== undefined) {
+      params = params.set('employeeId', String(employeeId));
+    }
 
     return this.http.get<CalendarioAgendamentoResponse[]>(
       `${this.apiUrl}/calendar`,

@@ -9,12 +9,13 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
 import {
   Pet,
   Servico,
-  CalendarioAgendamentoResponse
+  CalendarioAgendamentoResponse,
+  Profissional
 } from '../../models/agendamento.model';
 
 import { Loja } from '../../models/loja.model';
@@ -82,6 +83,14 @@ export class Agendamento implements OnInit {
   carregandoLojas = false;
 
   erroLojas: string | null = null;
+
+  profissionais: Profissional[] = [];
+
+  carregandoProfissionais = false;
+
+  erroProfissionais: string | null = null;
+
+  profissionalSelecionadoId = 0;
 
   cep = '';
   estado = '';
@@ -161,15 +170,6 @@ export class Agendamento implements OnInit {
   // Dados locais provisórios.
   // =========================================
 
-  profissionais: string[] = [
-    'Sem preferência de profissional',
-    'Gabriel Ramon Evangelista Ramos',
-    'Eryka Karolyna Marçal dos Santos',
-    'Camila Santos de Barros'
-  ];
-
-  profissionalPorPet: Record<number, string> = {};
-
   observacoes: Record<number, string> = {};
 
   // =========================================
@@ -218,8 +218,6 @@ export class Agendamento implements OnInit {
   ngOnInit(): void {
 
     this.carregarLojas();
-
-    this.carregarCalendario();
 
   }
 
@@ -307,6 +305,107 @@ export class Agendamento implements OnInit {
 
   }
 
+  selecionarLoja(lojaId: number): void {
+
+    if (this.lojaSelecionada === lojaId) {
+      return;
+    }
+
+    this.lojaSelecionada = lojaId;
+
+    this.profissionais = [];
+
+    this.profissionalSelecionadoId = 0;
+
+    this.dataSelecionada = '';
+
+    this.horarioSelecionado = '';
+
+    this.carregarProfissionais();
+
+  }
+
+  carregarProfissionais(): void {
+
+    if (this.lojaSelecionada === null) {
+      this.profissionais = [];
+      this.erroProfissionais = null;
+      return;
+    }
+
+    this.carregandoProfissionais = true;
+
+    this.erroProfissionais = null;
+
+    this.cdr.markForCheck();
+
+    this.lojaService.listarFuncionariosPorLoja(this.lojaSelecionada)
+
+      .pipe(
+        finalize(() => {
+          this.carregandoProfissionais = false;
+          this.cdr.markForCheck();
+        })
+      )
+
+      .subscribe({
+        next: (dados) => {
+
+          const profissionais = (dados || []).map((item) => {
+
+            if (typeof item === 'string') {
+              return {
+                id: 0,
+                nome: item
+              };
+            }
+
+            return {
+              id: item.id ?? item.employeeId ?? 0,
+              nome: item.nome ?? item.name ?? ''
+            };
+
+          }).filter(profissional =>
+            profissional.nome.trim().length > 0
+          );
+
+          this.profissionais = profissionais;
+
+          this.cdr.markForCheck();
+
+        },
+        error: (erro: HttpErrorResponse) => {
+
+          console.error(
+            'Erro ao carregar profissionais:',
+            erro
+          );
+
+          this.profissionais = [];
+
+          this.erroProfissionais = erro.status === 0
+            ? 'Não foi possível conectar ao servidor.'
+            : `Erro ao carregar profissionais. HTTP ${erro.status}.`;
+
+          this.cdr.markForCheck();
+
+        }
+      });
+
+  }
+
+  nomeProfissional(profissionalId: number): string {
+
+    if (profissionalId === 0) {
+      return 'Sem preferência';
+    }
+
+    return this.profissionais.find(
+      profissional => profissional.id === profissionalId
+    )?.nome || 'Profissional selecionado';
+
+  }
+
   // =========================================
   // INTEGRAÇÃO COM O CALENDÁRIO DO BACKEND
   // =========================================
@@ -329,7 +428,17 @@ export class Agendamento implements OnInit {
       yearMonth
     );
 
-    this.agendamentoApi.listarCalendario(yearMonth)
+    const employeeIds = [this.profissionalSelecionadoId];
+
+    const consultas = employeeIds.map(employeeId =>
+      this.agendamentoApi.listarCalendario(
+        yearMonth,
+        this.lojaSelecionada,
+        employeeId
+      )
+    );
+
+    forkJoin(consultas)
 
       .pipe(
 
@@ -350,14 +459,36 @@ export class Agendamento implements OnInit {
 
       .subscribe({
 
-        next: (dados) => {
+        next: (resultados) => {
 
           console.log(
             'Calendário recebido do backend:',
-            dados
+            resultados
           );
 
-          this.calendarioAgendamentos = dados || [];
+          const ocupadosPorData = new Map<string, Set<string>>();
+
+          resultados.forEach(dados => {
+            (dados || []).forEach(item => {
+              if (!ocupadosPorData.has(item.date)) {
+                ocupadosPorData.set(item.date, new Set<string>());
+              }
+
+              (item.hours || []).forEach(hora => {
+                ocupadosPorData.get(item.date)?.add(
+                  this.normalizarHora(hora)
+                );
+              });
+            });
+          });
+
+          this.calendarioAgendamentos =
+            [...ocupadosPorData.entries()].map(
+              ([date, hours]) => ({
+                date,
+                hours: [...hours]
+              })
+            );
 
           // Verifica se a data selecionada continua disponível.
           if (this.dataSelecionada) {
@@ -730,8 +861,8 @@ export class Agendamento implements OnInit {
 
       case 3:
 
-        // O profissional continua sendo opcional.
-        return true;
+        return !this.carregandoProfissionais &&
+          !this.erroProfissionais;
 
       case 4:
 
@@ -764,6 +895,12 @@ export class Agendamento implements OnInit {
       this.petsAtivos.forEach(pet => {
         this.garantirBanho(pet.id);
       });
+
+    }
+
+    if (this.etapa === 3) {
+
+      this.carregarCalendario();
 
     }
 

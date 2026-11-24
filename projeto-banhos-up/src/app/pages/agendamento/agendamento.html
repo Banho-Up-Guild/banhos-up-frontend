@@ -276,7 +276,7 @@
                     [class.selecionado]="lojaSelecionada === loja.id"
                     [attr.aria-pressed]="lojaSelecionada === loja.id"
                     type="button"
-                    (click)="lojaSelecionada = loja.id">
+                    (click)="selecionarLoja(loja.id)">
 
                     <span class="radio" aria-hidden="true"></span>
 
@@ -410,31 +410,58 @@
 
           <h2>Quem vai atender os seus pets?</h2>
 
-          @for (pet of petsAtivos; track pet.id) {
+          <section class="profissional-pet">
 
-            <section class="profissional-pet">
+            @if (carregandoProfissionais) {
+              <div class="aviso" role="status">
+                Carregando profissionais da loja...
+              </div>
+            }
 
-              <h3>{{ pet.nome }}</h3>
+            @if (erroProfissionais) {
+              <div class="aviso" role="alert">
+                <p>{{ erroProfissionais }}</p>
+                <button
+                  type="button"
+                  class="botao botao--secundario"
+                  (click)="carregarProfissionais()">
+                  Tentar novamente
+                </button>
+              </div>
+            }
 
-              @for (prof of profissionais; track prof) {
+            @if (!carregandoProfissionais && !erroProfissionais) {
 
-                <label class="radio-linha">
+              <label class="radio-linha">
 
-                  <input
-                    type="radio"
-                    [name]="'prof' + pet.id"
-                    [value]="prof"
-                    [(ngModel)]="profissionalPorPet[pet.id]">
+                <input
+                  type="radio"
+                  name="profissional"
+                  [value]="0"
+                  [(ngModel)]="profissionalSelecionadoId">
 
-                  <span>{{ prof }}</span>
+                <span>Sem preferência por profissionais</span>
+              </label>
 
-                </label>
+            }
 
-              }
+            @for (prof of profissionais; track $index) {
 
-            </section>
+              <label class="radio-linha">
 
-          }
+                <input
+                  type="radio"
+                  name="profissional"
+                  [value]="prof.id"
+                  [(ngModel)]="profissionalSelecionadoId">
+
+                <span>{{ prof.nome }}</span>
+
+              </label>
+
+            }
+
+          </section>
 
         }
 
@@ -641,6 +668,11 @@
             </div>
 
             <div class="resumo__linha">
+              <span>Profissional</span>
+              <strong>{{ nomeProfissional(profissionalSelecionadoId) }}</strong>
+            </div>
+
+            <div class="resumo__linha">
               <span>Duração aproximada</span>
               <strong>{{ duracaoTotal }} min</strong>
             </div>
@@ -657,14 +689,6 @@
                 {{ pet.especie === 'Gato' ? '🐈' : '🐕' }}
                 {{ pet.nome }}
               </h3>
-
-              <p>
-                Profissional
-
-                <strong>
-                  {{ profissionalPorPet[pet.id] || 'Sem preferência' }}
-                </strong>
-              </p>
 
               @for (id of servicosPet(pet.id); track id) {
 
