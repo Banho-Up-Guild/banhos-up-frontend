@@ -1,0 +1,309 @@
+:host {
+  display: block;
+}
+
+.login {
+  min-height: calc(100vh - 64px);
+  padding: 65px 20px 28px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: #c8ebfc;
+}
+
+.login_titulo {
+  margin: 0 0 58px;
+
+  color: #013e73;
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.login_icone-senha {
+  width: 21px;
+  height: 21px;
+  stroke-width: 2;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
+
+.login_card {
+  width: 100%;
+  max-width: 430px;
+
+  padding: 27px 32px 34px;
+
+  background: #ffffff;
+  border-radius: 13px;
+}
+
+.login_subtitulo {
+  margin: 0 0 15px;
+
+  color: #013e73;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.login_formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.login_campo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login_campo label {
+  color: #111111;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.login_campo input {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 11px;
+
+  border: 1px solid #bcbcbc;
+  border-radius: 4px;
+
+  background: #ffffff;
+  color: #222222;
+
+  font-family: inherit;
+  font-size: 0.78rem;
+
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login_campo input:focus {
+  border-color: #013e73;
+}
+
+.login_campo input::placeholder {
+  color: #929292;
+}
+
+.login_senha-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login_senha-container input {
+  padding-right: 42px;
+}
+
+.login_senha-botao {
+  position: absolute;
+  right: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 3px;
+
+  border: none;
+  background: transparent;
+  color: #222222;
+
+  cursor: pointer;
+}
+
+.login_senha-botao:hover {
+  color: #013e73;
+}
+
+.login_esqueci-senha {
+  align-self: flex-end;
+  margin-top: -7px;
+
+  color: #2877d4;
+  font-size: 0.75rem;
+  text-decoration: underline;
+}
+
+.login_entrar {
+  width: 100%;
+  height: 43px;
+
+  margin-top: 8px;
+
+  border: none;
+  border-radius: 4px;
+
+  background: #013e73;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login_entrar:hover {
+  background: #02518f;
+}
+
+.login_separador {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  margin: 20px 0;
+}
+
+.login_separador span {
+  height: 2px;
+  flex: 1;
+
+  background: #222222;
+}
+
+.login_separador strong {
+  color: #111111;
+  font-size: 0.85rem;
+}
+
+.login_cadastro {
+  width: 100%;
+  min-height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #333333;
+  border-radius: 4px;
+
+  background: #ffffff;
+  color: #111111;
+
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition: background 0.2s;
+}
+
+.login_cadastro:hover {
+  background: #f2f8fc;
+}
+
+.login_footer {
+  margin-top: 25px;
+
+  color: #111111;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.login_footer p {
+  margin: 2px 0;
+}
+
+/* =========================================
+   NOTEBOOK
+========================================= */
+
+@media (max-width: 1200px) {
+  .login {
+    padding-top: 55px;
+  }
+
+  .login_titulo {
+    margin-bottom: 48px;
+  }
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 900px) {
+  .login {
+    padding: 45px 24px 25px;
+  }
+
+  .login_titulo {
+    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+
+  .login_card {
+    max-width: 430px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .login {
+    min-height: calc(100vh - 60px);
+    padding: 38px 18px 24px;
+  }
+
+  .login_titulo {
+    max-width: 400px;
+    margin-bottom: 32px;
+
+    font-size: 1.65rem;
+  }
+
+  .login_card {
+    max-width: 430px;
+    padding: 25px 22px 28px;
+  }
+
+  .login_subtitulo {
+    font-size: 1.3rem;
+  }
+
+  .login_campo label {
+    font-size: 0.95rem;
+  }
+}
+
+/* =========================================
+   MOBILE PEQUENO
+========================================= */
+
+@media (max-width: 380px) {
+  .login {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .login_titulo {
+    font-size: 1.4rem;
+  }
+
+  .login_card {
+    padding: 22px 17px 25px;
+  }
+}

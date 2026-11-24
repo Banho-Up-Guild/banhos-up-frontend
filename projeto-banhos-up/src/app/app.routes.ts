@@ -14,6 +14,59 @@ export const routes: Routes = [
       import('./pages/agendamento/agendamento').then((m) => m.Agendamento),
   },
   {
+    path: 'cadastro',
+    title: 'BanhosUp! | Cadastro',
+    loadComponent: () =>
+      import('./pages/cadastro/cadastro').then((m) => m.Cadastro),
+  },
+  {
+    path: 'login',
+    title: 'BanhosUp! | Login',
+    loadComponent: () =>
+      import('./pages/login/login').then((m) => m.Login),
+  },
+  {
+    path: 'perfil',
+    title: 'BanhosUp! | Meu Perfil',
+    loadComponent: () =>
+      import('./pages/perfil/perfil').then((m) => m.Perfil),
+    children: [
+      {
+        path: '',
+        redirectTo: 'meus-dados',
+        pathMatch: 'full',
+      },
+      {
+        path: 'meus-dados',
+        title: 'BanhosUp! | Meus Dados',
+        loadComponent: () =>
+          import('./pages/perfil/componentes/meus-dados/meus-dados')
+            .then((m) => m.MeusDados),
+      },
+      {
+        path: 'agendamentos',
+        title: 'BanhosUp! | Meus Agendamentos',
+        loadComponent: () =>
+          import('./pages/perfil/componentes/meus-agendamentos/meus-agendamentos')
+            .then((m) => m.MeusAgendamentos),
+      },
+      {
+        path: 'pets',
+        title: 'BanhosUp! | Meus Pets',
+        loadComponent: () =>
+          import('./pages/perfil/componentes/meus-pets/meus-pets')
+            .then((m) => m.MeusPets),
+      },
+      {
+        path: 'alterar-senha',
+        title: 'BanhosUp! | Alterar Senha',
+        loadComponent: () =>
+          import('./pages/perfil/componentes/alterar-senha/alterar-senha')
+            .then((m) => m.AlterarSenha),
+      },
+    ],
+  },
+  {
     path: '**',
     redirectTo: '',
   },

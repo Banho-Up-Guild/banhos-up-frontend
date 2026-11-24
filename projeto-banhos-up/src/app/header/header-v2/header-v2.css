@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+.header-v2 {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  background: #8ed6f5;
+  border-bottom: 4px solid #013e73;
+}
+
+.header-v2__conteudo {
+  width: min(1400px, calc(100% - 48px));
+  min-height: 60px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-v2__logo {
+  display: flex;
+  align-items: center;
+}
+
+.header-v2__logo img {
+  display: block;
+  width: 145px;
+  height: auto;
+  object-fit: contain;
+}
+
+.header-v2__simbolo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-v2__simbolo img {
+  display: block;
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+/* =========================================
+   NOTEBOOK / TELAS MENORES
+========================================= */
+
+@media (max-width: 1200px) {
+  .header-v2__conteudo {
+    width: calc(100% - 40px);
+  }
+}
+
+/* =========================================
+   TABLETS
+========================================= */
+
+@media (max-width: 900px) {
+  .header-v2__conteudo {
+    width: calc(100% - 36px);
+    min-height: 60px;
+  }
+
+  .header-v2__logo img {
+    width: 135px;
+  }
+
+  .header-v2__simbolo img {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .header-v2__conteudo {
+    width: calc(100% - 28px);
+    min-height: 56px;
+  }
+
+  .header-v2__logo img {
+    width: 120px;
+  }
+
+  .header-v2__simbolo img {
+    width: 38px;
+    height: 38px;
+  }
+}
