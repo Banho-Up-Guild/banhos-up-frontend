@@ -8,60 +8,75 @@
 
     <h2 class="login_subtitulo">Acesse sua conta</h2>
 
-    <form class="login_formulario">
+    <form class="login_formulario" (ngSubmit)="entrar()">
 
-      <div class="login_campo">
-        <label for="email-cpf">E-mail ou CPF</label>
+  <div class="login_campo">
+    <label for="email">E-mail</label>
 
-        <input
-          type="text"
-          id="email-cpf"
-          name="emailCpf"
-          placeholder="Digite seu e-mail ou CPF"
-          autocomplete="username"
-        />
-      </div>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      [(ngModel)]="email"
+      placeholder="Digite seu e-mail"
+      autocomplete="username"
+      required
+    />
+  </div>
 
-      <div class="login_campo">
-        <label for="senha">Senha</label>
+  <div class="login_campo">
 
-        <div class="login_senha-container">
+    <label for="senha">Senha</label>
 
-          <input
-            [type]="mostrarSenha() ? 'text' : 'password'"
-            id="senha"
-            name="senha"
-            placeholder="Sua senha"
-            autocomplete="current-password"
-          />
+    <div class="login_senha-container">
 
-          <button
-            type="button"
-            class="login_senha-botao"
-            (click)="alternarVisibilidadeSenha()"
-            [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
-            [attr.aria-pressed]="mostrarSenha()"
-          >
-            @if (mostrarSenha()) {
-              <svg lucideEyeOff class="login_icone-senha"></svg>
-            } @else {
-              <svg lucideEye class="login_icone-senha"></svg>
-            }
-          </button>
+      <input
+        [type]="mostrarSenha() ? 'text' : 'password'"
+        id="senha"
+        name="senha"
+        [(ngModel)]="senha"
+        placeholder="Sua senha"
+        autocomplete="current-password"
+        required
+      />
 
-        </div>
-
-        <a routerLink="/recuperar-senha" class="login_esqueci-senha">
-          Esqueci a senha
-        </a>
-
-      </div>
-
-      <button type="submit" class="login_entrar">
-        ENTRAR
+      <button
+        type="button"
+        class="login_senha-botao"
+        (click)="alternarVisibilidadeSenha()"
+        [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
+        [attr.aria-pressed]="mostrarSenha()"
+      >
+        @if (mostrarSenha()) {
+          <svg lucideEyeOff class="login_icone-senha"></svg>
+        } @else {
+          <svg lucideEye class="login_icone-senha"></svg>
+        }
       </button>
 
-    </form>
+    </div>
+
+    <a routerLink="/recuperar-senha" class="login_esqueci-senha">
+      Esqueci a senha
+    </a>
+
+  </div>
+
+  @if (erro()) {
+    <p class="login_erro" role="alert">
+      {{ erro() }}
+    </p>
+  }
+
+  <button
+    type="submit"
+    class="login_entrar"
+    [disabled]="carregando()"
+  >
+    {{ carregando() ? 'ENTRANDO...' : 'ENTRAR' }}
+  </button>
+
+</form>
 
     <div class="login_separador">
       <span></span>

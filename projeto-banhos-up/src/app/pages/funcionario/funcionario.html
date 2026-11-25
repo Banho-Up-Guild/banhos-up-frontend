@@ -1,0 +1,288 @@
+<div class="funcionario-layout">
+
+  <aside class="funcionario-sidebar">
+
+    <a routerLink="/" class="funcionario-logo">
+      <img
+        src="assets/logos/RETANGULAR_COMPLETO.png"
+        alt="Banhos Up!"
+      />
+    </a>
+
+    <div class="funcionario-sidebar-titulo">
+      ÁREA DO FUNCIONÁRIO
+    </div>
+
+    <nav class="funcionario-menu">
+
+      @for (item of menu; track item.path) {
+
+        <a
+          [routerLink]="['/funcionario', item.path]"
+          class="funcionario-menu-item"
+          [class.funcionario-menu-item-ativo]="modulo() === item.path"
+        >
+          <span class="funcionario-menu-icone">
+            {{ item.icone }}
+          </span>
+
+          <span>{{ item.titulo }}</span>
+        </a>
+
+      }
+
+    </nav>
+
+    <div class="funcionario-sidebar-rodape">
+
+      <a routerLink="/" class="funcionario-voltar-home">
+        ← Voltar para a Home
+      </a>
+
+      <button
+        type="button"
+        class="funcionario-sair"
+        (click)="sair()"
+      >
+        Sair da conta
+      </button>
+
+    </div>
+
+  </aside>
+
+  <main class="funcionario-conteudo">
+
+    <header class="funcionario-header">
+
+      <div>
+        <span class="funcionario-header-identificacao">
+          Banhos Up! / Área do funcionário
+        </span>
+
+        <h1>{{ tituloAtual() }}</h1>
+
+        <p>{{ descricaoAtual() }}</p>
+      </div>
+
+      <div class="funcionario-usuario">
+        <div class="funcionario-avatar">
+          {{ usuarioAtual()?.name?.charAt(0) || 'F' }}
+        </div>
+
+        <div>
+          <strong>{{ usuarioAtual()?.name || 'Funcionário' }}</strong>
+          <span>Funcionário</span>
+        </div>
+      </div>
+
+    </header>
+
+    <section class="funcionario-pagina">
+
+      @if (modulo() === 'painel') {
+
+        <div class="funcionario-boas-vindas">
+          <h2>Bem-vindo à área do funcionário!</h2>
+
+          <p>
+            Aqui você poderá administrar as atividades da sua unidade
+            e acompanhar os atendimentos.
+          </p>
+        </div>
+
+        <div class="funcionario-indicadores">
+
+          <article class="funcionario-card-indicador">
+            <span>Agendamentos de hoje</span>
+            <strong>—</strong>
+          </article>
+
+          <article class="funcionario-card-indicador">
+            <span>Solicitações pendentes</span>
+            <strong>—</strong>
+          </article>
+
+          <article class="funcionario-card-indicador">
+            <span>Serviços cadastrados</span>
+            <strong>—</strong>
+          </article>
+
+          <article class="funcionario-card-indicador">
+            <span>Membros da equipe</span>
+            <strong>—</strong>
+          </article>
+
+        </div>
+
+        <article class="funcionario-card">
+          <h2>Atalhos</h2>
+
+          <p>
+            Selecione uma das opções do menu lateral para acessar
+            as funcionalidades disponíveis.
+          </p>
+        </article>
+
+      }
+
+      @else if (modulo() === 'agendamentos') {
+
+        <article class="funcionario-card">
+
+          <h2>Gerenciamento de agendamentos</h2>
+
+          <p>
+            Nesta área serão exibidos os agendamentos vinculados
+            à sua unidade, com opções de consulta e acompanhamento.
+          </p>
+
+          <div class="funcionario-estado-vazio">
+            <span>▦</span>
+            <strong>Lista de agendamentos</strong>
+            <p>
+              A consulta dos agendamentos será conectada à API
+              na etapa de Backend.
+            </p>
+          </div>
+
+        </article>
+
+      }
+
+      @else if (modulo() === 'disponibilidade') {
+
+        <article class="funcionario-card">
+
+          <h2>Disponibilidade e horários</h2>
+
+          <p>
+            Nesta área será possível configurar os dias de atendimento,
+            horários de abertura e fechamento e intervalos.
+          </p>
+
+          <div class="funcionario-estado-vazio">
+            <span>◷</span>
+            <strong>Configuração da disponibilidade</strong>
+            <p>
+              Os horários serão carregados e salvos por meio
+              da API do Backend.
+            </p>
+          </div>
+
+        </article>
+
+      }
+
+      @else if (modulo() === 'solicitacoes') {
+
+        <article class="funcionario-card">
+
+          <h2>Solicitações recebidas</h2>
+
+          <p>
+            Aqui serão apresentadas as solicitações de agendamento
+            aguardando confirmação.
+          </p>
+
+          <div class="funcionario-estado-vazio">
+            <span>▤</span>
+            <strong>Solicitações pendentes</strong>
+            <p>
+              A listagem e as ações de confirmar ou recusar
+              serão conectadas ao Backend.
+            </p>
+          </div>
+
+        </article>
+
+      }
+
+      @else if (modulo() === 'servicos') {
+
+        <article class="funcionario-card">
+
+          <h2>Serviços e preços</h2>
+
+          <p>
+            O catálogo de serviços e os preços serão compartilhados
+            por todas as unidades.
+          </p>
+
+          <div class="funcionario-estado-vazio">
+            <span>◇</span>
+            <strong>Catálogo de serviços</strong>
+            <p>
+              Aqui serão disponibilizadas as operações de consultar,
+              cadastrar, editar e desativar serviços, conforme a permissão
+              concedida ao funcionário.
+            </p>
+          </div>
+
+        </article>
+
+      }
+
+      @else if (modulo() === 'equipe') {
+
+        <article class="funcionario-card">
+
+          <h2>Gerir equipe das unidades</h2>
+
+          <p>
+            Gerencie os membros vinculados à sua própria unidade.
+          </p>
+
+          <div class="funcionario-aviso">
+            <strong>Importante</strong>
+
+            <p>
+              Esta funcionalidade permite gerenciar o vínculo dos
+              funcionários com a unidade. A criação de contas do sistema
+              e a concessão de permissões continuarão sendo
+              responsabilidades do ADMIN.
+            </p>
+          </div>
+
+          <div class="funcionario-estado-vazio">
+            <span>♧</span>
+            <strong>Equipe da unidade</strong>
+            <p>
+              A listagem e o gerenciamento dos vínculos serão
+              conectados ao Backend.
+            </p>
+          </div>
+
+        </article>
+
+      }
+
+      @else if (modulo() === 'unidade') {
+
+        <article class="funcionario-card">
+
+          <h2>Informações da unidade</h2>
+
+          <p>
+            Consulte e atualize os dados da unidade à qual sua conta
+            está vinculada, respeitando as permissões concedidas.
+          </p>
+
+          <div class="funcionario-estado-vazio">
+            <span>⌖</span>
+            <strong>Dados da unidade</strong>
+            <p>
+              As informações serão carregadas diretamente pelo Backend,
+              que identificará a unidade vinculada ao funcionário.
+            </p>
+          </div>
+
+        </article>
+
+      }
+
+    </section>
+
+  </main>
+
+</div>
