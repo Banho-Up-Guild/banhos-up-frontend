@@ -328,6 +328,18 @@
   margin-top: 24px;
 }
 
+.perfil_footer {
+  margin-top: auto;
+  padding-top: 28px;
+
+  color: #101820;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.perfil_footer p {
+  margin: 3px 0;
+}
 
 /* Responsividade */
 
