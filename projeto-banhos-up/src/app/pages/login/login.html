@@ -8,88 +8,75 @@
 
     <h2 class="login_subtitulo">Acesse sua conta</h2>
 
-    <form
-      class="login_formulario"
-      (ngSubmit)="entrar()"
-      novalidate
-    >
+    <form class="login_formulario" (ngSubmit)="entrar()">
 
-      <div class="login_campo">
-        <label for="email-cpf">E-mail ou CPF</label>
+  <div class="login_campo">
+    <label for="email">E-mail</label>
 
-        <input
-          type="text"
-          id="email-cpf"
-          name="emailCpf"
-          placeholder="Digite seu e-mail ou CPF"
-          autocomplete="username"
-          maxlength="254"
-          [(ngModel)]="emailCpf"
-          (ngModelChange)="formatarIdentificador($event)"
-          [class.campo-erro]="tentouEntrar && !identificadorValido"
-          [attr.aria-invalid]="tentouEntrar && !identificadorValido"
-        />
+    <input
+      type="email"
+      id="email"
+      name="email"
+      [(ngModel)]="email"
+      placeholder="Digite seu e-mail"
+      autocomplete="username"
+      required
+    />
+  </div>
 
-        @if (tentouEntrar && !identificadorValido) {
-          <small class="login_mensagem-erro">
-            <svg lucideCircleExclamationPoint></svg>
+  <div class="login_campo">
 
-            @if (!emailCpf.trim()) {
-              Informe seu e-mail ou CPF.
-            } @else {
-              Informe um CPF válido ou utilize seu e-mail.
-            }
-          </small>
+    <label for="senha">Senha</label>
+
+    <div class="login_senha-container">
+
+      <input
+        [type]="mostrarSenha() ? 'text' : 'password'"
+        id="senha"
+        name="senha"
+        [(ngModel)]="senha"
+        placeholder="Sua senha"
+        autocomplete="current-password"
+        required
+      />
+
+      <button
+        type="button"
+        class="login_senha-botao"
+        (click)="alternarVisibilidadeSenha()"
+        [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
+        [attr.aria-pressed]="mostrarSenha()"
+      >
+        @if (mostrarSenha()) {
+          <svg lucideEyeOff class="login_icone-senha"></svg>
+        } @else {
+          <svg lucideEye class="login_icone-senha"></svg>
         }
-      </div>
-
-      <div class="login_campo">
-        <label for="senha">Senha</label>
-
-        <div class="login_senha-container">
-
-          <input
-            [type]="mostrarSenha() ? 'text' : 'password'"
-            id="senha"
-            name="senha"
-            placeholder="Sua senha"
-            autocomplete="current-password"
-            [(ngModel)]="senha"
-            [class.campo-erro]="tentouEntrar && !senhaValida"
-            [attr.aria-invalid]="tentouEntrar && !senhaValida"
-          />
-
-          <button
-            type="button"
-            class="login_senha-botao"
-            (click)="alternarVisibilidadeSenha()"
-            [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
-            [attr.aria-pressed]="mostrarSenha()"
-          >
-            @if (mostrarSenha()) {
-              <svg lucideEyeOff class="login_icone-senha"></svg>
-            } @else {
-              <svg lucideEye class="login_icone-senha"></svg>
-            }
-          </button>
-
-        </div>
-
-        @if (tentouEntrar && !senhaValida) {
-          <small class="login_mensagem-erro">
-            <svg lucideCircleExclamationPoint></svg>
-            Informe sua senha.
-          </small>
-        }
-
-
-      </div>
-
-      <button type="submit" class="login_entrar">
-        ENTRAR
       </button>
 
-    </form>
+    </div>
+
+    <a routerLink="/recuperar-senha" class="login_esqueci-senha">
+      Esqueci a senha
+    </a>
+
+  </div>
+
+  @if (erro()) {
+    <p class="login_erro" role="alert">
+      {{ erro() }}
+    </p>
+  }
+
+  <button
+    type="submit"
+    class="login_entrar"
+    [disabled]="carregando()"
+  >
+    {{ carregando() ? 'ENTRANDO...' : 'ENTRAR' }}
+  </button>
+
+</form>
 
     <div class="login_separador">
       <span></span>

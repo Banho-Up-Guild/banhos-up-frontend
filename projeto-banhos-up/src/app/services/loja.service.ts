@@ -70,4 +70,20 @@ export class LojaService {
     );
   }
 
+  // ADMIN: listar todas as unidades, inclusive inativas
+listarTodasUnidadesAdmin(): Observable<Loja[]> {
+  return this.http.get<Loja[]>(
+    `${environment.apiUrl}/admin/lojas`
+  );
 }
+
+// EMPLOYEE: consultar somente sua própria unidade
+buscarMinhaUnidade(): Observable<Loja> {
+  return this.http.get<Loja>(
+    `${environment.apiUrl}/employee/me/store`
+  );
+}
+
+}
+
+

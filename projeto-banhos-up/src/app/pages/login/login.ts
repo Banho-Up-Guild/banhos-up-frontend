@@ -1,22 +1,21 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import {
-  LucideEye,
-  LucideEyeOff,
-  LucideCircleExclamationPoint
-} from '@lucide/angular';
+import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
+
+import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { HeaderV2 } from '../../header/header-v2/header-v2';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   imports: [
     HeaderV2,
-    FormsModule,
     RouterLink,
+    FormsModule,
     LucideEye,
-    LucideEyeOff,
-    LucideCircleExclamationPoint
+    LucideEyeOff
   ],
   templateUrl: './login.html',
   styleUrl: './login.css',
@@ -24,103 +23,73 @@ import { HeaderV2 } from '../../header/header-v2/header-v2';
 export class Login {
 
   mostrarSenha = signal(false);
+  carregando = signal(false);
+  erro = signal('');
 
-  emailCpf = '';
+  email = '';
   senha = '';
 
-  tentouEntrar = false;
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router
+  ) {}
 
   alternarVisibilidadeSenha(): void {
     this.mostrarSenha.update((visivel) => !visivel);
   }
 
-  formatarIdentificador(valor: string): void {
-    // Se houver letras ou @, consideramos que a pessoa está digitando um e-mail.
-    if (/[a-zA-Z@]/.test(valor)) {
-      this.emailCpf = valor;
-      return;
-    }
-
-    // Caso contrário, aplicamos a máscara de CPF.
-    let numero = valor.replace(/\D/g, '').slice(0, 11);
-
-    numero = numero.replace(/(\d{3})(\d)/, '$1.$2');
-    numero = numero.replace(/(\d{3})(\d)/, '$1.$2');
-    numero = numero.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-
-    this.emailCpf = numero;
-  }
-
-  validarCpf(cpf: string): boolean {
-    cpf = cpf.replace(/\D/g, '');
-
-    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
-      return false;
-    }
-
-    let soma = 0;
-
-    for (let i = 0; i < 9; i++) {
-      soma += Number(cpf[i]) * (10 - i);
-    }
-
-    let digito = (soma * 10) % 11;
-
-    if (digito === 10) {
-      digito = 0;
-    }
-
-    if (digito !== Number(cpf[9])) {
-      return false;
-    }
-
-    soma = 0;
-
-    for (let i = 0; i < 10; i++) {
-      soma += Number(cpf[i]) * (11 - i);
-    }
-
-    digito = (soma * 10) % 11;
-
-    if (digito === 10) {
-      digito = 0;
-    }
-
-    return digito === Number(cpf[10]);
-  }
-
-  get identificadorValido(): boolean {
-    const identificador = this.emailCpf.trim();
-
-    if (!identificador) {
-      return false;
-    }
-
-    // O formato do e-mail será validado futuramente.
-    if (identificador.includes('@')) {
-      return true;
-    }
-
-    return this.validarCpf(identificador);
-  }
-
-  get senhaValida(): boolean {
-    return this.senha.trim().length > 0;
-  }
-
-  get formularioValido(): boolean {
-    return this.identificadorValido && this.senhaValida;
-  }
-
   entrar(): void {
-    this.tentouEntrar = true;
+    this.erro.set('');
 
-    if (!this.formularioValido) {
+    const emailDigitado = this.email.trim().toLowerCase();
+
+    if (!emailDigitado || !this.senha) {
+      this.erro.set('Preencha o e-mail e a senha.');
       return;
     }
 
-    // Futuramente: autenticar o usuário com a API.
-    console.log('Campos de login válidos.');
-  }
+    this.carregando.set(true);
 
+    this.authService.login({
+      email: emailDigitado,
+      password: this.senha
+    })
+    .pipe(
+      finalize(() => this.carregando.set(false))
+    )
+    .subscribe({
+      next: (resposta) => {
+
+        const perfil = resposta.user.role;
+
+        if (perfil === 'EMPLOYEE' || perfil === 'ADMIN') {
+          this.router.navigate(['/funcionario/painel']);
+          return;
+        }
+
+        if (perfil === 'CUSTOMER') {
+          this.router.navigate(['/perfil']);
+        }
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        if (erro.status === 401 || erro.status === 400) {
+          this.erro.set('E-mail ou senha inválidos.');
+          return;
+        }
+
+        if (erro.status === 0) {
+          this.erro.set(
+            'Não foi possível conectar ao servidor. Verifique se o Backend está funcionando.'
+          );
+          return;
+        }
+
+        this.erro.set(
+          'Ocorreu um erro ao realizar o login. Tente novamente.'
+        );
+      }
+    });
+  }
 }

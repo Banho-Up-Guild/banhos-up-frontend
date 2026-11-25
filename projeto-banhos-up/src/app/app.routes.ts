@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { employeeGuard } from './guards/employee.guard';
 
 export const routes: Routes = [
   {
@@ -67,6 +68,19 @@ export const routes: Routes = [
     ],
   },
   {
+  path: 'funcionario',
+  pathMatch: 'full',
+  redirectTo: 'funcionario/painel'
+},
+{
+  path: 'funcionario/:modulo',
+  title: 'BanhosUp! | Área do Funcionário',
+  canActivate: [employeeGuard],
+  loadComponent: () =>
+    import('./pages/funcionario/funcionario')
+      .then((m) => m.Funcionario),
+},
+{
     path: '**',
     redirectTo: '',
   },

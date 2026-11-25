@@ -16,6 +16,8 @@ import {
   AgendamentoResponse
 } from '../models/agendamento.model';
 
+import { DisponibilidadeCalendarioResponse } from '../models/disponibilidade.model';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -62,6 +64,28 @@ export class AgendamentoApiService {
       dados
     );
 
+  }
+
+  listarDisponibilidade(
+    yearMonth: string,
+    storeId: number,
+    durationMinutes: number,
+    employeeId?: number | null
+  ): Observable<DisponibilidadeCalendarioResponse[]> {
+
+    let params = new HttpParams()
+      .set('storeId', String(storeId))
+      .set('yearMonth', yearMonth)
+      .set('durationMinutes', String(durationMinutes));
+
+    if (employeeId != null && employeeId > 0) {
+      params = params.set('employeeId', String(employeeId));
+    }
+
+    return this.http.get<DisponibilidadeCalendarioResponse[]>(
+      `${environment.apiUrl}/availability/calendar`,
+      { params }
+    );
   }
 
 }
