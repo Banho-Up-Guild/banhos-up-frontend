@@ -68,10 +68,6 @@ export const routes: Routes = [
     ],
   },
   {
-    path: '**',
-    redirectTo: '',
-  },
-  {
   path: 'funcionario',
   pathMatch: 'full',
   redirectTo: 'funcionario/painel'
@@ -84,4 +80,8 @@ export const routes: Routes = [
     import('./pages/funcionario/funcionario')
       .then((m) => m.Funcionario),
 },
+{
+    path: '**',
+    redirectTo: '',
+  },
 ];

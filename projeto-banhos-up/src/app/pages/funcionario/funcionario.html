@@ -3,10 +3,7 @@
   <aside class="funcionario-sidebar">
 
     <a routerLink="/" class="funcionario-logo">
-      <img
-        src="assets/logos/RETANGULAR_COMPLETO.png"
-        alt="Banhos Up!"
-      />
+      <img src="assets/logos/TÍTULO-MONO.png" alt="Banhos Up!" />
     </a>
 
     <div class="funcionario-sidebar-titulo">
@@ -17,17 +14,14 @@
 
       @for (item of menu; track item.path) {
 
-        <a
-          [routerLink]="['/funcionario', item.path]"
-          class="funcionario-menu-item"
-          [class.funcionario-menu-item-ativo]="modulo() === item.path"
-        >
-          <span class="funcionario-menu-icone">
-            {{ item.icone }}
-          </span>
+      <a [routerLink]="['/funcionario', item.path]" class="funcionario-menu-item"
+        [class.funcionario-menu-item-ativo]="modulo() === item.path">
+        <span class="funcionario-menu-icone">
+          {{ item.icone }}
+        </span>
 
-          <span>{{ item.titulo }}</span>
-        </a>
+        <span>{{ item.titulo }}</span>
+      </a>
 
       }
 
@@ -39,11 +33,7 @@
         ← Voltar para a Home
       </a>
 
-      <button
-        type="button"
-        class="funcionario-sair"
-        (click)="sair()"
-      >
+      <button type="button" class="funcionario-sair" (click)="sair()">
         Sair da conta
       </button>
 
@@ -72,7 +62,11 @@
 
         <div>
           <strong>{{ usuarioAtual()?.name || 'Funcionário' }}</strong>
-          <span>Funcionário</span>
+          <span>
+            {{ usuarioAtual()?.role === 'ADMIN'
+            ? 'Administrador'
+            : 'Funcionário' }}
+          </span>
         </div>
       </div>
 
@@ -82,202 +76,680 @@
 
       @if (modulo() === 'painel') {
 
-        <div class="funcionario-boas-vindas">
-          <h2>Bem-vindo à área do funcionário!</h2>
+      <div class="funcionario-boas-vindas">
+        <h2>Bem-vindo à área do funcionário!</h2>
 
-          <p>
-            Aqui você poderá administrar as atividades da sua unidade
-            e acompanhar os atendimentos.
-          </p>
-        </div>
+        <p>
+          Aqui você poderá administrar as atividades da sua unidade
+          e acompanhar os atendimentos.
+        </p>
+      </div>
 
-        <div class="funcionario-indicadores">
+      <div class="funcionario-indicadores">
 
-          <article class="funcionario-card-indicador">
-            <span>Agendamentos de hoje</span>
-            <strong>—</strong>
-          </article>
-
-          <article class="funcionario-card-indicador">
-            <span>Solicitações pendentes</span>
-            <strong>—</strong>
-          </article>
-
-          <article class="funcionario-card-indicador">
-            <span>Serviços cadastrados</span>
-            <strong>—</strong>
-          </article>
-
-          <article class="funcionario-card-indicador">
-            <span>Membros da equipe</span>
-            <strong>—</strong>
-          </article>
-
-        </div>
-
-        <article class="funcionario-card">
-          <h2>Atalhos</h2>
-
-          <p>
-            Selecione uma das opções do menu lateral para acessar
-            as funcionalidades disponíveis.
-          </p>
+        <article class="funcionario-card-indicador">
+          <span>Agendamentos de hoje</span>
+          <strong>—</strong>
         </article>
+
+        <article class="funcionario-card-indicador">
+          <span>Solicitações pendentes</span>
+          <strong>—</strong>
+        </article>
+
+        <article class="funcionario-card-indicador">
+          <span>Serviços cadastrados</span>
+          <strong>—</strong>
+        </article>
+
+        <article class="funcionario-card-indicador">
+          <span>Membros da equipe</span>
+          <strong>—</strong>
+        </article>
+
+      </div>
+
+      <article class="funcionario-card">
+        <h2>Atalhos</h2>
+
+        <p>
+          Selecione uma das opções do menu lateral para acessar
+          as funcionalidades disponíveis.
+        </p>
+      </article>
 
       }
 
       @else if (modulo() === 'agendamentos') {
 
-        <article class="funcionario-card">
+  <article class="funcionario-card">
 
-          <h2>Gerenciamento de agendamentos</h2>
+    <h2>Gerenciamento de agendamentos</h2>
 
-          <p>
-            Nesta área serão exibidos os agendamentos vinculados
-            à sua unidade, com opções de consulta e acompanhamento.
-          </p>
+    <p>Consulte os atendimentos da unidade e acompanhe seus status.</p>
 
-          <div class="funcionario-estado-vazio">
-            <span>▦</span>
-            <strong>Lista de agendamentos</strong>
+    <div class="funcionario-filtros">
+
+      <label>
+        Data inicial
+
+        <input
+          type="date"
+          [value]="filtroDataInicio()"
+          (change)="filtroDataInicio.set($any($event.target).value)"
+        />
+      </label>
+
+      <label>
+        Data final
+
+        <input
+          type="date"
+          [value]="filtroDataFim()"
+          (change)="filtroDataFim.set($any($event.target).value)"
+        />
+      </label>
+
+      <label>
+        Status
+
+        <select
+          [value]="filtroStatus()"
+          (change)="filtroStatus.set($any($event.target).value)"
+        >
+          <option value="">Todos</option>
+          <option value="AWAITING_CONFIRMATION">Aguardando confirmação</option>
+          <option value="CONFIRMED">Confirmado</option>
+          <option value="CANCELED">Cancelado</option>
+        </select>
+      </label>
+
+      <button
+        type="button"
+        (click)="aplicarFiltros()"
+      >
+        Filtrar
+      </button>
+
+    </div>
+
+    @if (carregandoAgendamentos()) {
+
+      <div class="funcionario-estado-vazio">
+        Carregando agendamentos...
+      </div>
+
+    } @else if (erroAgendamentos()) {
+
+      <div class="funcionario-erro">
+        {{ erroAgendamentos() }}
+      </div>
+
+    } @else if (agendamentos().length === 0) {
+
+      <div class="funcionario-estado-vazio">
+        <strong>Nenhum agendamento encontrado</strong>
+        <p>Não existem atendimentos para os filtros selecionados.</p>
+      </div>
+
+    } @else {
+
+      <div class="funcionario-lista-agendamentos">
+
+        @for (item of agendamentos(); track item.id) {
+
+          <article class="funcionario-agendamento-card">
+
+            <div class="funcionario-agendamento-topo">
+
+              <div>
+                <strong>Agendamento #{{ item.id }}</strong>
+                <p>{{ formatarDataHora(item.dateTimeAppointment) }}</p>
+              </div>
+
+              <span class="funcionario-status">
+                {{ nomeStatus(item.status) }}
+              </span>
+
+            </div>
+
+            <p><strong>Cliente:</strong> {{ item.customerName }}</p>
+
+            <p><strong>E-mail:</strong> {{ item.customerEmail || 'Não informado' }}</p>
+
+            <p><strong>Funcionário:</strong> {{ item.employeeName }}</p>
+
+            <div class="funcionario-agendamento-itens">
+
+              <strong>Pets e serviços</strong>
+
+              @for (servico of item.items; track $index) {
+
+                <p>
+                  {{ servico.petName }} —
+                  {{ servico.offeringName }}
+                </p>
+
+              }
+
+            </div>
+
             <p>
-              A consulta dos agendamentos será conectada à API
-              na etapa de Backend.
+              <strong>Total:</strong>
+              {{ item.totalPrice | currency:'BRL':'symbol':'1.2-2' }}
             </p>
-          </div>
 
-        </article>
+            @if (
+              item.status === 'AWAITING_CONFIRMATION' &&
+              temPermissao('APPOINTMENTS_CONFIRM')
+            ) {
 
-      }
+              <div class="funcionario-agendamento-acoes">
+
+                <button
+                  type="button"
+                  [disabled]="processandoAgendamento() === item.id"
+                  (click)="confirmarAgendamento(item.id)"
+                >
+                  Confirmar
+                </button>
+
+                <button
+                  type="button"
+                  class="funcionario-botao-recusar"
+                  [disabled]="processandoAgendamento() === item.id"
+                  (click)="recusarAgendamento(item.id)"
+                >
+                  Recusar
+                </button>
+
+              </div>
+
+            }
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </article>
+
+}
 
       @else if (modulo() === 'disponibilidade') {
 
-        <article class="funcionario-card">
+  <article class="funcionario-card">
 
-          <h2>Disponibilidade e horários</h2>
+    <h2>Disponibilidade e horários</h2>
 
-          <p>
-            Nesta área será possível configurar os dias de atendimento,
-            horários de abertura e fechamento e intervalos.
-          </p>
+    <p>
+      Configure os dias de funcionamento, horários de abertura,
+      fechamento e intervalos da unidade.
+    </p>
 
-          <div class="funcionario-estado-vazio">
-            <span>◷</span>
-            <strong>Configuração da disponibilidade</strong>
-            <p>
-              Os horários serão carregados e salvos por meio
-              da API do Backend.
-            </p>
+    @if (usuarioAtual()?.role === 'ADMIN') {
+
+      <div class="funcionario-seletor-unidade">
+
+        <label for="unidadeDisponibilidade">
+          Unidade
+        </label>
+
+        <select
+          id="unidadeDisponibilidade"
+          [ngModel]="disponibilidadeStoreId()"
+          (ngModelChange)="selecionarUnidadeDisponibilidade(+$event)"
+        >
+
+          @for (loja of unidades(); track loja.id) {
+
+            <option [ngValue]="loja.id">
+              {{ loja.nome }}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+    } @else {
+
+      <p class="funcionario-unidade-identificacao">
+        <strong>Unidade:</strong>
+        {{ nomeUnidadeDisponibilidade() }}
+      </p>
+
+    }
+
+    @if (carregandoDisponibilidade()) {
+
+      <div class="funcionario-estado-vazio">
+        Carregando horários...
+      </div>
+
+    } @else if (erroDisponibilidade() && !diasDisponibilidade().length) {
+
+      <div class="funcionario-erro">
+        {{ erroDisponibilidade() }}
+      </div>
+
+    } @else {
+
+      <div class="funcionario-horarios">
+
+        @for (dia of diasDisponibilidade(); track dia.dayOfWeek) {
+
+          <div class="funcionario-horario-linha">
+
+            <div class="funcionario-horario-dia">
+
+              <strong>{{ dia.dayName }}</strong>
+
+              <label>
+                <input
+                  type="checkbox"
+                  [ngModel]="!dia.closed"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="atualizarDiaDisponibilidade(
+                    dia.dayOfWeek,
+                    { closed: !$event }
+                  )"
+                />
+
+                Aberto
+              </label>
+
+            </div>
+
+            @if (!dia.closed) {
+
+              <div class="funcionario-horario-campos">
+
+                <label>
+                  Abertura
+
+                  <input
+                    type="time"
+                    [ngModel]="dia.openingTime || ''"
+                    [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="atualizarDiaDisponibilidade(
+                      dia.dayOfWeek,
+                      { openingTime: $event }
+                    )"
+                  />
+                </label>
+
+                <label>
+                  Fechamento
+
+                  <input
+                    type="time"
+                    [ngModel]="dia.closingTime || ''"
+                    [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="atualizarDiaDisponibilidade(
+                      dia.dayOfWeek,
+                      { closingTime: $event }
+                    )"
+                  />
+                </label>
+
+                <label>
+                  Início do intervalo
+
+                  <input
+                    type="time"
+                    [ngModel]="dia.breakStart || ''"
+                    [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="atualizarDiaDisponibilidade(
+                      dia.dayOfWeek,
+                      { breakStart: $event || null }
+                    )"
+                  />
+                </label>
+
+                <label>
+                  Fim do intervalo
+
+                  <input
+                    type="time"
+                    [ngModel]="dia.breakEnd || ''"
+                    [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="atualizarDiaDisponibilidade(
+                      dia.dayOfWeek,
+                      { breakEnd: $event || null }
+                    )"
+                  />
+                </label>
+
+              </div>
+
+            } @else {
+
+              <span class="funcionario-dia-fechado">
+                Fechado
+              </span>
+
+            }
+
           </div>
 
-        </article>
+        }
+
+      </div>
+
+      @if (erroDisponibilidade()) {
+
+        <div class="funcionario-erro">
+          {{ erroDisponibilidade() }}
+        </div>
 
       }
+
+      @if (sucessoDisponibilidade()) {
+
+        <div class="funcionario-sucesso">
+          {{ sucessoDisponibilidade() }}
+        </div>
+
+      }
+
+      <div class="funcionario-disponibilidade-acoes">
+
+        <button
+          type="button"
+          [disabled]="salvandoDisponibilidade() || !diasDisponibilidade().length"
+          (click)="salvarDisponibilidade()"
+        >
+          {{ salvandoDisponibilidade()
+            ? 'Salvando...'
+            : 'Salvar horários' }}
+        </button>
+
+      </div>
+
+    }
+
+  </article>
+
+}
 
       @else if (modulo() === 'solicitacoes') {
 
-        <article class="funcionario-card">
+  <article class="funcionario-card">
 
-          <h2>Solicitações recebidas</h2>
+    <h2>Solicitações de agendamento</h2>
 
-          <p>
-            Aqui serão apresentadas as solicitações de agendamento
-            aguardando confirmação.
-          </p>
+    <p>Solicitações que aguardam confirmação ou recusa.</p>
 
-          <div class="funcionario-estado-vazio">
-            <span>▤</span>
-            <strong>Solicitações pendentes</strong>
+    @if (carregandoAgendamentos()) {
+
+      <div class="funcionario-estado-vazio">
+        Carregando solicitações...
+      </div>
+
+    } @else if (erroAgendamentos()) {
+
+      <div class="funcionario-erro">
+        {{ erroAgendamentos() }}
+      </div>
+
+    } @else if (agendamentos().length === 0) {
+
+      <div class="funcionario-estado-vazio">
+        <strong>Nenhuma solicitação pendente</strong>
+        <p>Não existem solicitações aguardando confirmação.</p>
+      </div>
+
+    } @else {
+
+      <div class="funcionario-lista-agendamentos">
+
+        @for (item of agendamentos(); track item.id) {
+
+          <article class="funcionario-agendamento-card">
+
+            <div class="funcionario-agendamento-topo">
+
+              <div>
+                <strong>Solicitação #{{ item.id }}</strong>
+                <p>{{ formatarDataHora(item.dateTimeAppointment) }}</p>
+              </div>
+
+              <span class="funcionario-status">
+                Aguardando confirmação
+              </span>
+
+            </div>
+
+            <p><strong>Cliente:</strong> {{ item.customerName }}</p>
+
+            <p><strong>E-mail:</strong> {{ item.customerEmail || 'Não informado' }}</p>
+
+            <p><strong>Funcionário:</strong> {{ item.employeeName }}</p>
+
+            <div class="funcionario-agendamento-itens">
+
+              <strong>Pets e serviços</strong>
+
+              @for (servico of item.items; track $index) {
+
+                <p>
+                  {{ servico.petName }} —
+                  {{ servico.offeringName }}
+                </p>
+
+              }
+
+            </div>
+
             <p>
-              A listagem e as ações de confirmar ou recusar
-              serão conectadas ao Backend.
+              <strong>Total:</strong>
+              {{ item.totalPrice | currency:'BRL':'symbol':'1.2-2' }}
             </p>
-          </div>
 
-        </article>
+            @if (temPermissao('APPOINTMENTS_CONFIRM')) {
 
-      }
+              <div class="funcionario-agendamento-acoes">
+
+                <button
+                  type="button"
+                  [disabled]="processandoAgendamento() === item.id"
+                  (click)="confirmarAgendamento(item.id)"
+                >
+                  Confirmar
+                </button>
+
+                <button
+                  type="button"
+                  class="funcionario-botao-recusar"
+                  [disabled]="processandoAgendamento() === item.id"
+                  (click)="recusarAgendamento(item.id)"
+                >
+                  Recusar
+                </button>
+
+              </div>
+
+            } @else {
+
+              <p>Você não possui permissão para responder a esta solicitação.</p>
+
+            }
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </article>
+
+}
 
       @else if (modulo() === 'servicos') {
 
-        <article class="funcionario-card">
+      <article class="funcionario-card">
 
-          <h2>Serviços e preços</h2>
+        <h2>Serviços e preços</h2>
 
+        <p>
+          O catálogo de serviços e os preços serão compartilhados
+          por todas as unidades.
+        </p>
+
+        <div class="funcionario-estado-vazio">
+          <span>◇</span>
+          <strong>Catálogo de serviços</strong>
           <p>
-            O catálogo de serviços e os preços serão compartilhados
-            por todas as unidades.
+            Aqui serão disponibilizadas as operações de consultar,
+            cadastrar, editar e desativar serviços, conforme a permissão
+            concedida ao funcionário.
           </p>
+        </div>
 
-          <div class="funcionario-estado-vazio">
-            <span>◇</span>
-            <strong>Catálogo de serviços</strong>
-            <p>
-              Aqui serão disponibilizadas as operações de consultar,
-              cadastrar, editar e desativar serviços, conforme a permissão
-              concedida ao funcionário.
-            </p>
-          </div>
-
-        </article>
+      </article>
 
       }
 
       @else if (modulo() === 'equipe') {
 
-        <article class="funcionario-card">
+      <article class="funcionario-card">
 
-          <h2>Gerir equipe das unidades</h2>
+        <h2>Gerir equipe das unidades</h2>
+
+        <p>
+          Gerencie os membros vinculados à sua própria unidade.
+        </p>
+
+        <div class="funcionario-aviso">
+          <strong>Importante</strong>
 
           <p>
-            Gerencie os membros vinculados à sua própria unidade.
+            Esta funcionalidade permite gerenciar o vínculo dos
+            funcionários com a unidade. A criação de contas do sistema
+            e a concessão de permissões continuarão sendo
+            responsabilidades do ADMIN.
           </p>
+        </div>
 
-          <div class="funcionario-aviso">
-            <strong>Importante</strong>
+        <div class="funcionario-estado-vazio">
+          <span>♧</span>
+          <strong>Equipe da unidade</strong>
+          <p>
+            A listagem e o gerenciamento dos vínculos serão
+            conectados ao Backend.
+          </p>
+        </div>
 
-            <p>
-              Esta funcionalidade permite gerenciar o vínculo dos
-              funcionários com a unidade. A criação de contas do sistema
-              e a concessão de permissões continuarão sendo
-              responsabilidades do ADMIN.
-            </p>
-          </div>
-
-          <div class="funcionario-estado-vazio">
-            <span>♧</span>
-            <strong>Equipe da unidade</strong>
-            <p>
-              A listagem e o gerenciamento dos vínculos serão
-              conectados ao Backend.
-            </p>
-          </div>
-
-        </article>
+      </article>
 
       }
 
       @else if (modulo() === 'unidade') {
 
-        <article class="funcionario-card">
+      <article class="funcionario-card">
 
-          <h2>Informações da unidade</h2>
+        <h2>
+          {{ usuarioAtual()?.role === 'ADMIN'
+          ? 'Unidades cadastradas'
+          : 'Minha unidade' }}
+        </h2>
 
-          <p>
-            Consulte e atualize os dados da unidade à qual sua conta
-            está vinculada, respeitando as permissões concedidas.
-          </p>
+        <p>
+          {{ usuarioAtual()?.role === 'ADMIN'
+          ? 'Consulte todas as unidades cadastradas no Banhos Up!.'
+          : 'Consulte as informações da unidade à qual você está vinculado.' }}
+        </p>
 
-          <div class="funcionario-estado-vazio">
-            <span>⌖</span>
-            <strong>Dados da unidade</strong>
-            <p>
-              As informações serão carregadas diretamente pelo Backend,
-              que identificará a unidade vinculada ao funcionário.
-            </p>
-          </div>
+        @if (carregandoUnidades()) {
 
-        </article>
+        <div class="funcionario-estado-vazio">
+          <strong>Carregando unidades...</strong>
+          <p>Aguarde enquanto consultamos o banco de dados.</p>
+        </div>
+
+        }
+
+        @else if (erroUnidades()) {
+
+        <div class="funcionario-erro">
+          {{ erroUnidades() }}
+        </div>
+
+        }
+
+        @else if (unidades().length === 0) {
+
+        <div class="funcionario-estado-vazio">
+          <span>⌖</span>
+          <strong>Nenhuma unidade encontrada</strong>
+          <p>Não encontramos unidades para apresentar.</p>
+        </div>
+
+        }
+
+        @else {
+
+        <div class="funcionario-unidades-grid">
+
+          @for (loja of unidades(); track loja.id) {
+
+          <article class="funcionario-unidade-card">
+
+            <div class="funcionario-unidade-topo">
+
+              <h3>{{ loja.nome }}</h3>
+
+              <span class="funcionario-status" [class.funcionario-status-inativa]="!loja.ativa">
+                {{ loja.ativa ? 'Ativa' : 'Inativa' }}
+              </span>
+
+            </div>
+
+            <div class="funcionario-unidade-dados">
+
+              <p>
+                <strong>ID:</strong>
+                {{ loja.id }}
+              </p>
+
+              <p>
+                <strong>Endereço:</strong>
+                {{ loja.endereco }}
+              </p>
+
+              <p>
+                <strong>Bairro:</strong>
+                {{ loja.bairro }}
+              </p>
+
+              <p>
+                <strong>Cidade:</strong>
+                {{ loja.cidade }} - {{ loja.estado }}
+              </p>
+
+              <p>
+                <strong>CEP:</strong>
+                {{ loja.cep }}
+              </p>
+
+            </div>
+
+          </article>
+
+          }
+
+        </div>
+
+        }
+
+      </article>
 
       }
 

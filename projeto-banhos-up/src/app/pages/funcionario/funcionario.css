@@ -328,6 +328,376 @@
   line-height: 1.5;
 }
 
+/* UNIDADES */
+
+.funcionario-unidades-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 25px;
+}
+
+.funcionario-unidade-card {
+  padding: 20px;
+
+  border: 1px solid #dce8f0;
+  border-radius: 9px;
+
+  background: #ffffff;
+}
+
+.funcionario-unidade-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 18px;
+}
+
+.funcionario-unidade-topo h3 {
+  margin: 0;
+  color: #013e73;
+  font-size: 1.05rem;
+}
+
+.funcionario-status {
+  padding: 5px 11px;
+  border-radius: 20px;
+
+  background: #e6f7ed;
+  color: #168348;
+
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.funcionario-status-inativa {
+  background: #fff0f0;
+  color: #b42318;
+}
+
+.funcionario-unidade-dados {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.funcionario-unidade-dados p {
+  margin: 0;
+  color: #607080;
+  font-size: 0.88rem;
+}
+
+.funcionario-unidade-dados strong {
+  color: #013e73;
+}
+
+.funcionario-erro {
+  margin-top: 22px;
+  padding: 16px;
+
+  border: 1px solid #e4a2a2;
+  border-radius: 7px;
+
+  background: #fff0f0;
+  color: #b42318;
+}
+
+/* FILTROS DE AGENDAMENTO */
+
+.funcionario-filtros {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 22px;
+  margin-bottom: 25px;
+}
+
+.funcionario-filtros label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #013e73;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.funcionario-filtros input,
+.funcionario-filtros select {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #c9dce9;
+  border-radius: 6px;
+  background: white;
+  font-family: inherit;
+}
+
+.funcionario-filtros button,
+.funcionario-agendamento-acoes button {
+  min-height: 40px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #2595e4;
+  color: white;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.funcionario-filtros button:hover,
+.funcionario-agendamento-acoes button:hover {
+  background: #013e73;
+}
+
+/* LISTAGEM */
+
+.funcionario-lista-agendamentos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+  margin-top: 22px;
+}
+
+.funcionario-agendamento-card {
+  padding: 20px;
+  border: 1px solid #dce8f0;
+  border-radius: 9px;
+  background: white;
+}
+
+.funcionario-agendamento-card > p {
+  margin: 10px 0;
+  color: #607080;
+  font-size: 0.88rem;
+}
+
+.funcionario-agendamento-card > p strong {
+  color: #013e73;
+}
+
+.funcionario-agendamento-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 13px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e3edf4;
+}
+
+.funcionario-agendamento-topo strong {
+  color: #013e73;
+}
+
+.funcionario-agendamento-topo p {
+  margin: 5px 0 0;
+  color: #71808c;
+  font-size: 0.85rem;
+}
+
+.funcionario-agendamento-itens {
+  margin-top: 15px;
+  padding: 13px;
+  border-radius: 7px;
+  background: #f3faff;
+}
+
+.funcionario-agendamento-itens strong {
+  color: #013e73;
+}
+
+.funcionario-agendamento-itens p {
+  margin: 8px 0 0;
+  color: #607080;
+  font-size: 0.85rem;
+}
+
+.funcionario-agendamento-acoes {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.funcionario-agendamento-acoes button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.funcionario-agendamento-acoes .funcionario-botao-recusar {
+  background: #b42318;
+}
+
+.funcionario-agendamento-acoes .funcionario-botao-recusar:hover {
+  background: #851b13;
+}
+
+/* DISPONIBILIDADE */
+
+.funcionario-seletor-unidade {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-width: 350px;
+  margin-top: 22px;
+}
+
+.funcionario-seletor-unidade label {
+  color: #013e73;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.funcionario-seletor-unidade select,
+.funcionario-horario-campos input {
+  min-height: 40px;
+  padding: 8px 10px;
+
+  border: 1px solid #c9dce9;
+  border-radius: 6px;
+
+  background: white;
+  color: #013e73;
+  font-family: inherit;
+}
+
+.funcionario-unidade-identificacao {
+  margin-top: 20px;
+  color: #607080;
+}
+
+.funcionario-horarios {
+  display: flex;
+  flex-direction: column;
+  margin-top: 22px;
+
+  border: 1px solid #e0eaf1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.funcionario-horario-linha {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  align-items: center;
+  gap: 20px;
+
+  padding: 17px 20px;
+
+  border-bottom: 1px solid #e5edf3;
+}
+
+.funcionario-horario-linha:last-child {
+  border-bottom: none;
+}
+
+.funcionario-horario-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.funcionario-horario-dia strong {
+  color: #013e73;
+  text-transform: capitalize;
+}
+
+.funcionario-horario-dia label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #607080;
+  font-size: 0.84rem;
+}
+
+.funcionario-horario-dia input[type="checkbox"] {
+  accent-color: #2595e4;
+}
+
+.funcionario-horario-campos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.funcionario-horario-campos label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  color: #607080;
+  font-size: 0.76rem;
+}
+
+.funcionario-dia-fechado {
+  color: #9b4444;
+  font-size: 0.9rem;
+}
+
+.funcionario-disponibilidade-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.funcionario-disponibilidade-acoes button {
+  min-height: 43px;
+  padding: 10px 22px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #2595e4;
+  color: white;
+
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.funcionario-disponibilidade-acoes button:hover {
+  background: #013e73;
+}
+
+.funcionario-disponibilidade-acoes button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.funcionario-sucesso {
+  margin-top: 18px;
+  padding: 13px;
+
+  border-radius: 6px;
+  background: #e6f7ed;
+  color: #168348;
+}
+
+@media (max-width: 950px) {
+  .funcionario-horario-linha {
+    grid-template-columns: 1fr;
+  }
+
+  .funcionario-horario-campos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .funcionario-lista-agendamentos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 850px) {
+  .funcionario-unidades-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* RESPONSIVIDADE */
 
 @media (max-width: 1100px) {
