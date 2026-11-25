@@ -1,1 +1,177 @@
-<p>meus-dados works!</p>
+<section class="meus-dados">
+
+  <header class="meus-dados_cabecalho">
+    <h2>Meus dados</h2>
+    <p>Confira ou altere seus dados de cadastro.</p>
+  </header>
+
+  <form class="meus-dados_formulario" (ngSubmit)="salvar()" novalidate>
+
+    <div class="campo campo_nome">
+      <label for="nome">Nome completo</label>
+
+      <input
+        id="nome"
+        name="nome"
+        type="text"
+        [(ngModel)]="dados.nome"
+        maxlength="100"
+        [class.campo-erro]="tentouSalvar && !nomeValido"
+        [attr.aria-invalid]="tentouSalvar && !nomeValido"
+      />
+
+      @if (tentouSalvar && !nomeValido) {
+        <small class="mensagem-erro">
+          <svg lucideCircleExclamationPoint></svg>
+          Informe seu nome completo.
+        </small>
+      }
+    </div>
+
+    <div class="campo campo_cpf">
+      <label for="cpf">CPF</label>
+
+      <input
+        id="cpf"
+        name="cpf"
+        type="text"
+        inputmode="numeric"
+        maxlength="14"
+        [(ngModel)]="dados.cpf"
+        (ngModelChange)="formatarCpf($event)"
+        placeholder="000.000.000-00"
+        [class.campo-erro]="tentouSalvar && !cpfValido"
+        [attr.aria-invalid]="tentouSalvar && !cpfValido"
+      />
+
+      @if (tentouSalvar && !cpfValido) {
+        <small class="mensagem-erro">
+          <svg lucideCircleExclamationPoint></svg>
+          Informe um CPF válido.
+        </small>
+      }
+    </div>
+
+    <div class="campo campo_email">
+      <label for="email">E-mail</label>
+
+      <input
+        id="email"
+        name="email"
+        type="email"
+        [(ngModel)]="dados.email"
+      />
+    </div>
+
+    <div class="campo campo_genero">
+      <label for="genero">Gênero</label>
+
+      <select
+        id="genero"
+        name="genero"
+        [(ngModel)]="dados.genero"
+      >
+        <option value="">Selecione</option>
+        <option value="Feminino">Feminino</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Não informar">Prefiro não informar</option>
+      </select>
+    </div>
+
+    <div class="campo campo_nascimento">
+      <label for="nascimento">Data de nascimento</label>
+
+      <input
+        id="nascimento"
+        name="nascimento"
+        type="text"
+        inputmode="numeric"
+        maxlength="10"
+        placeholder="00/00/0000"
+        [(ngModel)]="dados.nascimento"
+        (ngModelChange)="formatarData($event)"
+        [class.campo-erro]="tentouSalvar && !nascimentoValido"
+        [attr.aria-invalid]="tentouSalvar && !nascimentoValido"
+      />
+
+      @if (tentouSalvar && !nascimentoValido) {
+        <small class="mensagem-erro">
+          <svg lucideCircleExclamationPoint></svg>
+          Informe uma data válida.
+        </small>
+      }
+    </div>
+
+    <div class="campo campo_ddd-celular">
+      <label for="dddCelular">DDD</label>
+
+      <input
+        id="dddCelular"
+        name="dddCelular"
+        type="text"
+        inputmode="numeric"
+        maxlength="2"
+        [(ngModel)]="dados.dddCelular"
+        (ngModelChange)="formatarDdd($event, 'dddCelular')"
+        [class.campo-erro]="tentouSalvar && !dddCelularValido"
+        [attr.aria-invalid]="tentouSalvar && !dddCelularValido"
+      />
+
+      @if (tentouSalvar && !dddCelularValido) {
+        <small class="mensagem-erro">
+          <svg lucideCircleExclamationPoint></svg>
+          Informe o DDD.
+        </small>
+      }
+    </div>
+
+    <div class="campo campo_celular">
+      <label for="celular">Celular</label>
+
+      <input
+        id="celular"
+        name="celular"
+        type="text"
+        inputmode="numeric"
+        maxlength="10"
+        placeholder="00000-0000"
+        [(ngModel)]="dados.celular"
+        (ngModelChange)="formatarCelular($event)"
+        [class.campo-erro]="tentouSalvar && !celularValido"
+        [attr.aria-invalid]="tentouSalvar && !celularValido"
+      />
+
+      @if (tentouSalvar && !celularValido) {
+        <small class="mensagem-erro">
+          <svg lucideCircleExclamationPoint></svg>
+          Informe um celular válido.
+        </small>
+      }
+    </div>
+
+    <div class="formulario_acoes">
+
+      @if (salvou) {
+        <p class="mensagem-sucesso">
+          Dados atualizados com sucesso!
+        </p>
+      }
+
+      <button
+        type="submit"
+        class="botao_salvar"
+        [class.botao-habilitado]="formularioValido"
+      >
+        Salvar
+      </button>
+
+    </div>
+
+  </form>
+
+	<footer class="perfil_footer">
+    <p>Copyright© 2026 Banhos UP S/A</p>
+    <p>Todos os direitos reservados</p>
+  </footer>
+
+</section>

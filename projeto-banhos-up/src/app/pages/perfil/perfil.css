@@ -91,6 +91,10 @@
   text-decoration: none;
 
   transition: color 0.2s, background 0.2s;
+
+  border: none;
+  text-align: left;
+  cursor: pointer;
 }
 
 .perfil_item span {

@@ -77,16 +77,17 @@
         <svg lucideChevronRight class="perfil_seta"></svg>
       </a>
 
-      <a
-        routerLink="/home"
-        class="perfil_item"
-      >
-        <svg lucideSquareArrowRightExit class="perfil_icone"></svg>
+      <button
+				type="button"
+				class="perfil_item"
+				(click)="abrirModalSair()"
+			>
+				<svg lucideSquareArrowRightExit class="perfil_icone"></svg>
 
-        <span>Sair da conta</span>
+				<span>Sair da conta</span>
 
-        <svg lucideChevronRight class="perfil_seta"></svg>
-      </a>
+				<svg lucideChevronRight class="perfil_seta"></svg>
+			</button>
 
     </nav>
 
@@ -95,5 +96,52 @@
   <section class="perfil_conteudo">
     <router-outlet></router-outlet>
   </section>
+
+	@if (modalSairAberto()) {
+		<div
+			class="perfil_modal-overlay"
+			(click)="fecharModalSair()"
+		>
+			<section
+				class="perfil_modal"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="titulo-modal-sair"
+				(click)="$event.stopPropagation()"
+			>
+				<div class="perfil_modal-icone">
+					<svg lucideSquareArrowRightExit></svg>
+				</div>
+
+				<h2 id="titulo-modal-sair">
+					Sair da conta
+				</h2>
+
+				<p>
+					Tem certeza de que deseja sair da sua conta?
+				</p>
+
+				<div class="perfil_modal-acoes">
+
+					<button
+						type="button"
+						class="perfil_modal-cancelar"
+						(click)="fecharModalSair()"
+					>
+						Cancelar
+					</button>
+
+					<button
+						type="button"
+						class="perfil_modal-confirmar"
+						(click)="confirmarSaida()"
+					>
+						Sair da conta
+					</button>
+
+				</div>
+			</section>
+		</div>
+	}
 
 </main>
