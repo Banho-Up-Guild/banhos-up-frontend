@@ -108,32 +108,6 @@
       </div>
 
       <div class="cadastro_campo">
-        <label for="telefone">
-          Telefone <span>(opcional)</span>
-        </label>
-
-        <input
-          type="tel"
-          id="telefone"
-          name="telefone"
-          placeholder="DDD + Telefone"
-          maxlength="14"
-          inputmode="numeric"
-          [(ngModel)]="telefone"
-          (ngModelChange)="formatarTelefone($event)"
-          [class.campo-erro]="tentouCadastrar && !telefoneValido"
-          [attr.aria-invalid]="tentouCadastrar && !telefoneValido"
-        />
-
-        @if (tentouCadastrar && !telefoneValido) {
-          <small class="cadastro_mensagem-erro">
-            <svg lucideCircleExclamationPoint></svg>
-            Informe o DDD e um telefone com 8 dígitos.
-          </small>
-        }
-      </div>
-
-      <div class="cadastro_campo">
         <label for="genero">
           Gênero <span>(opcional)</span>
         </label>

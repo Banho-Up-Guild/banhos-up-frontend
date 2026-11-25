@@ -132,14 +132,6 @@
   grid-column: span 2;
 }
 
-.campo_ddd-telefone {
-  grid-column: span 1;
-}
-
-.campo_telefone {
-  grid-column: span 2;
-}
-
 .formulario_acoes {
   grid-column: 1 / -1;
 
@@ -214,13 +206,6 @@
     grid-column: span 2;
   }
 
-  .campo_ddd-telefone {
-    grid-column: span 1;
-  }
-
-  .campo_telefone {
-    grid-column: span 3;
-  }
 }
 
 /* MOBILE */
@@ -245,13 +230,11 @@
     grid-column: span 2;
   }
 
-  .campo_ddd-celular,
-  .campo_ddd-telefone {
+  .campo_ddd-celular {
     grid-column: span 1;
   }
 
-  .campo_celular,
-  .campo_telefone {
+  .campo_celular {
     grid-column: span 1;
   }
 
@@ -270,13 +253,11 @@
     grid-column: span 2;
   }
 
-  .campo_ddd-celular,
-  .campo_ddd-telefone {
+  .campo_ddd-celular {
     grid-column: span 1;
   }
 
-  .campo_celular,
-  .campo_telefone {
+  .campo_celular {
     grid-column: span 1;
   }
 }

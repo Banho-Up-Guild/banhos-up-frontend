@@ -30,7 +30,6 @@ export class Cadastro {
   cpf = '';
   email = '';
   celular = '';
-  telefone = '';
   genero = '';
   nascimento = '';
   senha = '';
@@ -66,18 +65,6 @@ export class Cadastro {
       this.celular = `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
     } else {
       this.celular = `(${numero.slice(0, 2)}) ${numero.slice(2, 7)}-${numero.slice(7)}`;
-    }
-  }
-
-  formatarTelefone(valor: string): void {
-    const numero = valor.replace(/\D/g, '').slice(0, 10);
-
-    if (numero.length <= 2) {
-      this.telefone = numero;
-    } else if (numero.length <= 6) {
-      this.telefone = `(${numero.slice(0, 2)}) ${numero.slice(2)}`;
-    } else {
-      this.telefone = `(${numero.slice(0, 2)}) ${numero.slice(2, 6)}-${numero.slice(6)}`;
     }
   }
 
@@ -135,12 +122,6 @@ export class Cadastro {
 
   get celularValido(): boolean {
     return this.celular.replace(/\D/g, '').length === 11;
-  }
-
-  get telefoneValido(): boolean {
-    const numero = this.telefone.replace(/\D/g, '');
-
-    return numero.length === 0 || numero.length === 10;
   }
 
   get nascimentoValido(): boolean {
@@ -222,7 +203,6 @@ export class Cadastro {
       this.cpfValido &&
       this.emailValido &&
       this.celularValido &&
-      this.telefoneValido &&
       this.nascimentoValido &&
       this.senhaValida &&
       this.confirmacaoValida &&

@@ -77,18 +77,6 @@ describe('Cadastro', () => {
     expect(component.celularValido).toBe(false);
   });
 
-  it('deve aceitar telefone opcional vazio', () => {
-    component.telefone = '';
-
-    expect(component.telefoneValido).toBe(true);
-  });
-
-  it('deve validar telefone preenchido com DDD e 8 dígitos', () => {
-    component.telefone = '(11) 9999-9999';
-
-    expect(component.telefoneValido).toBe(true);
-  });
-
   it('deve identificar a data de nascimento vazia como inválida', () => {
     component.nascimento = '';
 

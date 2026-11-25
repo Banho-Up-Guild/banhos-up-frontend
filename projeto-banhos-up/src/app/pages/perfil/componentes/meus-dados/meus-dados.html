@@ -149,46 +149,6 @@
       }
     </div>
 
-    <div class="campo campo_ddd-telefone">
-      <label for="dddTelefone">DDD</label>
-
-      <input
-        id="dddTelefone"
-        name="dddTelefone"
-        type="text"
-        inputmode="numeric"
-        maxlength="2"
-        [(ngModel)]="dados.dddTelefone"
-        (ngModelChange)="formatarDdd($event, 'dddTelefone')"
-        [class.campo-erro]="tentouSalvar && !telefoneValido"
-        [attr.aria-invalid]="tentouSalvar && !telefoneValido"
-      />
-    </div>
-
-    <div class="campo campo_telefone">
-      <label for="telefone">Telefone</label>
-
-      <input
-        id="telefone"
-        name="telefone"
-        type="text"
-        inputmode="numeric"
-        maxlength="9"
-        placeholder="Telefone"
-        [(ngModel)]="dados.telefone"
-        (ngModelChange)="formatarTelefone($event)"
-        [class.campo-erro]="tentouSalvar && !telefoneValido"
-        [attr.aria-invalid]="tentouSalvar && !telefoneValido"
-      />
-
-      @if (tentouSalvar && !telefoneValido) {
-        <small class="mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          Confira o DDD e o telefone.
-        </small>
-      }
-    </div>
-
     <div class="formulario_acoes">
 
       @if (salvou) {

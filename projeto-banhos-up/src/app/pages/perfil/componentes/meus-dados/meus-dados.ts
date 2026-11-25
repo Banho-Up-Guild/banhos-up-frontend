@@ -10,8 +10,6 @@ interface DadosUsuario {
   nascimento: string;
   dddCelular: string;
   celular: string;
-  dddTelefone: string;
-  telefone: string;
 }
 
 @Component({
@@ -33,8 +31,6 @@ export class MeusDados {
     nascimento: '15/08/2000',
     dddCelular: '11',
     celular: '99999-9999',
-    dddTelefone: '',
-    telefone: ''
   };
 
   tentouSalvar = false;
@@ -51,7 +47,7 @@ export class MeusDados {
     this.salvou = false;
   }
 
-  formatarDdd(valor: string, campo: 'dddCelular' | 'dddTelefone'): void {
+  formatarDdd(valor: string, campo: 'dddCelular'): void {
     this.dados[campo] = valor.replace(/\D/g, '').slice(0, 2);
     this.salvou = false;
   }
@@ -64,17 +60,6 @@ export class MeusDados {
     }
 
     this.dados.celular = numero;
-    this.salvou = false;
-  }
-
-  formatarTelefone(valor: string): void {
-    let numero = valor.replace(/\D/g, '').slice(0, 8);
-
-    if (numero.length > 4) {
-      numero = numero.replace(/(\d{4})(\d)/, '$1-$2');
-    }
-
-    this.dados.telefone = numero;
     this.salvou = false;
   }
 
@@ -153,25 +138,13 @@ export class MeusDados {
     return this.dados.celular.replace(/\D/g, '').length === 9;
   }
 
-  get telefoneValido(): boolean {
-    const ddd = this.dados.dddTelefone;
-    const telefone = this.dados.telefone.replace(/\D/g, '');
-
-    if (!ddd && !telefone) {
-      return true;
-    }
-
-    return /^\d{2}$/.test(ddd) && telefone.length === 8;
-  }
-
   get formularioValido(): boolean {
     return (
       this.nomeValido &&
       this.cpfValido &&
       this.nascimentoValido &&
       this.dddCelularValido &&
-      this.celularValido &&
-      this.telefoneValido
+      this.celularValido
     );
   }
 

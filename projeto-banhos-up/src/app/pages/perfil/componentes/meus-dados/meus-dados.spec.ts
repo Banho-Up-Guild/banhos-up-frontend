@@ -51,13 +51,6 @@ describe('MeusDados', () => {
     expect(component.celularValido).toBe(false);
   });
 
-  it('deve permitir telefone opcional vazio', () => {
-    component.dados.dddTelefone = '';
-    component.dados.telefone = '';
-
-    expect(component.telefoneValido).toBe(true);
-  });
-
   it('deve impedir o salvamento com dados inválidos', () => {
     component.dados.cpf = '111.111.111-11';
 
