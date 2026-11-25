@@ -1,4 +1,3 @@
-
 import {
   Component,
   OnInit,
@@ -8,6 +7,7 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideTriangleExclamationPoint } from '@lucide/angular';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 
@@ -25,7 +25,7 @@ import { AgendamentoApiService } from '../../services/agendamento-api.service';
 @Component({
   selector: 'app-agendamento',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideTriangleExclamationPoint],
   templateUrl: './agendamento.html',
   styleUrl: './agendamento.css',
 })
@@ -57,6 +57,18 @@ export class Agendamento implements OnInit {
       nome: 'Pet 2',
       especie: 'Gato',
       porte: 'Pequeno'
+    },
+    {
+      id: 3,
+      nome: 'Pet 3',
+      especie: 'Outro' as Pet['especie'],
+      porte: 'Pequeno'
+    },
+    {
+      id: 4,
+      nome: 'Pet 4',
+      especie: 'Cachorro',
+      porte: 'Grande'
     }
   ];
 
@@ -69,6 +81,10 @@ export class Agendamento implements OnInit {
   };
 
   mostrarNovoPet = false;
+
+  mostrarAvisoLimitePets = false;
+
+  readonly limitePetsPorAgendamento = 3;
 
   // =========================================
   // LOJAS
@@ -787,16 +803,41 @@ export class Agendamento implements OnInit {
 
   alternarPet(id: number): void {
 
+    if (this.petsSelecionados.includes(id)) {
+
+      this.petsSelecionados = this.petsSelecionados.filter(
+        x => x !== id
+      );
+
+      this.mostrarAvisoLimitePets = false;
+
+      return;
+    }
+
+    if (this.petsSelecionados.length >= this.limitePetsPorAgendamento) {
+
+      this.mostrarAvisoLimitePets = true;
+
+      return;
+    }
+
     this.garantirBanho(id);
 
-    this.petsSelecionados =
-      this.petsSelecionados.includes(id)
-        ? this.petsSelecionados.filter(x => x !== id)
-        : [...this.petsSelecionados, id];
+    this.petsSelecionados = [
+      ...this.petsSelecionados,
+      id
+    ];
+
+    this.mostrarAvisoLimitePets = false;
 
   }
 
   adicionarPet(): void {
+
+    if (this.petsSelecionados.length >= this.limitePetsPorAgendamento) {
+      this.mostrarAvisoLimitePets = true;
+      return;
+    }
 
     if (!this.novoPet.nome.trim()) {
       return;

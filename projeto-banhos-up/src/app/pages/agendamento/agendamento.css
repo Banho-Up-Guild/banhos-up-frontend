@@ -1,4 +1,3 @@
-
 /* =====================================================
    BANHOS UP! — AGENDAMENTO
 ===================================================== */
@@ -861,6 +860,28 @@ textarea {
 
 .sucesso h2 {
   margin-bottom: 15px;
+}
+
+.aviso-limite-pets {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  margin: 15px 0;
+  border: 1px solid #e5a000;
+  border-radius: 8px;
+  background: #fff8df;
+  color: #805b00;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.aviso-limite-pets svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  stroke-width: 2;
 }
 
 /* RESPONSIVIDADE — NOTEBOOKS */
