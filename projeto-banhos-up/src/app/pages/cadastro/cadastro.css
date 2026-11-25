@@ -384,3 +384,52 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     font-size: 0.68rem;
   }
 }
+
+
+/* =========================================
+   VALIDAÇÕES
+========================================= */
+
+.cadastro_campo input.campo-erro,
+.cadastro_campo select.campo-erro {
+  border-color: #d93025;
+}
+
+.cadastro_campo input.campo-erro:focus,
+.cadastro_campo select.campo-erro:focus {
+  border-color: #d93025;
+  box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.08);
+}
+
+.cadastro_mensagem-erro {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: -2px;
+
+  color: #d93025;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.cadastro_mensagem-erro svg {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  stroke-width: 2;
+}
+
+.cadastro_requisitos li {
+  transition: color 0.2s;
+}
+
+.cadastro_requisitos li.requisito-valido {
+  color: #218838;
+  font-weight: 600;
+}
+
+.cadastro_termos input:focus-visible {
+  outline: 2px solid #d93025;
+  outline-offset: 2px;
+}
