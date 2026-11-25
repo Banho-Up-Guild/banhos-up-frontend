@@ -1,0 +1,363 @@
+.meus-pets {
+  width: 100%;
+  padding: 0 0 30px;
+  color: #174b75;
+  font-family: inherit;
+}
+
+.meus-pets_cabecalho {
+  margin-bottom: 36px;
+}
+
+.meus-pets_cabecalho h2 {
+  margin: 0 0 2px;
+  color: #174b75;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.meus-pets_cabecalho p {
+  margin: 0;
+  color: #7d9bb5;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.meus-pets_lista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.meus-pets_adicionar,
+.meus-pets_card {
+  width: 194px;
+  min-height: 125px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 9px;
+  background: #eeeeee;
+}
+
+.meus-pets_adicionar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 14px;
+  color: #174b75;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+
+.meus-pets_adicionar:hover {
+  background: #e4eaf0;
+}
+
+.meus-pets_adicionar-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.meus-pets_adicionar-icone svg {
+  width: 40px;
+  height: 40px;
+}
+
+.meus-pets_card {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 11px;
+  color: #174b75;
+}
+
+.meus-pets_acoes {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+
+.meus-pets_acoes button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #174b75;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.meus-pets_acoes button:hover {
+  text-decoration: underline;
+}
+
+.meus-pets_informacoes {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.meus-pets_informacoes strong {
+  color: #174b75;
+  font-weight: 700;
+}
+
+.meus-pets_informacoes span {
+  color: #7896b0;
+  font-weight: 600;
+}
+
+
+/* Fundo e estrutura dos modais */
+
+.meus-pets_overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(13, 35, 54, 0.48);
+}
+
+.meus-pets_modal {
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 26px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.16);
+  color: #174b75;
+}
+
+.meus-pets_modal-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.meus-pets_modal-cabecalho h2 {
+  margin: 0 0 5px;
+  color: #174b75;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.meus-pets_modal-cabecalho p {
+  margin: 0;
+  color: #7d9bb5;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.meus-pets_fechar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #eeeeee;
+  color: #174b75;
+  cursor: pointer;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.meus-pets_fechar:hover {
+  background: #dfe8ef;
+}
+
+
+/* Formulário */
+
+.meus-pets_formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.meus-pets_campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.meus-pets_campo > label:first-child {
+  color: #174b75;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.meus-pets_campo input:not([type="checkbox"]),
+.meus-pets_campo select {
+  width: 100%;
+  height: 43px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #d6e0e8;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #174b75;
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.meus-pets_campo input:focus,
+.meus-pets_campo select:focus {
+  border-color: #397eae;
+  box-shadow: 0 0 0 3px rgba(57, 126, 174, 0.12);
+}
+
+.meus-pets_campo input::placeholder {
+  color: #a0b1bf;
+}
+
+.meus-pets_campo input:disabled {
+  cursor: not-allowed;
+  background: #f0f2f4;
+  color: #9aa9b5;
+}
+
+.meus-pets_checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  color: #64839e;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.meus-pets_checkbox input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #174b75;
+  cursor: pointer;
+}
+
+.meus-pets_erro {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: #d34c4c;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.meus-pets_erro svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+
+/* Botões dos modais */
+
+.meus-pets_modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.meus-pets_modal-acoes button {
+  min-height: 40px;
+  padding: 0 17px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+
+.meus-pets_botao-cancelar {
+  background: #edf1f4;
+  color: #52718b;
+}
+
+.meus-pets_botao-cancelar:hover {
+  background: #dfe6eb;
+}
+
+.meus-pets_botao-confirmar {
+  background: #174b75;
+  color: #ffffff;
+}
+
+.meus-pets_botao-confirmar:hover {
+  background: #103b60;
+}
+
+.meus-pets_botao-remover {
+  background: #d94c4c;
+  color: #ffffff;
+}
+
+.meus-pets_botao-remover:hover {
+  background: #bd3838;
+}
+
+.meus-pets_modal-remocao .meus-pets_modal-acoes {
+  margin-top: 24px;
+}
+
+
+/* Responsividade */
+
+@media (max-width: 600px) {
+  .meus-pets_lista {
+    gap: 10px;
+  }
+
+  .meus-pets_adicionar,
+  .meus-pets_card {
+    width: calc(50% - 5px);
+    min-width: 145px;
+  }
+
+  .meus-pets_modal {
+    padding: 21px;
+  }
+}
+
+@media (max-width: 380px) {
+  .meus-pets_adicionar,
+  .meus-pets_card {
+    width: 100%;
+  }
+
+  .meus-pets_modal-acoes {
+    flex-direction: column-reverse;
+  }
+
+  .meus-pets_modal-acoes button {
+    width: 100%;
+  }
+}

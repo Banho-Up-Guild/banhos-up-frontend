@@ -1,1 +1,300 @@
-<p>meus-pets works!</p>
+<section class="meus-pets">
+
+  <div class="meus-pets_cabecalho">
+    <h2>Meus Pets</h2>
+    <p>Clique nos campos para alterar as informações</p>
+  </div>
+
+  <div class="meus-pets_lista">
+
+    <!-- Cartão para adicionar um novo pet -->
+    <button
+      type="button"
+      class="meus-pets_adicionar"
+      (click)="abrirModalCadastro()"
+    >
+      <span class="meus-pets_adicionar-icone">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+      </span>
+
+      <span>Adicionar novo PET</span>
+    </button>
+
+    <!-- Cartões dos pets cadastrados -->
+    @for (pet of pets(); track pet.id) {
+      <article class="meus-pets_card">
+
+        <div class="meus-pets_acoes">
+          <button
+            type="button"
+            class="meus-pets_remover"
+            (click)="abrirModalRemocao(pet)"
+          >
+            Remover
+          </button>
+
+          <button
+            type="button"
+            class="meus-pets_editar"
+            (click)="abrirModalEdicao(pet)"
+          >
+            Editar
+          </button>
+        </div>
+
+        <div class="meus-pets_informacoes">
+          <strong>{{ pet.nome }}</strong>
+          <span>{{ pet.tipo }}</span>
+          <span>{{ pet.raca }}</span>
+          <span>{{ pet.cor }}</span>
+          <span>{{ pet.nascimentoDesconhecido ? 'Nascimento não informado' : formatarData(pet.dataNascimento) }}</span>
+        </div>
+
+      </article>
+    }
+
+  </div>
+</section>
+
+<!-- Modal de cadastro e edição -->
+@if (modalAberto() === 'cadastro' || modalAberto() === 'edicao') {
+  <div
+    class="meus-pets_overlay"
+    (click)="fecharModal()"
+  >
+    <section
+      class="meus-pets_modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-modal-pet"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="meus-pets_modal-cabecalho">
+        <div>
+          <h2 id="titulo-modal-pet">
+            {{ modalAberto() === 'edicao' ? 'Editar Pet' : 'Adicionar novo PET' }}
+          </h2>
+
+          <p>
+            {{ modalAberto() === 'edicao'
+              ? 'Altere as informações do seu pet'
+              : 'Preencha as informações do seu pet' }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="meus-pets_fechar"
+          aria-label="Fechar modal"
+          (click)="fecharModal()"
+        >
+          &times;
+        </button>
+      </div>
+
+      <form
+        class="meus-pets_formulario"
+        (ngSubmit)="salvarPet()"
+        novalidate
+      >
+
+        <div class="meus-pets_campo">
+          <label for="pet-nome">Nome</label>
+
+          <input
+            id="pet-nome"
+            type="text"
+            name="nome"
+            placeholder="Digite o nome do pet"
+            [(ngModel)]="nome"
+            maxlength="60"
+          />
+
+          @if (tentouSalvar && !nomeValido) {
+            <small class="meus-pets_erro">
+              <svg lucideCircleExclamationPoint></svg>
+              Informe o nome do seu pet.
+            </small>
+          }
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-tipo">Tipo</label>
+
+          <select
+            id="pet-tipo"
+            name="tipo"
+            [(ngModel)]="tipo"
+          >
+            <option value="" disabled>Selecione o tipo do pet</option>
+            <option value="Cachorro">Cachorro</option>
+            <option value="Gato">Gato</option>
+            <option value="Outro">Outro</option>
+          </select>
+
+          @if (tentouSalvar && !tipoValido) {
+            <small class="meus-pets_erro">
+              <svg lucideCircleExclamationPoint></svg>
+              Selecione o tipo do seu pet.
+            </small>
+          }
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-raca">Raça</label>
+
+          <input
+            id="pet-raca"
+            type="text"
+            name="raca"
+            placeholder="Digite a raça do pet"
+            [(ngModel)]="raca"
+            maxlength="60"
+          />
+
+          @if (tentouSalvar && !racaValida) {
+            <small class="meus-pets_erro">
+              <svg lucideCircleExclamationPoint></svg>
+              Informe a raça do seu pet.
+            </small>
+          }
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-cor">Cor</label>
+
+          <input
+            id="pet-cor"
+            type="text"
+            name="cor"
+            placeholder="Ex.: Branco, caramelo, preto..."
+            [(ngModel)]="cor"
+            maxlength="40"
+          />
+
+          @if (tentouSalvar && !corValida) {
+            <small class="meus-pets_erro">
+              <svg lucideCircleExclamationPoint></svg>
+              Informe a cor do seu pet.
+            </small>
+          }
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-nascimento">Data de nascimento</label>
+
+          <input
+            id="pet-nascimento"
+            type="date"
+            name="dataNascimento"
+            [(ngModel)]="dataNascimento"
+            [disabled]="nascimentoDesconhecido"
+            [max]="'9999-12-31'"
+          />
+
+          <label class="meus-pets_checkbox">
+            <input
+              type="checkbox"
+              name="nascimentoDesconhecido"
+              [(ngModel)]="nascimentoDesconhecido"
+              (ngModelChange)="alterarNascimentoDesconhecido()"
+            />
+
+            <span>Data de nascimento desconhecida</span>
+          </label>
+
+          @if (tentouSalvar && !dataNascimentoValida) {
+            <small class="meus-pets_erro">
+              <svg lucideCircleExclamationPoint></svg>
+              Informe uma data válida ou marque a opção de nascimento desconhecido.
+            </small>
+          }
+        </div>
+
+        <div class="meus-pets_modal-acoes">
+          <button
+            type="button"
+            class="meus-pets_botao-cancelar"
+            (click)="fecharModal()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="meus-pets_botao-confirmar"
+          >
+            {{ modalAberto() === 'edicao' ? 'Salvar alterações' : 'Cadastrar pet' }}
+          </button>
+        </div>
+
+      </form>
+    </section>
+  </div>
+}
+
+
+<!-- Modal de confirmação de remoção -->
+@if (modalAberto() === 'remocao') {
+  <div
+    class="meus-pets_overlay"
+    (click)="fecharModal()"
+  >
+    <section
+      class="meus-pets_modal meus-pets_modal-remocao"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-remocao-pet"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="meus-pets_modal-cabecalho">
+        <div>
+          <h2 id="titulo-remocao-pet">Remover pet</h2>
+          <p>Tem certeza de que deseja remover este cadastro?</p>
+        </div>
+
+        <button
+          type="button"
+          class="meus-pets_fechar"
+          aria-label="Fechar modal"
+          (click)="fecharModal()"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="meus-pets_modal-acoes">
+        <button
+          type="button"
+          class="meus-pets_botao-cancelar"
+          (click)="fecharModal()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="meus-pets_botao-remover"
+          (click)="confirmarRemocao()"
+        >
+          Remover
+        </button>
+      </div>
+
+    </section>
+  </div>
+}
