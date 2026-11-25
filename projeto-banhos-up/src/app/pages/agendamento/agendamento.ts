@@ -78,7 +78,7 @@ export class Agendamento implements OnInit {
 
   novoPet = {
     nome: '',
-    especie: 'Cachorro' as 'Cachorro' | 'Gato',
+    especie: 'Cachorro' as Pet['especie'],
     porte: 'Médio'
   };
 
