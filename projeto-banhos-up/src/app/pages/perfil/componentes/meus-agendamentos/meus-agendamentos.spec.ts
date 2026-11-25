@@ -25,9 +25,8 @@ describe('MeusAgendamentos', () => {
     expect(component.abaAtiva()).toBe('proximos');
   });
 
-  it('deve possuir um agendamento próximo de exemplo', () => {
-    expect(component.agendamentosProximos.length).toBe(1);
-    expect(component.agendamentosProximos[0].status).toBe('agendado');
+  it('deve possuir três agendamentos próximos de exemplo', () => {
+    expect(component.agendamentosProximos.length).toBe(3);
   });
 
   it('deve possuir dois agendamentos anteriores de exemplo', () => {
@@ -46,7 +45,55 @@ describe('MeusAgendamentos', () => {
     component.selecionarAba('proximos');
 
     expect(component.abaAtiva()).toBe('proximos');
-    expect(component.agendamentosExibidos.length).toBe(1);
+    expect(component.agendamentosExibidos.length).toBe(3);
+  });
+
+  it('deve apresentar três pets no quarto agendamento', () => {
+    const agendamento = component.agendamentos().find(item => item.id === 4);
+
+    expect(agendamento?.pets.length).toBe(3);
+    expect(component.formatarNomesPets(agendamento!.pets))
+      .toBe('Pet 4, Pet 5 e Pet 6');
+  });
+
+  it('deve apresentar dois pets no quinto agendamento', () => {
+    const agendamento = component.agendamentos().find(item => item.id === 5);
+
+    expect(agendamento?.pets.length).toBe(2);
+    expect(component.formatarNomesPets(agendamento!.pets))
+      .toBe('Pet 7 e Pet 8');
+  });
+
+  it('deve aceitar até três pets por agendamento', () => {
+    const pets = [
+      { nome: 'Pet 1', tipoPet: 'cachorro' as const },
+      { nome: 'Pet 2', tipoPet: 'gato' as const },
+      { nome: 'Pet 3', tipoPet: 'outro' as const }
+    ];
+
+    expect(component.quantidadePetsValida(pets)).toBe(true);
+  });
+
+  it('não deve aceitar mais de três pets por agendamento', () => {
+    const pets = [
+      { nome: 'Pet 1', tipoPet: 'cachorro' as const },
+      { nome: 'Pet 2', tipoPet: 'gato' as const },
+      { nome: 'Pet 3', tipoPet: 'outro' as const },
+      { nome: 'Pet 4', tipoPet: 'cachorro' as const }
+    ];
+
+    expect(component.quantidadePetsValida(pets)).toBe(false);
+  });
+
+  it('não deve aceitar um agendamento sem pets', () => {
+    expect(component.quantidadePetsValida([])).toBe(false);
+  });
+
+  it('deve identificar corretamente os tipos dos pets de um agendamento', () => {
+    const agendamento = component.agendamentos().find(item => item.id === 5);
+
+    expect(agendamento?.pets[0].tipoPet).toBe('gato');
+    expect(agendamento?.pets[1].tipoPet).toBe('outro');
   });
 
   it('deve abrir o modal de reagendamento', () => {
@@ -102,12 +149,14 @@ describe('MeusAgendamentos', () => {
     const mes = String(amanha.getMonth() + 1).padStart(2, '0');
     const dia = String(amanha.getDate()).padStart(2, '0');
 
-    component.novaData = `${ano}-${mes}-${dia}`;
+    const novaData = `${ano}-${mes}-${dia}`;
+
+    component.novaData = novaData;
     component.novoHorario = '14:00';
 
     component.salvarReagendamento();
 
-    expect(component.agendamentosProximos[0].data).toBe(component.dataMinima === component.novaData ? component.dataMinima : `${ano}-${mes}-${dia}`);
+    expect(component.agendamentosProximos[0].data).toBe(novaData);
     expect(component.agendamentosProximos[0].horario).toBe('14:00 até 15:30');
     expect(component.modalReagendarAberto()).toBe(false);
   });
@@ -145,7 +194,7 @@ describe('MeusAgendamentos', () => {
     component.fecharModalCancelar();
 
     expect(component.modalCancelarAberto()).toBe(false);
-    expect(component.agendamentosProximos.length).toBe(1);
+    expect(component.agendamentosProximos.length).toBe(3);
   });
 
   it('deve cancelar o agendamento após confirmação', () => {
@@ -154,7 +203,7 @@ describe('MeusAgendamentos', () => {
     component.abrirModalCancelar(agendamento);
     component.confirmarCancelamento();
 
-    expect(component.agendamentosProximos.length).toBe(0);
+    expect(component.agendamentosProximos.length).toBe(2);
     expect(component.agendamentosAnteriores.length).toBe(3);
   });
 

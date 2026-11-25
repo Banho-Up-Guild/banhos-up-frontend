@@ -112,7 +112,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 59px;
+  min-height: 70px;
   padding: 8px 11px;
   border-bottom: 1px solid #e2e2e2;
 }
@@ -123,27 +123,53 @@
   gap: 7px;
   min-width: 0;
   color: #222222;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
+.agendamento_pet > span {
+  overflow-wrap: anywhere;
+}
+
 .agendamento_pet-icone {
-  display: flex;
+  display: grid;
   flex-shrink: 0;
   align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid #91aec4;
+  justify-items: center;
+  width: 58px;
+  height: 58px;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid #174b75;
   border-radius: 50%;
-  background: #f7f9fa;
-  color: #333333;
+  background: #f7f7f7;
+  color: #111111;
+  gap: 0;
 }
 
 .agendamento_pet-icone svg {
-  width: 23px;
-  height: 23px;
-  stroke-width: 1.8;
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+
+/* Um único pet: ícone centralizado */
+.agendamento_pet-icone.grupo-um {
+  grid-template-columns: 1fr;
+}
+
+/* Dois pets: ícones lado a lado */
+.agendamento_pet-icone.grupo-dois {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Três pets: dois ícones em cima e um centralizado embaixo */
+.agendamento_pet-icone.grupo-tres {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.agendamento_pet-icone.grupo-tres svg:nth-child(3) {
+  grid-column: 1 / -1;
 }
 
 .agendamento_status {

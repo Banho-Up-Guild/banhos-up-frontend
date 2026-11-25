@@ -13,14 +13,19 @@ import {
   LucideDollarSign
 } from '@lucide/angular';
 
-type TipoPet = 'cachorro' | 'gato' | 'outro';
+export const MAX_PETS_POR_AGENDAMENTO = 3;
+
+export interface PetAgendamento {
+  nome: string;
+  tipoPet: 'cachorro' | 'gato' | 'outro';
+}
+
 type StatusAgendamento = 'agendado' | 'cancelado' | 'realizado';
 type AbaAgendamentos = 'proximos' | 'anteriores';
 
 interface Agendamento {
   id: number;
-  nomePet: string;
-  tipoPet: TipoPet;
+  pets: PetAgendamento[];
   loja: string;
   data: string;
   horario: string;
@@ -47,13 +52,16 @@ interface Agendamento {
   styleUrl: './meus-agendamentos.css'
 })
 export class MeusAgendamentos {
+  readonly limitePets = MAX_PETS_POR_AGENDAMENTO;
+
   abaAtiva = signal<AbaAgendamentos>('proximos');
 
   agendamentos = signal<Agendamento[]>([
     {
       id: 1,
-      nomePet: 'Pet 1',
-      tipoPet: 'cachorro',
+      pets: [
+        { nome: 'Pet 1', tipoPet: 'cachorro' }
+      ],
       loja: 'BanhosUp Diadema',
       data: '2026-12-17',
       horario: '09:30 até 11:00',
@@ -62,8 +70,9 @@ export class MeusAgendamentos {
     },
     {
       id: 2,
-      nomePet: 'Pet 2',
-      tipoPet: 'gato',
+      pets: [
+        { nome: 'Pet 2', tipoPet: 'gato' }
+      ],
       loja: 'BanhosUp Diadema',
       data: '2026-09-20',
       horario: '10:00 até 11:30',
@@ -72,13 +81,39 @@ export class MeusAgendamentos {
     },
     {
       id: 3,
-      nomePet: 'Pet 3',
-      tipoPet: 'outro',
+      pets: [
+        { nome: 'Pet 3', tipoPet: 'outro' }
+      ],
       loja: 'BanhosUp Diadema',
       data: '2026-09-15',
       horario: '14:00 até 15:30',
       pagamento: 'Pago',
       status: 'realizado'
+    },
+    {
+      id: 4,
+      pets: [
+        { nome: 'Pet 4', tipoPet: 'cachorro' },
+        { nome: 'Pet 5', tipoPet: 'cachorro' },
+        { nome: 'Pet 6', tipoPet: 'cachorro' }
+      ],
+      loja: 'BanhosUp Diadema',
+      data: '2026-12-03',
+      horario: '09:30 até 11:00',
+      pagamento: 'Pendente',
+      status: 'agendado'
+    },
+    {
+      id: 5,
+      pets: [
+        { nome: 'Pet 7', tipoPet: 'gato' },
+        { nome: 'Pet 8', tipoPet: 'outro' }
+      ],
+      loja: 'BanhosUp Diadema',
+      data: '2026-12-05',
+      horario: '14:00 até 15:30',
+      pagamento: 'Pendente',
+      status: 'agendado'
     }
   ]);
 
@@ -100,7 +135,8 @@ export class MeusAgendamentos {
 
   get agendamentosAnteriores(): Agendamento[] {
     return this.agendamentos().filter(
-      agendamento => agendamento.status === 'cancelado' ||
+      agendamento =>
+        agendamento.status === 'cancelado' ||
         agendamento.status === 'realizado'
     );
   }
@@ -113,6 +149,24 @@ export class MeusAgendamentos {
 
   selecionarAba(aba: AbaAgendamentos): void {
     this.abaAtiva.set(aba);
+  }
+
+  quantidadePetsValida(pets: PetAgendamento[]): boolean {
+    return pets.length >= 1 && pets.length <= this.limitePets;
+  }
+
+  formatarNomesPets(pets: PetAgendamento[]): string {
+    const nomes = pets.map(pet => pet.nome);
+
+    if (nomes.length === 1) {
+      return nomes[0];
+    }
+
+    if (nomes.length === 2) {
+      return `${nomes[0]} e ${nomes[1]}`;
+    }
+
+    return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
   }
 
   abrirModalReagendar(agendamento: Agendamento): void {
@@ -203,14 +257,14 @@ export class MeusAgendamentos {
 
   formatarData(data: string): string {
     const [ano, mes, dia] = data.split('-').map(Number);
-
     const dataFormatada = new Date(ano, mes - 1, dia);
 
     const diaSemana = new Intl.DateTimeFormat('pt-BR', {
       weekday: 'long'
     }).format(dataFormatada);
 
-    const dataNumerica = `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}`;
+    const dataNumerica =
+      `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}`;
 
     return `${diaSemana.charAt(0).toUpperCase()}${diaSemana.slice(1)}, ${dataNumerica}`;
   }
