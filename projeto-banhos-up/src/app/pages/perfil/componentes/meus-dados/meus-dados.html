@@ -59,8 +59,8 @@
         @if (erro()) { <p class="mensagem-erro" role="alert">{{ erro() }}</p> }
         @if (sucesso()) { <p class="mensagem-sucesso" role="status">{{ sucesso() }}</p> }
         <div class="meus-dados_botoes">
-          <button type="button" class="botao_descartar" (click)="restaurarDados()" [disabled]="salvando()">Descartar alterações</button>
-          <button type="submit" class="botao_salvar botao-habilitado" [disabled]="salvando()">
+          <button type="button" class="botao_descartar" (click)="restaurarDados()" [disabled]="salvando() || !temAlteracoes()">Descartar alterações</button>
+          <button type="submit" class="botao_salvar botao-habilitado" [disabled]="salvando() || !temAlteracoes()">
             {{ salvando() ? 'Salvando...' : 'Salvar alterações' }}
           </button>
         </div>
