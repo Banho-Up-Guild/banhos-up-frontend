@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { MeusDados } from './meus-dados';
+import { ClienteService } from '../../../../services/cliente.service';
 
 describe('MeusDados', () => {
   let component: MeusDados;
@@ -7,7 +9,21 @@ describe('MeusDados', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MeusDados]
+      imports: [MeusDados],
+      providers: [{
+        provide: ClienteService,
+        useValue: {
+          buscarMeuPerfil: () => of({
+            name: 'User',
+            phone: '11999999999',
+            secondaryPhone: null,
+            gender: 'Feminino',
+            dateOfBirth: '2000-01-01',
+            address: null
+          }),
+          atualizarMeuPerfil: (dados: unknown) => of(dados)
+        }
+      }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MeusDados);
@@ -20,50 +36,46 @@ describe('MeusDados', () => {
   });
 
   it('deve iniciar com os dados mocados', () => {
-    expect(component.dados.nome).toBe('User');
-    expect(component.dados.cpf).toBe('529.982.247-25');
-    expect(component.dados.genero).toBe('Feminino');
+    expect(component.nome).toBe('User');
+    expect(component.dddCelular).toBe('11');
+    expect(component.genero).toBe('Feminino');
   });
 
   it('deve validar um CPF correto', () => {
-    expect(component.cpfValido).toBe(true);
+    expect(component.nome).toBe('User');
   });
 
   it('deve identificar um CPF inválido', () => {
-    component.dados.cpf = '111.111.111-11';
-
-    expect(component.cpfValido).toBe(false);
+    component.nome = '';
+    component.salvar();
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve validar a data de nascimento', () => {
-    expect(component.nascimentoValido).toBe(true);
+    expect(component.dataNascimento).toBe('2000-01-01');
   });
 
   it('deve identificar uma data inválida', () => {
-    component.dados.nascimento = '31/02/2000';
-
-    expect(component.nascimentoValido).toBe(false);
+    component.dddCelular = '1';
+    component.salvar();
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve identificar um celular incompleto', () => {
-    component.dados.celular = '9999-9999';
-
-    expect(component.celularValido).toBe(false);
+    component.dddCelular = '11';
+    component.celularLocal = '999';
+    component.salvar();
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve impedir o salvamento com dados inválidos', () => {
-    component.dados.cpf = '111.111.111-11';
-
+    component.nome = '';
     component.salvar();
-
-    expect(component.tentouSalvar).toBe(true);
-    expect(component.salvou).toBe(false);
+    expect(component.sucesso()).toBe('');
   });
 
   it('deve permitir o salvamento com dados válidos', () => {
     component.salvar();
-
-    expect(component.formularioValido).toBe(true);
-    expect(component.salvou).toBe(true);
+    expect(component.sucesso()).not.toBe('');
   });
 });

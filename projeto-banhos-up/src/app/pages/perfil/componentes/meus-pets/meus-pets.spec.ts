@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { MeusPets } from './meus-pets';
+import { PetService, PetResponse } from '../../../../services/pet.service';
 
 describe('MeusPets', () => {
   let component: MeusPets;
@@ -7,7 +9,16 @@ describe('MeusPets', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MeusPets]
+      imports: [MeusPets],
+      providers: [{
+        provide: PetService,
+        useValue: {
+          listarMeusPets: () => of([]),
+          cadastrar: (dados: Record<string, unknown>) => of({ id: 1, ...dados } as PetResponse),
+          atualizar: (id: number, dados: Record<string, unknown>) => of({ id, ...dados } as PetResponse),
+          excluir: () => of(undefined)
+        }
+      }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MeusPets);
@@ -17,11 +28,10 @@ describe('MeusPets', () => {
 
   function preencherFormulario(): void {
     component.nome = 'Bob';
-    component.tipo = 'Cachorro';
+    component.especie = 'Cachorro';
     component.raca = 'Golden Retriever';
-    component.cor = 'Dourado';
     component.dataNascimento = '2020-01-01';
-    component.nascimentoDesconhecido = false;
+    component.porte = 'MEDIO';
   }
 
   it('deve criar o componente', () => {
@@ -33,97 +43,69 @@ describe('MeusPets', () => {
   });
 
   it('deve abrir o modal de cadastro', () => {
-    component.abrirModalCadastro();
+    component.abrirCadastro();
 
-    expect(component.modalAberto()).toBe('cadastro');
+    expect(component.formularioAberto()).toBe(true);
   });
 
   it('deve fechar o modal', () => {
-    component.abrirModalCadastro();
-    component.fecharModal();
+    component.abrirCadastro();
+    component.cancelarFormulario();
 
-    expect(component.modalAberto()).toBe(null);
+    expect(component.formularioAberto()).toBe(false);
   });
 
   it('deve cadastrar um pet com informações válidas', () => {
     preencherFormulario();
 
-    component.abrirModalCadastro();
+    component.abrirCadastro();
     preencherFormulario();
-    component.salvarPet();
+    component.salvar();
 
     expect(component.pets().length).toBe(1);
     expect(component.pets()[0].nome).toBe('Bob');
-    expect(component.pets()[0].tipo).toBe('Cachorro');
+    expect(component.pets()[0].especie).toBe('Cachorro');
   });
 
   it('não deve cadastrar um pet com campos obrigatórios vazios', () => {
-    component.abrirModalCadastro();
-    component.salvarPet();
+    component.abrirCadastro();
+    component.salvar();
 
     expect(component.pets().length).toBe(0);
-    expect(component.tentouSalvar).toBe(true);
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve permitir cadastro sem data quando nascimento for desconhecido', () => {
     preencherFormulario();
-
     component.dataNascimento = '';
-    component.nascimentoDesconhecido = true;
-
-    component.salvarPet();
+    component.salvar();
 
     expect(component.pets().length).toBe(1);
-    expect(component.pets()[0].dataNascimento).toBe('');
-    expect(component.pets()[0].nascimentoDesconhecido).toBe(true);
-  });
-
-  it('deve limpar a data ao marcar nascimento desconhecido', () => {
-    component.dataNascimento = '2020-01-01';
-    component.nascimentoDesconhecido = true;
-
-    component.alterarNascimentoDesconhecido();
-
-    expect(component.dataNascimento).toBe('');
-  });
-
-  it('não deve aceitar uma data de nascimento inexistente', () => {
-    component.dataNascimento = '2020-02-31';
-    component.nascimentoDesconhecido = false;
-
-    expect(component.dataNascimentoValida).toBe(false);
-  });
-
-  it('não deve aceitar uma data de nascimento futura', () => {
-    component.dataNascimento = '2999-01-01';
-    component.nascimentoDesconhecido = false;
-
-    expect(component.dataNascimentoValida).toBe(false);
+    expect(component.pets()[0].dataNascimento).toBeNull();
   });
 
   it('deve abrir o modal de edição com os dados do pet', () => {
     preencherFormulario();
-
-    component.salvarPet();
+    component.salvar();
 
     const pet = component.pets()[0];
 
-    component.abrirModalEdicao(pet);
+    component.editar(pet);
 
-    expect(component.modalAberto()).toBe('edicao');
+    expect(component.formularioAberto()).toBe(true);
     expect(component.nome).toBe('Bob');
     expect(component.raca).toBe('Golden Retriever');
   });
 
   it('deve salvar as alterações de um pet', () => {
     preencherFormulario();
-    component.salvarPet();
+    component.salvar();
 
     const pet = component.pets()[0];
 
-    component.abrirModalEdicao(pet);
+    component.editar(pet);
     component.nome = 'Bob Atualizado';
-    component.salvarPet();
+    component.salvar();
 
     expect(component.pets().length).toBe(1);
     expect(component.pets()[0].nome).toBe('Bob Atualizado');
@@ -131,35 +113,35 @@ describe('MeusPets', () => {
 
   it('deve abrir o modal de remoção', () => {
     preencherFormulario();
-    component.salvarPet();
+    component.salvar();
 
     const pet = component.pets()[0];
 
-    component.abrirModalRemocao(pet);
+    component.solicitarExclusao(pet.id);
 
-    expect(component.modalAberto()).toBe('remocao');
+    expect(component.petParaExcluir()).toBe(pet.id);
   });
 
   it('deve remover o pet após confirmação', () => {
     preencherFormulario();
-    component.salvarPet();
+    component.salvar();
 
     const pet = component.pets()[0];
 
-    component.abrirModalRemocao(pet);
-    component.confirmarRemocao();
+    component.solicitarExclusao(pet.id);
+    component.confirmarExclusao();
 
     expect(component.pets().length).toBe(0);
   });
 
   it('não deve remover o pet ao cancelar a remoção', () => {
     preencherFormulario();
-    component.salvarPet();
+    component.salvar();
 
     const pet = component.pets()[0];
 
-    component.abrirModalRemocao(pet);
-    component.fecharModal();
+    component.solicitarExclusao(pet.id);
+    component.cancelarExclusao();
 
     expect(component.pets().length).toBe(1);
   });

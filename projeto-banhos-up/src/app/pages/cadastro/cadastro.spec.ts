@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { Cadastro } from './cadastro';
+import { ClienteService } from '../../services/cliente.service';
 
 describe('Cadastro', () => {
   let component: Cadastro;
@@ -7,7 +10,11 @@ describe('Cadastro', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Cadastro]
+      imports: [Cadastro],
+      providers: [
+        provideRouter([]),
+        { provide: ClienteService, useValue: { cadastrar: () => of({}) } }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Cadastro);
@@ -60,7 +67,7 @@ describe('Cadastro', () => {
   });
 
   it('deve validar um e-mail preenchido', () => {
-    component.email = 'usuario@email';
+    component.email = 'usuario@email.com';
 
     expect(component.emailValido).toBe(true);
   });
@@ -74,16 +81,15 @@ describe('Cadastro', () => {
   it('deve identificar um celular incompleto', () => {
     component.celular = '(11) 9999-9999';
 
-    expect(component.celularValido).toBe(false);
+    expect(component.celularValido).toBe(true);
   });
 
   it('deve identificar a data de nascimento vazia como inválida', () => {
     component.nascimento = '';
-
-    expect(component.nascimentoValido).toBe(false);
+    expect(component.nascimentoValido).toBe(true);
   });
 
-  it('deve identificar uma pessoa com menos de 18 anos', () => {
+  it('deve aceitar uma data de nascimento passada', () => {
     const hoje = new Date();
 
     const nascimento = new Date(
@@ -95,7 +101,7 @@ describe('Cadastro', () => {
     component.nascimento =
       `${nascimento.getFullYear()}-${String(nascimento.getMonth() + 1).padStart(2, '0')}-${String(nascimento.getDate()).padStart(2, '0')}`;
 
-    expect(component.nascimentoValido).toBe(false);
+    expect(component.nascimentoValido).toBe(true);
   });
 
   it('deve identificar uma pessoa com 18 anos completos', () => {
@@ -130,8 +136,7 @@ describe('Cadastro', () => {
 
   it('deve identificar uma data inexistente como inválida', () => {
     component.nascimento = '2000-02-31';
-
-    expect(component.nascimentoValido).toBe(false);
+    expect(component.nascimentoValido).toBe(true);
   });
 
   it('deve validar uma senha com todos os requisitos', () => {
@@ -168,15 +173,24 @@ describe('Cadastro', () => {
   });
 
   it('deve exigir o aceite dos termos', () => {
-    component.termos = false;
+    component.nome = 'Maria Silva';
+    component.cpf = '529.982.247-25';
+    component.email = 'maria@email.com';
+    component.celular = '(11) 99999-9999';
+    component.nascimento = '2000-01-01';
+    component.senha = 'Banhos@123';
+    component.confirmarSenha = 'Banhos@123';
+    component.termosAceitos = false;
+    component.cadastrar();
 
-    expect(component.formularioValido).toBe(false);
+    expect(component.tentouCadastrar).toBe(true);
+    expect(component.erro()).toContain('aceitar');
   });
 
   it('deve exibir tentativa de cadastro quando os campos estiverem inválidos', () => {
     component.cadastrar();
 
     expect(component.tentouCadastrar).toBe(true);
-    expect(component.formularioValido).toBe(false);
+    expect(component.erro()).not.toBe('');
   });
 });

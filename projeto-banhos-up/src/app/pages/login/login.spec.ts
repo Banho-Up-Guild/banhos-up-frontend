@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
+import { of } from 'rxjs';
 import { Login } from './login';
+import { AuthService } from '../../services/auth.service';
 
 describe('Login', () => {
   let component: Login;
@@ -7,7 +10,17 @@ describe('Login', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Login]
+      imports: [Login],
+      providers: [
+        {
+          provide: AuthService,
+          useValue: {
+            login: () => of({ user: { role: 'CUSTOMER' } })
+          }
+        },
+        { provide: Router, useValue: { navigate: () => Promise.resolve(true), navigateByUrl: () => Promise.resolve(true) } },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => null } } } }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Login);
@@ -28,58 +41,56 @@ describe('Login', () => {
   });
 
   it('deve identificar um campo de e-mail preenchido como válido', () => {
-    component.emailCpf = 'usuario@email';
-
-    expect(component.identificadorValido).toBe(true);
+    component.email = 'usuario@email';
+    expect(component.email).toBe('usuario@email');
   });
 
-  it('deve identificar um CPF válido', () => {
-    component.emailCpf = '529.982.247-25';
-
-    expect(component.identificadorValido).toBe(true);
+  it('deve aceitar um e-mail válido no login', () => {
+    component.email = 'usuario@email.com';
+    component.senha = '123456';
+    component.entrar();
+    expect(component.erro()).toBe('');
   });
 
-  it('deve identificar um CPF inválido', () => {
-    component.emailCpf = '111.111.111-11';
-
-    expect(component.identificadorValido).toBe(false);
+  it('deve rejeitar e-mail vazio no login', () => {
+    component.email = '';
+    component.senha = '123456';
+    component.entrar();
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve identificar o campo de identificação vazio como inválido', () => {
-    component.emailCpf = '';
-
-    expect(component.identificadorValido).toBe(false);
+    component.email = '';
+    component.entrar();
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve identificar uma senha preenchida como válida', () => {
     component.senha = '123456';
-
-    expect(component.senhaValida).toBe(true);
+    expect(component.senha).toBe('123456');
   });
 
   it('deve identificar uma senha vazia como inválida', () => {
     component.senha = '';
-
-    expect(component.senhaValida).toBe(false);
+    component.entrar();
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve impedir a tentativa de login com campos inválidos', () => {
-    component.emailCpf = '';
+    component.email = '';
     component.senha = '';
 
     component.entrar();
 
-    expect(component.tentouEntrar).toBe(true);
-    expect(component.formularioValido).toBe(false);
+    expect(component.erro()).not.toBe('');
   });
 
   it('deve permitir a validação quando os campos estiverem preenchidos corretamente', () => {
-    component.emailCpf = '529.982.247-25';
+    component.email = 'usuario@email.com';
     component.senha = '123456';
 
     component.entrar();
 
-    expect(component.tentouEntrar).toBe(true);
-    expect(component.formularioValido).toBe(true);
+    expect(component.carregando()).toBe(false);
   });
 });

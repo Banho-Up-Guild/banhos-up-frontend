@@ -56,7 +56,9 @@ describe('Agendamento', () => {
         {
           provide: PetService,
           useValue: {
+            listarMeusPets: () => of(petsDeTeste),
             listarPorDono: () => of(petsDeTeste),
+            cadastrar: (dados: Record<string, unknown>) => of({ id: 5, ...dados }),
             criar: (dados: Record<string, unknown>) => of({
               id: 5,
               ...dados

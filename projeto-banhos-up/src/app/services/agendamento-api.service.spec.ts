@@ -30,7 +30,6 @@ describe('AgendamentoApiService', () => {
     );
   });
 
-  afterEach(() => injector.destroy());
 
   it('envia employeeId=0 no calendário quando não há preferência profissional', () => {
     service.listarDisponibilidade('2026-12', 1, 30, 0).subscribe();
