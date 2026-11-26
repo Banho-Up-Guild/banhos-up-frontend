@@ -116,6 +116,53 @@ export class Agendamento implements OnInit {
   estado = '';
   cidade = '';
 
+  // Opções dos filtros são calculadas a partir das unidades recebidas da API.
+  get estadosDisponiveis(): string[] {
+    return [...new Set(
+      this.lojas
+        .map(loja => loja.estado?.trim().toUpperCase())
+        .filter((estado): estado is string => !!estado)
+    )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  get cidadesDisponiveis(): string[] {
+    const estado = this.normalizarTexto(this.estado);
+
+    return [...new Set(
+      this.lojas
+        .filter(loja => !estado || this.normalizarTexto(loja.estado) === estado)
+        .map(loja => loja.cidade?.trim())
+        .filter((cidade): cidade is string => !!cidade)
+    )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  get lojasFiltradas(): Loja[] {
+    const cep = this.cep.replace(/\D/g, '');
+    const estado = this.normalizarTexto(this.estado);
+    const cidade = this.normalizarTexto(this.cidade);
+
+    return this.lojas.filter(loja => {
+      const cepLoja = (loja.cep || '').replace(/\D/g, '');
+
+      return (!cep || cepLoja.startsWith(cep))
+        && (!estado || this.normalizarTexto(loja.estado) === estado)
+        && (!cidade || this.normalizarTexto(loja.cidade) === cidade);
+    });
+  }
+
+  atualizarEstado(estado: string): void {
+    this.estado = estado;
+    this.cidade = '';
+  }
+
+  private normalizarTexto(valor: string | null | undefined): string {
+    return (valor || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLocaleLowerCase('pt-BR');
+  }
+
   // =========================================
   // SERVIÇOS
   // =========================================
@@ -185,6 +232,7 @@ export class Agendamento implements OnInit {
   agendamentoCriado: {
     profissional: string;
     dataHora: string;
+    valorTotal: number;
   } | null = null;
 
   private calendarioRequestId = 0;
@@ -227,7 +275,12 @@ export class Agendamento implements OnInit {
 
           if (this.pets.length > 0) {
             this.petsSelecionados = [this.pets[0].id];
+            this.mostrarNovoPet = false;
             this.inicializarServicosDosPets();
+          } else {
+            // Cliente sem pets precisa cadastrar o primeiro antes de avançar.
+            this.petsSelecionados = [];
+            this.mostrarNovoPet = true;
           }
 
           if (this.lojaSelecionada !== null) {
@@ -257,7 +310,11 @@ export class Agendamento implements OnInit {
       }))
       .subscribe({
         next: (dados) => {
-          this.servicos = dados.map(servico => this.mapearServico(servico));
+          // O endpoint já recebe ativos=true; o filtro adicional protege a tela
+          // caso uma resposta futura inclua algum serviço inativo.
+          this.servicos = dados
+            .filter(servico => servico.ativo !== false)
+            .map(servico => this.mapearServico(servico));
 
           this.inicializarServicosDosPets();
 
@@ -312,7 +369,7 @@ export class Agendamento implements OnInit {
       preco: servico.preco,
       duracao: servico.duracaoMinutos,
       descricao: servico.descricao || undefined,
-      obrigatorio: servico.nome.trim().toLocaleLowerCase('pt-BR') === 'banho',
+      obrigatorio: this.normalizarTexto(servico.nome).includes('banho'),
       grupo: 'Serviços disponíveis'
     };
   }
@@ -918,6 +975,7 @@ export class Agendamento implements OnInit {
       case 4:
 
         return !this.carregandoCalendario &&
+          !this.carregandoRecomendacao &&
           !this.erroCalendario &&
           !!this.dataSelecionada &&
           !!this.horarioSelecionado &&
@@ -967,6 +1025,7 @@ export class Agendamento implements OnInit {
 
   private recomendarProfissional(): void {
     if (
+      this.carregandoRecomendacao ||
       this.lojaSelecionada === null ||
       !this.dataSelecionada ||
       !this.horarioSelecionado
@@ -1040,6 +1099,10 @@ export class Agendamento implements OnInit {
     // Na primeira etapa, a seta leva o cliente de volta à Home.
     this.router.navigateByUrl('/');
 
+  }
+
+  verMeusAgendamentos(): void {
+    this.router.navigateByUrl('/perfil/agendamentos');
   }
 
   // =========================================
@@ -1334,6 +1397,7 @@ export class Agendamento implements OnInit {
 
     this.salvandoAgendamento = true;
     this.erroConfirmacao = null;
+    this.agendamentoCriado = null;
 
     this.agendamentoApi.criarAgendamento(dados)
       .pipe(finalize(() => {
@@ -1344,7 +1408,8 @@ export class Agendamento implements OnInit {
         next: (resposta) => {
           this.agendamentoCriado = {
             profissional: resposta.nameEmployee,
-            dataHora: resposta.dateTimeAppointment
+            dataHora: resposta.dateTimeAppointment,
+            valorTotal: Number(resposta.totalPrice)
           };
           this.confirmado = true;
           this.cdr.markForCheck();
