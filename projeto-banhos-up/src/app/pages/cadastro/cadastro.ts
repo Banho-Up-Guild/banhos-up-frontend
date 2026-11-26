@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 
 import { HeaderV2 } from '../../header/header-v2/header-v2';
-import { LucideEye, LucideEyeOff } from '@lucide/angular';
+import { LucideCircleExclamationPoint, LucideEye, LucideEyeOff } from '@lucide/angular';
 import { ClienteService } from '../../services/cliente.service';
 
 @Component({
@@ -15,7 +15,8 @@ import { ClienteService } from '../../services/cliente.service';
     RouterLink,
     HeaderV2,
     LucideEye,
-    LucideEyeOff
+    LucideEyeOff,
+    LucideCircleExclamationPoint
   ],
   templateUrl: './cadastro.html',
   styleUrl: './cadastro.css',
@@ -49,6 +50,49 @@ export class Cadastro {
   confirmarSenha = '';
   termosAceitos = false;
 
+  // Controla quando as mensagens de validação devem aparecer.
+  tentouCadastrar = false;
+
+  get nascimentoValido(): boolean {
+    if (!this.nascimento) {
+      return true;
+    }
+
+    const dataNascimento = new Date(`${this.nascimento}T00:00:00`);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    return Number.isFinite(dataNascimento.getTime()) && dataNascimento < hoje;
+  }
+
+  get senhaMinima(): boolean {
+    return this.senha.length >= 8 && this.senha.length <= 72;
+  }
+
+  get senhaMaiuscula(): boolean {
+    return /[A-Z]/.test(this.senha);
+  }
+
+  get senhaMinuscula(): boolean {
+    return /[a-z]/.test(this.senha);
+  }
+
+  get senhaEspecial(): boolean {
+    return /[^A-Za-z0-9]/.test(this.senha);
+  }
+
+  get senhaNumero(): boolean {
+    return /\d/.test(this.senha);
+  }
+
+  get senhaValida(): boolean {
+    return this.senhaMinima &&
+      this.senhaMaiuscula &&
+      this.senhaMinuscula &&
+      this.senhaEspecial &&
+      this.senhaNumero;
+  }
+
   alternarVisibilidadeSenha(): void {
     this.mostrarSenha.update((visivel) => !visivel);
   }
@@ -59,6 +103,7 @@ export class Cadastro {
 
   cadastrar(): void {
 
+    this.tentouCadastrar = true;
     this.erro.set('');
     this.sucesso.set('');
 
@@ -100,12 +145,7 @@ export class Cadastro {
       return;
     }
 
-    const senhaValida =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/.test(
-        this.senha
-      );
-
-    if (!senhaValida) {
+    if (!this.senhaValida) {
       this.erro.set(
         'A senha precisa conter letra maiúscula, minúscula, número e caractere especial.'
       );
@@ -124,6 +164,11 @@ export class Cadastro {
 
     if (telefone && telefone.length !== 10 && telefone.length !== 11) {
       this.erro.set('O telefone opcional informado é inválido.');
+      return;
+    }
+
+    if (!this.nascimentoValido) {
+      this.erro.set('A data de nascimento deve ser uma data válida no passado.');
       return;
     }
 
@@ -162,6 +207,7 @@ export class Cadastro {
         this.senha = '';
         this.confirmarSenha = '';
         this.termosAceitos = false;
+        this.tentouCadastrar = false;
 
         this.mostrarSenha.set(false);
         this.mostrarConfirmacaoSenha.set(false);

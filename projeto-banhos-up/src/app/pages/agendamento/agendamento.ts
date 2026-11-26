@@ -7,25 +7,30 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { LucideTriangleExclamationPoint } from '@lucide/angular';
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs';
 import { Router } from '@angular/router';
 
 import {
   Pet,
   Servico,
-  CalendarioAgendamentoResponse,
   Profissional,
-  EspeciePet
+  EspeciePet,
+  ProfissionalDisponivelResponse,
+  ServicoResponse,
+  CriarAgendamentoRequest
 } from '../../models/agendamento.model';
 
 import { Loja } from '../../models/loja.model';
 
 import { LojaService } from '../../services/loja.service';
 import { AgendamentoApiService } from '../../services/agendamento-api.service';
-import { PetService } from '../../services/pet.service';
+import {
+  PetService,
+  PetRequest as PetCadastroRequest,
+  PetResponse as PetApiResponse
+} from '../../services/pet.service';
 import { ServicoService } from '../../services/servico.service';
 import { AuthService } from '../../services/auth.service';
 import { DisponibilidadeCalendarioResponse } from '../../models/disponibilidade.model';
@@ -33,7 +38,7 @@ import { DisponibilidadeCalendarioResponse } from '../../models/disponibilidade.
 @Component({
   selector: 'app-agendamento',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucideTriangleExclamationPoint],
+  imports: [CommonModule, FormsModule, LucideTriangleExclamationPoint],
   templateUrl: './agendamento.html',
   styleUrl: './agendamento.css',
 })
@@ -75,11 +80,8 @@ export class Agendamento implements OnInit {
   // Limite de pets por agendamento.
   readonly limitePetsPorAgendamento = 3;
 
-  // Exibe o aviso quando o limite é atingido.
-  get mostrarAvisoLimitePets(): boolean {
-    return this.petsSelecionados.length >=
-      this.limitePetsPorAgendamento;
-  }
+  // Aviso visual exibido quando o cliente tenta exceder o limite.
+  mostrarAvisoLimitePets = false;
 
   novoPet = {
     nome: '',
@@ -88,10 +90,6 @@ export class Agendamento implements OnInit {
   };
 
   mostrarNovoPet = false;
-
-  mostrarAvisoLimitePets = false;
-
-  readonly limitePetsPorAgendamento = 3;
 
   // =========================================
   // LOJAS
@@ -207,18 +205,18 @@ export class Agendamento implements OnInit {
     const usuario = this.authService.usuarioAtual();
 
     if (usuario?.role === 'CUSTOMER') {
-      this.carregarPets(usuario.id);
+      this.carregarPets();
     } else {
       this.erroPets = 'Entre na sua conta de cliente para carregar seus pets e agendar.';
     }
 
   }
 
-  private carregarPets(donoId: number): void {
+  private carregarPets(): void {
     this.carregandoPets = true;
     this.erroPets = null;
 
-    this.petService.listarPorDono(donoId)
+    this.petService.listarMeusPets()
       .pipe(finalize(() => {
         this.carregandoPets = false;
         this.cdr.markForCheck();
@@ -260,6 +258,7 @@ export class Agendamento implements OnInit {
       .subscribe({
         next: (dados) => {
           this.servicos = dados.map(servico => this.mapearServico(servico));
+
           this.inicializarServicosDosPets();
 
           if (this.servicos.length === 0) {
@@ -287,12 +286,12 @@ export class Agendamento implements OnInit {
   recarregarPets(): void {
     const usuario = this.authService.usuarioAtual();
     if (usuario?.role === 'CUSTOMER') {
-      this.carregarPets(usuario.id);
+      this.carregarPets();
     }
   }
 
-  private mapearPet(pet: PetResponse): Pet {
-    const portes: Record<NonNullable<PetResponse['porte']>, string> = {
+  private mapearPet(pet: PetApiResponse): Pet {
+    const portes: Record<NonNullable<PetApiResponse['porte']>, string> = {
       PEQUENO: 'Pequeno',
       MEDIO: 'Médio',
       GRANDE: 'Grande'
@@ -1048,63 +1047,26 @@ export class Agendamento implements OnInit {
   // =========================================
 
   alternarPet(id: number): void {
-
     if (this.petsSelecionados.includes(id)) {
-
-    // Se já estiver selecionado, permite desmarcar.
-    if (this.petsSelecionados.includes(id)) {
-
-      this.petsSelecionados =
-        this.petsSelecionados.filter(x => x !== id);
-
+      this.petsSelecionados = this.petsSelecionados.filter(
+        petId => petId !== id
+      );
+      this.mostrarAvisoLimitePets = false;
+      this.limparSelecaoDeHorario();
+      this.carregarCalendario();
       return;
     }
 
-    // Impede ultrapassar o limite.
-    if (
-      this.petsSelecionados.length >=
-      this.limitePetsPorAgendamento
-    ) {
-      return;
-    }
-
-    this.petsSelecionados = [
-      ...this.petsSelecionados,
-      id
-    ];
-  }
-
-      return;
-    }
-
-    if (
-      this.petsSelecionados.length >=
-      this.limitePetsPorAgendamento
-    ) {
-      return;
-    }
-
-    const id = Math.max(
-      0,
-      ...this.pets.map(pet => pet.id)
-    ) + 1;
-
+    if (this.petsSelecionados.length >= this.limitePetsPorAgendamento) {
       this.mostrarAvisoLimitePets = true;
-
       return;
     }
 
-    this.garantirBanho(id);
-
-    this.petsSelecionados = [
-      ...this.petsSelecionados,
-      id
-    ];
-
+    this.petsSelecionados = [...this.petsSelecionados, id];
     this.mostrarAvisoLimitePets = false;
+    this.garantirBanho(id);
     this.limparSelecaoDeHorario();
     this.carregarCalendario();
-
   }
 
   adicionarPet(): void {
@@ -1137,14 +1099,13 @@ export class Agendamento implements OnInit {
       raca: null,
       dataNascimento: null,
       porte: porte[this.novoPet.porte],
-      observacoes: null,
-      donoId: usuario.id
+      observacoes: null
     };
 
     this.salvandoPet = true;
     this.erroPets = null;
 
-    this.petService.criar(dados)
+    this.petService.cadastrar(dados)
       .pipe(finalize(() => {
         this.salvandoPet = false;
         this.cdr.markForCheck();

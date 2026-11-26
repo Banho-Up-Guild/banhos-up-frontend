@@ -129,7 +129,7 @@
         </select>
 
       </div>
-  
+
       <div class="cadastro_campo">
 
         <label for="nascimento">
@@ -142,8 +142,6 @@
           name="nascimento"
           [(ngModel)]="nascimento"
           autocomplete="bday"
-          required
-          [(ngModel)]="nascimento"
           [class.campo-erro]="tentouCadastrar && !nascimentoValido"
           [attr.aria-invalid]="tentouCadastrar && !nascimentoValido"
         />
@@ -238,15 +236,19 @@
           <li [class.requisito-valido]="senhaMinima">
             Mínimo 8 caracteres
           </li>
+
           <li [class.requisito-valido]="senhaMaiuscula">
             Letra maiúscula
           </li>
+
           <li [class.requisito-valido]="senhaMinuscula">
             Letra minúscula
           </li>
+
           <li [class.requisito-valido]="senhaEspecial">
             Caractere especial
           </li>
+
           <li [class.requisito-valido]="senhaNumero">
             Número
           </li>
