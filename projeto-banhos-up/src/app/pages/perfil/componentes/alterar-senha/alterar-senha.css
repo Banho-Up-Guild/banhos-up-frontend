@@ -1,306 +1,100 @@
-:host {
-  display: block;
-  width: 100%;
-  min-height: 100%;
-  box-sizing: border-box;
-  background: #ffffff;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 .alterar-senha {
   width: 100%;
-  min-height: calc(100vh - 80px);
-  padding: 28px 16px 24px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  color: #101820;
+  max-width: 720px;
+  margin: 0 auto;
+  color: #172b3a;
 }
 
-.alterar-senha_titulo {
-  margin: 0 0 28px;
-
-  color: #013e73;
-  font-size: clamp(1.8rem, 4vw, 2.3rem);
-  font-weight: 700;
-  text-align: center;
-}
-
-.alterar-senha_card {
-  width: min(100%, 520px);
-  padding: 30px 32px;
-
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-}
-
-.alterar-senha_formulario {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.alterar-senha_campo {
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.alterar-senha_campo label {
-  color: #101820;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.alterar-senha_input-container {
-  position: relative;
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-}
-
-.alterar-senha_input-container input {
-  width: 100%;
-  height: 42px;
-  padding: 0 42px 0 12px;
-
-  border: 1px solid #c8c8c8;
-  border-radius: 5px;
-
-  outline: none;
-  background: #ffffff;
-  color: #101820;
-
-  font-family: inherit;
-  font-size: 0.78rem;
-
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.alterar-senha_input-container input::placeholder {
-  color: #999999;
-  font-size: 0.75rem;
-}
-
-.alterar-senha_input-container input:focus {
-  border-color: #013e73;
-  box-shadow: 0 0 0 2px rgb(1 62 115 / 10%);
-}
-
-.alterar-senha_visibilidade {
-  position: absolute;
-  right: 10px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 3px;
-
-  border: none;
-  background: transparent;
-  color: #333333;
-
-  cursor: pointer;
-}
-
-.alterar-senha_visibilidade:hover {
-  color: #013e73;
-}
-
-.alterar-senha_icone {
-  width: 19px;
-  height: 19px;
-  stroke-width: 2;
-}
-
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-    display: none;
-}
-
-input[type="password"]::-webkit-credentials-auto-fill-button {
-    visibility: hidden;
-    display: none !important;
-    pointer-events: none;
-}
-
-.alterar-senha_requisitos {
-  margin-top: -5px;
-  font-size: 0.72rem;
-}
-
-.alterar-senha_requisitos strong {
-  color: #101820;
-  font-size: 0.78rem;
-}
-
-.alterar-senha_requisitos ul {
-  margin: 7px 0 0;
-  padding-left: 16px;
-
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px 12px;
-
-  color: #666666;
-  font-size: 0.72rem;
-}
-
-.alterar-senha_requisitos li {
-  transition: color 0.2s;
-}
-
-.alterar-senha_requisitos li.requisito-valido {
-  color: #218838;
-  font-weight: 600;
-}
-
-.alterar-senha_input-container input.campo-erro {
-  border-color: #d93025;
-}
-
-.alterar-senha_input-container input.campo-erro:focus {
-  border-color: #d93025;
-  box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.08);
-}
-
-.alterar-senha_erro {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-
-  color: #d93025;
-  font-size: 0.72rem;
-  line-height: 1.35;
-}
-
-.alterar-senha_erro svg {
-  width: 15px;
-  height: 15px;
-  min-width: 15px;
-  stroke-width: 2;
-}
-
-.alterar-senha_botao {
-  width: 100%;
-  min-height: 44px;
-  margin-top: 5px;
-
-  border: none;
-  border-radius: 4px;
-
-  background: #013e73;
-  color: #ffffff;
-
-  font-family: inherit;
+.alterar-senha__cabecalho p {
+  margin: 0 0 5px;
+  color: #2595e4;
   font-size: 0.85rem;
   font-weight: 700;
+}
 
+.alterar-senha__cabecalho h1 {
+  margin: 0;
+  color: #013e73;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.alterar-senha__cabecalho span {
+  display: block;
+  margin-top: 8px;
+  color: #6b7782;
+  line-height: 1.5;
+}
+
+.alterar-senha__formulario {
+  display: grid;
+  gap: 17px;
+  margin-top: 28px;
+  padding: 25px;
+  border: 1px solid #e0eaf1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(1 62 115 / 5%);
+}
+
+.alterar-senha__formulario label {
+  display: grid;
+  gap: 7px;
+  color: #25445b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.alterar-senha__formulario input {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 13px;
+  border: 1px solid #cbd9e4;
+  border-radius: 7px;
+  outline: none;
+  color: #183b57;
+  font: inherit;
+  font-weight: 400;
+}
+
+.alterar-senha__formulario input:focus {
+  border-color: #2595e4;
+  box-shadow: 0 0 0 3px rgb(37 149 228 / 12%);
+}
+
+.alterar-senha__dica {
+  margin: -4px 0 0;
+  color: #75838d;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.alterar-senha__mensagem {
+  padding: 11px 13px;
+  border-radius: 7px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.alterar-senha__mensagem--erro { color: #9d2929; background: #fff0f0; }
+.alterar-senha__mensagem--sucesso { color: #187143; background: #eaf7ef; }
+
+.alterar-senha__formulario button {
+  min-height: 46px;
+  justify-self: start;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 7px;
+  background: #013e73;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.alterar-senha_botao:hover {
-  background: #075b9b;
-}
+.alterar-senha__formulario button:hover:not(:disabled) { background: #07558e; }
+.alterar-senha__formulario button:disabled { opacity: 0.65; cursor: wait; }
 
-.alterar-senha_footer {
-  margin-top: auto;
-  padding-top: 28px;
-
-  color: #101820;
-  text-align: center;
-  font-size: 0.7rem;
-}
-
-.alterar-senha_footer p {
-  margin: 3px 0;
-}
-
-/* Notebook e telas intermediárias */
-
-@media (max-width: 1024px) {
-  .alterar-senha {
-    padding: 26px 20px 24px;
-  }
-
-  .alterar-senha_card {
-    width: min(100%, 490px);
-    padding: 28px;
-  }
-}
-
-/* Tablets */
-
-@media (max-width: 768px) {
-  .alterar-senha {
-    padding: 24px 20px;
-  }
-
-  .alterar-senha_titulo {
-    margin-bottom: 24px;
-    font-size: 2rem;
-  }
-
-  .alterar-senha_card {
-    width: min(100%, 470px);
-    padding: 26px 24px;
-  }
-}
-
-/* Celulares */
-
-@media (max-width: 480px) {
-  .alterar-senha {
-    min-height: 100%;
-    padding: 24px 14px;
-  }
-
-  .alterar-senha_titulo {
-    margin-bottom: 22px;
-    font-size: 1.8rem;
-  }
-
-  .alterar-senha_card {
-    width: 100%;
-    padding: 24px 18px;
-    border-radius: 10px;
-  }
-
-  .alterar-senha_campo label {
-    font-size: 0.85rem;
-  }
-
-  .alterar-senha_requisitos ul {
-    font-size: 0.68rem;
-    gap: 5px 8px;
-  }
-
-  .alterar-senha_footer {
-    font-size: 0.65rem;
-  }
-}
-
-/* Celulares estreitos */
-
-@media (max-width: 380px) {
-  .alterar-senha_card {
-    padding: 22px 14px;
-  }
-
-  .alterar-senha_requisitos ul {
-    grid-template-columns: 1fr 1fr;
-    column-gap: 5px;
-  }
+@media (max-width: 520px) {
+  .alterar-senha__formulario { padding: 18px 15px; }
+  .alterar-senha__formulario button { width: 100%; }
 }

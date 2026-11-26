@@ -1,13 +1,19 @@
 <main class="agendamento">
 
   <!-- CABEÇALHO -->
-  <div class="topo-agendamento">
-    <button type="button" class="voltar" (click)="voltar()" [disabled]="etapa === 0" aria-label="Voltar">
-      ‹
-    </button>
+<div class="topo-agendamento">
+  <button
+    type="button"
+    class="voltar"
+    (click)="voltar()"
+    [attr.aria-label]="etapa === 0 ? 'Voltar para a página inicial' : 'Voltar para a etapa anterior'"
+    [title]="etapa === 0 ? 'Voltar para a Home' : 'Etapa anterior'"
+  >
+    ‹
+  </button>
 
-    <h1>Agendamento</h1>
-  </div>
+  <h1>Agendamento</h1>
+</div>
 
   <div class="layout-agendamento">
 
@@ -44,13 +50,11 @@
         <h2>Agendamento solicitado!</h2>
 
         <p>
-          Sua solicitação foi enviada para {{ agendamentoCriado?.profissional }}.
+          Seu pedido foi registrado nesta demonstração.
+          A confirmação real depende da integração com o sistema da loja.
         </p>
 
-        <p>{{ agendamentoCriado?.dataHora | date:'dd/MM/yyyy HH:mm' }}</p>
-
-        <button class="botao botao--primario" type="button"
-          (click)="confirmado = false; etapa = 0; agendamentoCriado = null">
+        <button class="botao botao--primario" type="button" (click)="confirmado = false; etapa = 0">
 
           Fazer novo agendamento
 
@@ -68,33 +72,6 @@
       <p class="sobretitulo">Meus pets</p>
 
       <h2>Escolha o pet para realizar o agendamento</h2>
-
-      @if (carregandoPets) {
-      <div class="aviso" role="status">Carregando seus pets...</div>
-      }
-
-      @if (erroPets) {
-      <div class="aviso" role="alert">
-        <p>{{ erroPets }}</p>
-        @if (usuarioAtual()?.role === 'CUSTOMER') {
-        <button type="button" class="botao botao--secundario" (click)="recarregarPets()">
-          Tentar novamente
-        </button>
-        } @else {
-        <a routerLink="/login">Entrar</a>
-        }
-      </div>
-      }
-
-      @if (carregandoServicos) {
-      <div class="aviso" role="status">Carregando serviços...</div>
-      }
-
-      @if (!carregandoPets && !erroPets && pets.length === 0) {
-      <div class="aviso" role="status">
-      Você ainda não cadastrou pets. Cadastre um pet para continuar.
-      </div>
-      }
 
       <div class="pets-lista">
 
@@ -121,9 +98,7 @@
 
         }
 
-        <button class="pet-opcao novo-pet" type="button"
-          [disabled]="carregandoPets || salvandoPet || usuarioAtual()?.role !== 'CUSTOMER'"
-          (click)="mostrarNovoPet = !mostrarNovoPet">
+        <button class="pet-opcao novo-pet" type="button" (click)="mostrarNovoPet = !mostrarNovoPet">
 
           <span class="mais">+</span>
 
@@ -186,10 +161,9 @@
 
         </div>
 
-        <button class="botao botao--primario" type="button" (click)="adicionarPet()"
-          [disabled]="salvandoPet || !novoPet.nome.trim()">
+        <button class="botao botao--primario" type="button" (click)="adicionarPet()">
 
-          {{ salvandoPet ? 'Salvando pet...' : 'Adicionar pet' }}
+          Adicionar pet
 
         </button>
 
@@ -345,19 +319,6 @@
 
       <h2>Escolha os serviços para os pets</h2>
 
-      @if (carregandoServicos) {
-      <div class="aviso" role="status">Carregando serviços disponíveis...</div>
-      }
-
-      @if (erroServicos) {
-      <div class="aviso" role="alert">
-        <p>{{ erroServicos }}</p>
-        <button type="button" class="botao botao--secundario" (click)="carregarServicos()">
-          Tentar novamente
-        </button>
-      </div>
-      }
-
       <div class="abas-pets">
 
         @for (pet of petsAtivos; track pet.id) {
@@ -461,20 +422,18 @@
 
         <label class="radio-linha">
 
-          <input type="radio" name="profissional" [value]="0" [(ngModel)]="profissionalSelecionadoId"
-            (ngModelChange)="selecionarProfissional($event)">
+          <input type="radio" name="profissional" [value]="0" [(ngModel)]="profissionalSelecionadoId">
 
           <span>Sem preferência por profissionais</span>
         </label>
 
         }
 
-        @for (prof of profissionais; track prof.id) {
+        @for (prof of profissionais; track $index) {
 
         <label class="radio-linha">
 
-          <input type="radio" name="profissional" [value]="prof.id" [(ngModel)]="profissionalSelecionadoId"
-            (ngModelChange)="selecionarProfissional($event)">
+          <input type="radio" name="profissional" [value]="prof.id" [(ngModel)]="profissionalSelecionadoId">
 
           <span>{{ prof.nome }}</span>
 
@@ -539,13 +498,9 @@
         @if (carregandoCalendario) {
 
         <div class="aviso" role="status">
-          Consultando os horários disponíveis...
+          Consultando os horários ocupados...
         </div>
 
-        }
-
-        @if (erroRecomendacao) {
-        <div class="aviso" role="alert">{{ erroRecomendacao }}</div>
         }
 
         @if (erroCalendario) {
@@ -560,18 +515,6 @@
 
           </button>
 
-        </div>
-
-        }
-
-        @if (
-        !carregandoCalendario &&
-        !erroCalendario &&
-        disponibilidadeCalendario.length === 0
-        ) {
-
-        <div class="aviso" role="status">
-          Não há horários disponíveis neste mês. Verifique se a unidade possui expediente configurado.
         </div>
 
         }
@@ -664,13 +607,6 @@
 
           }
 
-          @for (hora of horariosIndisponiveisDoDia; track hora) {
-          <button type="button" class="horario-indisponivel" disabled>
-            {{ hora }}
-            <small>Indisponível</small>
-          </button>
-          }
-
         </div>
 
         }
@@ -719,7 +655,7 @@
 
         <div class="resumo__linha">
           <span>Profissional</span>
-          <strong>{{ profissionalRecomendado?.employeeName }}</strong>
+          <strong>{{ nomeProfissional(profissionalSelecionadoId) }}</strong>
         </div>
 
         <div class="resumo__linha">
@@ -789,10 +725,6 @@
 
       </label>
 
-      @if (erroConfirmacao) {
-      <div class="aviso" role="alert">{{ erroConfirmacao }}</div>
-      }
-
       }
 
       <!-- ====================================
@@ -819,10 +751,9 @@
 
           } @else {
 
-          <button class="botao botao--primario" type="button" (click)="confirmar()"
-            [disabled]="!termosAceitos || salvandoAgendamento">
+          <button class="botao botao--primario" type="button" (click)="confirmar()" [disabled]="!termosAceitos">
 
-            {{ salvandoAgendamento ? 'Agendando...' : 'Agendar' }} <span>→</span>
+            Agendar <span>→</span>
 
           </button>
 

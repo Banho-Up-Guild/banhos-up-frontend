@@ -1,164 +1,190 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { LucideCircleExclamationPoint } from '@lucide/angular';
 
-interface DadosUsuario {
-  nome: string;
-  cpf: string;
-  email: string;
-  genero: string;
-  nascimento: string;
-  dddCelular: string;
-  celular: string;
-}
+import { Component, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
+
+import {
+  AtualizarPerfilClienteRequest,
+  ClienteService,
+  PerfilClienteResponse
+} from '../../../../services/cliente.service';
 
 @Component({
   selector: 'app-meus-dados',
-  imports: [
-    FormsModule,
-    LucideCircleExclamationPoint
-  ],
+  imports: [FormsModule, DatePipe],
   templateUrl: './meus-dados.html',
-  styleUrl: './meus-dados.css'
+  styleUrl: './meus-dados.css',
 })
-export class MeusDados {
+export class MeusDados implements OnInit {
 
-  dados: DadosUsuario = {
-    nome: 'User',
-    cpf: '529.982.247-25',
-    email: 'User@gmail.com',
-    genero: 'Feminino',
-    nascimento: '15/08/2000',
-    dddCelular: '11',
-    celular: '99999-9999',
-  };
+  carregando = signal(true);
+  salvando = signal(false);
+  erro = signal('');
+  sucesso = signal('');
 
-  tentouSalvar = false;
-  salvou = false;
+  perfil = signal<PerfilClienteResponse | null>(null);
 
-  formatarCpf(valor: string): void {
-    let numero = valor.replace(/\D/g, '').slice(0, 11);
+  nome = '';
+  celular = '';
+  telefoneSecundario = '';
+  genero = '';
+  dataNascimento = '';
+  endereco = '';
 
-    numero = numero.replace(/(\d{3})(\d)/, '$1.$2');
-    numero = numero.replace(/(\d{3})(\d)/, '$1.$2');
-    numero = numero.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  constructor(private readonly clienteService: ClienteService) {}
 
-    this.dados.cpf = numero;
-    this.salvou = false;
+  ngOnInit(): void {
+    this.carregarPerfil();
   }
 
-  formatarDdd(valor: string, campo: 'dddCelular'): void {
-    this.dados[campo] = valor.replace(/\D/g, '').slice(0, 2);
-    this.salvou = false;
-  }
+  carregarPerfil(): void {
+    this.erro.set('');
+    this.sucesso.set('');
+    this.carregando.set(true);
 
-  formatarCelular(valor: string): void {
-    let numero = valor.replace(/\D/g, '').slice(0, 9);
+    this.clienteService.buscarMeuPerfil()
+      .pipe(finalize(() => this.carregando.set(false)))
+      .subscribe({
+        next: (perfil) => {
+          this.perfil.set(perfil);
+          this.preencherFormulario(perfil);
+        },
 
-    if (numero.length > 5) {
-      numero = numero.replace(/(\d{5})(\d)/, '$1-$2');
-    }
-
-    this.dados.celular = numero;
-    this.salvou = false;
-  }
-
-  formatarData(valor: string): void {
-    let numero = valor.replace(/\D/g, '').slice(0, 8);
-
-    if (numero.length > 4) {
-      numero = numero.replace(/(\d{2})(\d{2})(\d+)/, '$1/$2/$3');
-    } else if (numero.length > 2) {
-      numero = numero.replace(/(\d{2})(\d+)/, '$1/$2');
-    }
-
-    this.dados.nascimento = numero;
-    this.salvou = false;
-  }
-
-  get nomeValido(): boolean {
-    return this.dados.nome.trim().length > 0;
-  }
-
-  get cpfValido(): boolean {
-    const cpf = this.dados.cpf.replace(/\D/g, '');
-
-    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
-      return false;
-    }
-
-    let soma = 0;
-
-    for (let i = 0; i < 9; i++) {
-      soma += Number(cpf[i]) * (10 - i);
-    }
-
-    let digito = (soma * 10) % 11;
-    if (digito === 10) digito = 0;
-
-    if (digito !== Number(cpf[9])) {
-      return false;
-    }
-
-    soma = 0;
-
-    for (let i = 0; i < 10; i++) {
-      soma += Number(cpf[i]) * (11 - i);
-    }
-
-    digito = (soma * 10) % 11;
-    if (digito === 10) digito = 0;
-
-    return digito === Number(cpf[10]);
-  }
-
-  get nascimentoValido(): boolean {
-    const data = this.dados.nascimento;
-
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
-      return false;
-    }
-
-    const [dia, mes, ano] = data.split('/').map(Number);
-    const nascimento = new Date(ano, mes - 1, dia);
-
-    return (
-      nascimento.getFullYear() === ano &&
-      nascimento.getMonth() === mes - 1 &&
-      nascimento.getDate() === dia &&
-      nascimento <= new Date()
-    );
-  }
-
-  get dddCelularValido(): boolean {
-    return /^\d{2}$/.test(this.dados.dddCelular);
-  }
-
-  get celularValido(): boolean {
-    return this.dados.celular.replace(/\D/g, '').length === 9;
-  }
-
-  get formularioValido(): boolean {
-    return (
-      this.nomeValido &&
-      this.cpfValido &&
-      this.nascimentoValido &&
-      this.dddCelularValido &&
-      this.celularValido
-    );
+        error: (erro: HttpErrorResponse) => {
+          this.erro.set(
+            this.mensagemErro(
+              erro,
+              'Não foi possível carregar seus dados.'
+            )
+          );
+        }
+      });
   }
 
   salvar(): void {
-    this.tentouSalvar = true;
-    this.salvou = false;
+    this.erro.set('');
+    this.sucesso.set('');
 
-    if (!this.formularioValido) {
+    if (this.salvando()) {
       return;
     }
 
-    // Simulação de salvamento dos dados.
-    this.salvou = true;
+    const nome = this.nome.trim();
+    const celular = this.celular.replace(/\D/g, '');
+    const telefone = this.telefoneSecundario.replace(/\D/g, '');
 
-    console.log('Dados atualizados:', this.dados);
+    if (!nome) {
+      this.erro.set('Informe seu nome completo.');
+      return;
+    }
+
+    if (celular.length !== 10 && celular.length !== 11) {
+      this.erro.set('Informe um celular válido com DDD.');
+      return;
+    }
+
+    if (
+      telefone &&
+      telefone.length !== 10 &&
+      telefone.length !== 11
+    ) {
+      this.erro.set(
+        'Informe um telefone secundário válido com DDD.'
+      );
+      return;
+    }
+
+    const dados: AtualizarPerfilClienteRequest = {
+      name: nome,
+      phone: celular,
+      secondaryPhone: telefone || null,
+      gender: this.genero || null,
+      dateOfBirth: this.dataNascimento || null,
+      address: this.endereco.trim() || null
+    };
+
+    this.salvando.set(true);
+
+    this.clienteService.atualizarMeuPerfil(dados)
+      .pipe(finalize(() => this.salvando.set(false)))
+      .subscribe({
+        next: (perfilAtualizado) => {
+          this.perfil.set(perfilAtualizado);
+          this.preencherFormulario(perfilAtualizado);
+
+          this.sucesso.set(
+            'Seus dados foram atualizados com sucesso.'
+          );
+        },
+
+        error: (erro: HttpErrorResponse) => {
+          this.erro.set(
+            this.mensagemErro(
+              erro,
+              'Não foi possível atualizar seus dados.'
+            )
+          );
+        }
+      });
+  }
+
+  restaurarDados(): void {
+    const perfilAtual = this.perfil();
+
+    if (!perfilAtual) {
+      return;
+    }
+
+    this.preencherFormulario(perfilAtual);
+
+    this.erro.set('');
+    this.sucesso.set('Alterações descartadas.');
+  }
+
+  private preencherFormulario(
+    perfil: PerfilClienteResponse
+  ): void {
+
+    this.nome = perfil.name ?? '';
+    this.celular = perfil.phone ?? '';
+    this.telefoneSecundario = perfil.secondaryPhone ?? '';
+    this.genero = perfil.gender ?? '';
+    this.dataNascimento = perfil.dateOfBirth ?? '';
+    this.endereco = perfil.address ?? '';
+  }
+
+  private mensagemErro(
+    erro: HttpErrorResponse,
+    padrao: string
+  ): string {
+
+    if (erro.status === 0) {
+      return 'Não foi possível conectar ao servidor. Verifique se o Backend está funcionando.';
+    }
+
+    if (erro.status === 401) {
+      return 'Sua sessão expirou. Entre novamente na sua conta.';
+    }
+
+    if (erro.status === 403) {
+      return 'Você não tem permissão para acessar estes dados.';
+    }
+
+    const corpo = erro.error;
+
+    if (
+      typeof corpo?.message === 'string' &&
+      corpo.message.trim()
+    ) {
+      return corpo.message;
+    }
+
+    if (corpo?.errors && typeof corpo.errors === 'object') {
+      return Object.values(corpo.errors).join(' ');
+    }
+
+    return padrao;
   }
 }

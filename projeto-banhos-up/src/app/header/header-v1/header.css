@@ -78,6 +78,14 @@
   font-weight: 600;
 }
 
+.header__login-texto span:last-child {
+  display: block;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .header__menu-botao {
   display: none;
   padding: 8px;
@@ -93,6 +101,17 @@
   margin: 4px 0;
   border-radius: 4px;
   background: #013e73;
+}
+
+.header__contato {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #013e73;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 @media (max-width: 900px) {
@@ -138,15 +157,4 @@
   .header__logo img {
     width: 125px;
   }
-}
-
-.header__contato {
-  justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #013e73;
-  font-size: 0.95rem;
-  font-weight: 600;
-  white-space: nowrap;
 }

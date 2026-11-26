@@ -385,3 +385,20 @@
     width: 100%;
   }
 }
+
+/* A opção de sair é um botão, não um link de navegação. */
+.perfil_item-sair {
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.perfil_item-sair:hover {
+  color: #43b9f5;
+  background: #f7fcff;
+}
+
+.perfil_item-home {
+  margin-top: 10px;
+}

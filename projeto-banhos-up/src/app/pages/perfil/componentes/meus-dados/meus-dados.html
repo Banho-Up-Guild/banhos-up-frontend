@@ -1,177 +1,246 @@
+
 <section class="meus-dados">
 
-  <header class="meus-dados_cabecalho">
-    <h2>Meus dados</h2>
-    <p>Confira ou altere seus dados de cadastro.</p>
+  <header class="meus-dados__cabecalho">
+    <div>
+      <p class="meus-dados__sobretitulo">MINHA CONTA</p>
+      <h1>Meus dados</h1>
+
+      <p class="meus-dados__descricao">
+        Consulte e mantenha suas informações pessoais atualizadas.
+      </p>
+    </div>
+
+    <span
+      class="meus-dados__status"
+      [class.inativo]="perfil() && !perfil()?.active"
+    >
+      {{ perfil()?.active ? 'Conta ativa' : 'Conta' }}
+    </span>
   </header>
 
-  <form class="meus-dados_formulario" (ngSubmit)="salvar()" novalidate>
+  @if (carregando()) {
 
-    <div class="campo campo_nome">
-      <label for="nome">Nome completo</label>
-
-      <input
-        id="nome"
-        name="nome"
-        type="text"
-        [(ngModel)]="dados.nome"
-        maxlength="100"
-        [class.campo-erro]="tentouSalvar && !nomeValido"
-        [attr.aria-invalid]="tentouSalvar && !nomeValido"
-      />
-
-      @if (tentouSalvar && !nomeValido) {
-        <small class="mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          Informe seu nome completo.
-        </small>
-      }
+    <div class="meus-dados__estado" role="status">
+      Carregando seus dados...
     </div>
 
-    <div class="campo campo_cpf">
-      <label for="cpf">CPF</label>
+  } @else if (perfil()) {
 
-      <input
-        id="cpf"
-        name="cpf"
-        type="text"
-        inputmode="numeric"
-        maxlength="14"
-        [(ngModel)]="dados.cpf"
-        (ngModelChange)="formatarCpf($event)"
-        placeholder="000.000.000-00"
-        [class.campo-erro]="tentouSalvar && !cpfValido"
-        [attr.aria-invalid]="tentouSalvar && !cpfValido"
-      />
+    <form
+      class="meus-dados__formulario"
+      (ngSubmit)="salvar()"
+    >
 
-      @if (tentouSalvar && !cpfValido) {
-        <small class="mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          Informe um CPF válido.
-        </small>
-      }
-    </div>
+      <!-- Informações pessoais -->
+      <div class="meus-dados__secao">
 
-    <div class="campo campo_email">
-      <label for="email">E-mail</label>
+        <h2>Informações pessoais</h2>
 
-      <input
-        id="email"
-        name="email"
-        type="email"
-        [(ngModel)]="dados.email"
-      />
-    </div>
+        <p>Seus dados principais de identificação.</p>
 
-    <div class="campo campo_genero">
-      <label for="genero">Gênero</label>
+        <div class="meus-dados__grade">
 
-      <select
-        id="genero"
-        name="genero"
-        [(ngModel)]="dados.genero"
-      >
-        <option value="">Selecione</option>
-        <option value="Feminino">Feminino</option>
-        <option value="Masculino">Masculino</option>
-        <option value="Não informar">Prefiro não informar</option>
-      </select>
-    </div>
+          <div class="meus-dados__campo">
+            <label for="perfilNome">Nome completo</label>
 
-    <div class="campo campo_nascimento">
-      <label for="nascimento">Data de nascimento</label>
+            <input
+              id="perfilNome"
+              name="nome"
+              type="text"
+              [(ngModel)]="nome"
+              maxlength="100"
+              autocomplete="name"
+              required
+            />
+          </div>
 
-      <input
-        id="nascimento"
-        name="nascimento"
-        type="text"
-        inputmode="numeric"
-        maxlength="10"
-        placeholder="00/00/0000"
-        [(ngModel)]="dados.nascimento"
-        (ngModelChange)="formatarData($event)"
-        [class.campo-erro]="tentouSalvar && !nascimentoValido"
-        [attr.aria-invalid]="tentouSalvar && !nascimentoValido"
-      />
+          <div class="meus-dados__campo">
+            <label for="perfilCpf">CPF</label>
 
-      @if (tentouSalvar && !nascimentoValido) {
-        <small class="mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          Informe uma data válida.
-        </small>
-      }
-    </div>
+            <input
+              id="perfilCpf"
+              name="cpf"
+              type="text"
+              [value]="perfil()?.cpf || ''"
+              readonly
+            />
 
-    <div class="campo campo_ddd-celular">
-      <label for="dddCelular">DDD</label>
+            <small>
+              O CPF não pode ser alterado por esta página.
+            </small>
+          </div>
 
-      <input
-        id="dddCelular"
-        name="dddCelular"
-        type="text"
-        inputmode="numeric"
-        maxlength="2"
-        [(ngModel)]="dados.dddCelular"
-        (ngModelChange)="formatarDdd($event, 'dddCelular')"
-        [class.campo-erro]="tentouSalvar && !dddCelularValido"
-        [attr.aria-invalid]="tentouSalvar && !dddCelularValido"
-      />
+          <div class="meus-dados__campo">
+            <label for="perfilEmail">E-mail</label>
 
-      @if (tentouSalvar && !dddCelularValido) {
-        <small class="mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          Informe o DDD.
-        </small>
-      }
-    </div>
+            <input
+              id="perfilEmail"
+              name="email"
+              type="email"
+              [value]="perfil()?.email || ''"
+              readonly
+            />
 
-    <div class="campo campo_celular">
-      <label for="celular">Celular</label>
+            <small>
+              O e-mail não pode ser alterado por esta página.
+            </small>
+          </div>
 
-      <input
-        id="celular"
-        name="celular"
-        type="text"
-        inputmode="numeric"
-        maxlength="10"
-        placeholder="00000-0000"
-        [(ngModel)]="dados.celular"
-        (ngModelChange)="formatarCelular($event)"
-        [class.campo-erro]="tentouSalvar && !celularValido"
-        [attr.aria-invalid]="tentouSalvar && !celularValido"
-      />
+          <div class="meus-dados__campo">
+            <label for="perfilNascimento">Data de nascimento</label>
 
-      @if (tentouSalvar && !celularValido) {
-        <small class="mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          Informe um celular válido.
-        </small>
-      }
-    </div>
+            <input
+              id="perfilNascimento"
+              name="dataNascimento"
+              type="date"
+              [(ngModel)]="dataNascimento"
+            />
+          </div>
 
-    <div class="formulario_acoes">
+        </div>
+      </div>
 
-      @if (salvou) {
-        <p class="mensagem-sucesso">
-          Dados atualizados com sucesso!
+      <!-- Contato -->
+      <div class="meus-dados__secao">
+
+        <h2>Contato</h2>
+
+        <p>
+          Utilizamos essas informações para falar com você sobre seus agendamentos.
+        </p>
+
+        <div class="meus-dados__grade">
+
+          <div class="meus-dados__campo">
+            <label for="perfilCelular">Celular</label>
+
+            <input
+              id="perfilCelular"
+              name="celular"
+              type="tel"
+              [(ngModel)]="celular"
+              maxlength="15"
+              autocomplete="tel"
+              placeholder="DDD + celular"
+              required
+            />
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilTelefone">
+              Telefone secundário <span>(opcional)</span>
+            </label>
+
+            <input
+              id="perfilTelefone"
+              name="telefoneSecundario"
+              type="tel"
+              [(ngModel)]="telefoneSecundario"
+              maxlength="15"
+              placeholder="DDD + telefone"
+            />
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilGenero">
+              Gênero <span>(opcional)</span>
+            </label>
+
+            <select
+              id="perfilGenero"
+              name="genero"
+              [(ngModel)]="genero"
+            >
+              <option value="">Não informado</option>
+              <option value="feminino">Feminino</option>
+              <option value="masculino">Masculino</option>
+              <option value="nao-informar">Prefiro não informar</option>
+            </select>
+          </div>
+
+          <div class="meus-dados__campo meus-dados__campo--largura-total">
+            <label for="perfilEndereco">
+              Endereço <span>(opcional)</span>
+            </label>
+
+            <input
+              id="perfilEndereco"
+              name="endereco"
+              type="text"
+              [(ngModel)]="endereco"
+              maxlength="255"
+              autocomplete="street-address"
+              placeholder="Rua, número, bairro, cidade e CEP"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      @if (erro()) {
+        <p
+          class="meus-dados__mensagem erro"
+          role="alert"
+        >
+          {{ erro() }}
         </p>
       }
 
+      @if (sucesso()) {
+        <p
+          class="meus-dados__mensagem sucesso"
+          role="status"
+        >
+          {{ sucesso() }}
+        </p>
+      }
+
+      <!-- Botões -->
+      <footer class="meus-dados__acoes">
+
+        <button
+          class="meus-dados__botao secundario"
+          type="button"
+          (click)="restaurarDados()"
+          [disabled]="salvando()"
+        >
+          Descartar alterações
+        </button>
+
+        <button
+          class="meus-dados__botao primario"
+          type="submit"
+          [disabled]="salvando()"
+        >
+          {{ salvando() ? 'Salvando...' : 'Salvar alterações' }}
+        </button>
+
+      </footer>
+
+    </form>
+
+    <p class="meus-dados__rodape">
+      Cliente desde {{ perfil()?.registeredAt | date:'dd/MM/yyyy' }}.
+    </p>
+
+  } @else {
+
+    <div class="meus-dados__estado">
+
+      <p>Não foi possível carregar seu perfil.</p>
+
       <button
-        type="submit"
-        class="botao_salvar"
-        [class.botao-habilitado]="formularioValido"
+        class="meus-dados__botao primario"
+        type="button"
+        (click)="carregarPerfil()"
       >
-        Salvar
+        Tentar novamente
       </button>
 
     </div>
 
-  </form>
-
-	<footer class="perfil_footer">
-    <p>Copyright© 2026 Banhos UP S/A</p>
-    <p>Todos os direitos reservados</p>
-  </footer>
+  }
 
 </section>

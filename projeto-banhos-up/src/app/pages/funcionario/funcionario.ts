@@ -24,6 +24,20 @@ import { DisponibilidadeService } from '../../services/disponibilidade.service';
 
 import { DiaDisponibilidade } from '../../models/disponibilidade.model';
 
+import { forkJoin } from 'rxjs';
+
+import { FuncionarioEquipeService } from '../../services/funcionario-equipe.service';
+
+import {
+  FuncionarioEquipe
+} from '../../models/funcionario-equipe.model';
+
+import { OfertaService } from '../../services/oferta.service';
+
+import { Oferta } from '../../models/oferta.model';
+
+import { LojaRequest } from '../../models/loja.model';
+
 type ModuloFuncionario =
   | 'painel'
   | 'agendamentos'
@@ -47,6 +61,36 @@ export class Funcionario {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+
+  // GERENCIAMENTO DA EQUIPE
+
+  readonly equipe = signal<FuncionarioEquipe[]>([]);
+
+  readonly disponiveisEquipe = signal<FuncionarioEquipe[]>([]);
+
+  readonly equipeStoreId = signal<number | null>(null);
+
+  readonly nomeUnidadeEquipe = signal('');
+
+  readonly funcionarioDisponivelId = signal<number | null>(null);
+
+  readonly carregandoEquipe = signal(false);
+
+  readonly salvandoEquipe = signal(false);
+
+  readonly erroEquipe = signal('');
+
+  readonly sucessoEquipe = signal('');
+
+  readonly membroEditandoId = signal<number | null>(null);
+
+  readonly cargoEdicao = signal('');
+
+  private readonly funcionarioEquipeService =
+    inject(FuncionarioEquipeService);
+
+  private readonly ofertaService =
+    inject(OfertaService);
 
   private readonly funcionarioAgendamentoService =
     inject(FuncionarioAgendamentoService);
@@ -98,6 +142,52 @@ export class Funcionario {
   readonly erroUnidades = signal('');
 
   readonly modulo = signal<ModuloFuncionario>('painel');
+
+  // SERVIÇOS E PREÇOS
+
+  readonly ofertas = signal<Oferta[]>([]);
+
+  readonly carregandoOfertas = signal(false);
+
+  readonly salvandoOferta = signal(false);
+
+  readonly erroOfertas = signal('');
+
+  readonly sucessoOfertas = signal('');
+
+  readonly mostrarFormularioOferta = signal(false);
+
+  readonly editandoOfertaId = signal<number | null>(null);
+
+  // CADASTRO E EDIÇÃO DE UNIDADES
+
+  readonly mostrarFormularioUnidade = signal(false);
+
+  readonly editandoUnidadeId = signal<number | null>(null);
+
+  readonly salvandoUnidade = signal(false);
+
+  readonly erroFormularioUnidade = signal('');
+
+  readonly sucessoFormularioUnidade = signal('');
+
+  formularioUnidade: LojaRequest = {
+    nome: '',
+    cep: '',
+    estado: '',
+    cidade: '',
+    endereco: '',
+    bairro: ''
+  };
+
+  formularioOferta: Oferta = {
+    id: null,
+    nome: '',
+    descricao: '',
+    preco: 0,
+    duracaoMinutos: 30,
+    ativo: true
+  };
 
   readonly menu = [
     {
@@ -206,6 +296,14 @@ export class Funcionario {
             this.carregarUnidades();
           }
 
+          if (modulo === 'equipe') {
+            this.carregarEquipe();
+          }
+
+          if (modulo === 'servicos') {
+            this.carregarOfertas();
+          }
+
           if (modulo === 'disponibilidade') {
             this.carregarDisponibilidade();
           }
@@ -281,6 +379,247 @@ export class Funcionario {
     this.carregandoUnidades.set(false);
   }
 
+  abrirNovaUnidade(): void {
+
+    if (this.usuarioAtual()?.role !== 'ADMIN') {
+      return;
+    }
+
+    this.editandoUnidadeId.set(null);
+
+    this.formularioUnidade = {
+      nome: '',
+      cep: '',
+      estado: '',
+      cidade: '',
+      endereco: '',
+      bairro: ''
+    };
+
+    this.erroFormularioUnidade.set('');
+    this.sucessoFormularioUnidade.set('');
+
+    this.mostrarFormularioUnidade.set(true);
+  }
+
+  editarUnidade(loja: Loja): void {
+
+    const perfil = this.usuarioAtual()?.role;
+
+    if (
+      perfil === 'EMPLOYEE' &&
+      !this.temPermissao('STORES_MANAGE')
+    ) {
+      this.erroUnidades.set(
+        'Você não possui a permissão STORES_MANAGE.'
+      );
+
+      return;
+    }
+
+    this.editandoUnidadeId.set(loja.id);
+
+    this.formularioUnidade = {
+      nome: loja.nome,
+      cep: loja.cep,
+      estado: loja.estado,
+      cidade: loja.cidade,
+      endereco: loja.endereco,
+      bairro: loja.bairro
+    };
+
+    this.erroFormularioUnidade.set('');
+    this.sucessoFormularioUnidade.set('');
+
+    this.mostrarFormularioUnidade.set(true);
+  }
+
+  cancelarFormularioUnidade(): void {
+
+    this.mostrarFormularioUnidade.set(false);
+
+    this.editandoUnidadeId.set(null);
+
+    this.erroFormularioUnidade.set('');
+
+    this.formularioUnidade = {
+      nome: '',
+      cep: '',
+      estado: '',
+      cidade: '',
+      endereco: '',
+      bairro: ''
+    };
+  }
+
+  salvarUnidade(): void {
+
+    const perfil = this.usuarioAtual()?.role;
+
+    const dados = this.formularioUnidade;
+
+    if (
+      !dados.nome.trim() ||
+      !dados.cep.trim() ||
+      !dados.estado.trim() ||
+      !dados.cidade.trim() ||
+      !dados.endereco.trim() ||
+      !dados.bairro.trim()
+    ) {
+
+      this.erroFormularioUnidade.set(
+        'Preencha todos os campos obrigatórios.'
+      );
+
+      return;
+    }
+
+    const cep = dados.cep.replace(/\D/g, '');
+
+    if (cep.length !== 8) {
+
+      this.erroFormularioUnidade.set(
+        'Informe um CEP válido com oito números.'
+      );
+
+      return;
+    }
+
+    if (!/^[A-Za-z]{2}$/.test(dados.estado)) {
+
+      this.erroFormularioUnidade.set(
+        'Informe a sigla do estado com duas letras.'
+      );
+
+      return;
+    }
+
+    if (
+      perfil === 'EMPLOYEE' &&
+      !this.temPermissao('STORES_MANAGE')
+    ) {
+
+      this.erroFormularioUnidade.set(
+        'Você não possui permissão para editar a unidade.'
+      );
+
+      return;
+    }
+
+    if (perfil !== 'ADMIN' && perfil !== 'EMPLOYEE') {
+      return;
+    }
+
+    const request: LojaRequest = {
+      ...dados,
+      cep: cep
+    };
+
+    let requisicao;
+
+    if (perfil === 'ADMIN') {
+
+      const id = this.editandoUnidadeId();
+
+      requisicao = id !== null
+        ? this.lojaService.atualizarUnidade(id, request)
+        : this.lojaService.criarUnidade(request);
+
+    } else {
+
+      // O Backend identifica a unidade pelo funcionário autenticado.
+      requisicao = this.lojaService.atualizarMinhaUnidade(request);
+    }
+
+    this.salvandoUnidade.set(true);
+    this.erroFormularioUnidade.set('');
+
+    requisicao.subscribe({
+
+      next: () => {
+
+        this.salvandoUnidade.set(false);
+
+        this.cancelarFormularioUnidade();
+
+        this.sucessoFormularioUnidade.set(
+          'Unidade salva com sucesso!'
+        );
+
+        this.carregarUnidades();
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        this.salvandoUnidade.set(false);
+
+        if (erro.status === 403) {
+
+          this.erroFormularioUnidade.set(
+            'Você não possui autorização para esta operação.'
+          );
+
+        } else if (erro.status === 0) {
+
+          this.erroFormularioUnidade.set(
+            'Não foi possível conectar ao Backend.'
+          );
+
+        } else {
+
+          this.erroFormularioUnidade.set(
+            erro.error?.message ||
+            `Não foi possível salvar a unidade. HTTP ${erro.status}.`
+          );
+        }
+      }
+    });
+  }
+
+  alterarStatusUnidade(loja: Loja): void {
+
+    // Somente ADMIN.
+    if (this.usuarioAtual()?.role !== 'ADMIN') {
+      return;
+    }
+
+    const novoStatus = !loja.ativa;
+
+    const acao = novoStatus ? 'reativar' : 'desativar';
+
+    const confirmar = window.confirm(
+      `Deseja realmente ${acao} a unidade "${loja.nome}"?`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.lojaService.alterarStatusUnidade(
+      loja.id,
+      novoStatus
+    )
+      .subscribe({
+
+        next: () => {
+
+          this.sucessoFormularioUnidade.set(
+            `Unidade ${novoStatus ? 'reativada' : 'desativada'} com sucesso!`
+          );
+
+          this.carregarUnidades();
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          this.erroUnidades.set(
+            erro.error?.message ||
+            'Não foi possível alterar a situação da unidade.'
+          );
+        }
+      });
+  }
+
 
   private tratarErroUnidades(erro: HttpErrorResponse): void {
 
@@ -343,6 +682,586 @@ export class Funcionario {
     }
 
     return this.permissoesFuncionario().includes(permissao);
+  }
+
+  iniciarEdicaoCargo(funcionario: FuncionarioEquipe): void {
+
+    this.membroEditandoId.set(funcionario.id);
+
+    this.cargoEdicao.set(
+      funcionario.cargo || ''
+    );
+  }
+
+
+  cancelarEdicaoCargo(): void {
+
+    this.membroEditandoId.set(null);
+
+    this.cargoEdicao.set('');
+  }
+
+
+  salvarCargoFuncionario(funcionarioId: number): void {
+
+    const cargo = this.cargoEdicao().trim();
+
+    if (!cargo) {
+
+      this.erroEquipe.set(
+        'Informe o cargo do funcionário.'
+      );
+
+      return;
+    }
+
+    const requisicao =
+      this.usuarioAtual()?.role === 'ADMIN'
+        ? this.funcionarioEquipeService.atualizarCargoAdmin(
+          this.equipeStoreId()!,
+          funcionarioId,
+          cargo
+        )
+        : this.funcionarioEquipeService.atualizarCargoMinhaEquipe(
+          funcionarioId,
+          cargo
+        );
+
+    this.salvandoEquipe.set(true);
+    this.erroEquipe.set('');
+
+    requisicao.subscribe({
+
+      next: () => {
+
+        this.salvandoEquipe.set(false);
+
+        this.cancelarEdicaoCargo();
+
+        this.sucessoEquipe.set(
+          'Cargo atualizado com sucesso!'
+        );
+
+        this.recarregarEquipe();
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        this.salvandoEquipe.set(false);
+
+        this.erroEquipe.set(
+          erro.error?.message ||
+          'Não foi possível atualizar o cargo.'
+        );
+      }
+    });
+  }
+
+  removerFuncionarioEquipe(funcionarioId: number): void {
+
+    const confirmar = window.confirm(
+      'Deseja realmente remover este funcionário da equipe? O histórico de agendamentos será preservado.'
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.salvandoEquipe.set(true);
+
+    const requisicao =
+      this.usuarioAtual()?.role === 'ADMIN'
+        ? this.funcionarioEquipeService.removerAdmin(
+          this.equipeStoreId()!,
+          funcionarioId
+        )
+        : this.funcionarioEquipeService.removerMinhaEquipe(
+          funcionarioId
+        );
+
+    requisicao.subscribe({
+
+      next: () => {
+
+        this.salvandoEquipe.set(false);
+
+        this.sucessoEquipe.set(
+          'Funcionário removido da equipe. O histórico foi preservado.'
+        );
+
+        this.recarregarEquipe();
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        this.salvandoEquipe.set(false);
+
+        this.erroEquipe.set(
+          erro.error?.message ||
+          'Não foi possível remover o funcionário.'
+        );
+      }
+    });
+  }
+
+  adicionarFuncionarioEquipe(): void {
+
+    const employeeId = this.funcionarioDisponivelId();
+
+    if (employeeId === null) {
+
+      this.erroEquipe.set(
+        'Selecione um funcionário.'
+      );
+
+      return;
+    }
+
+    this.salvandoEquipe.set(true);
+    this.erroEquipe.set('');
+
+    const requisicao =
+      this.usuarioAtual()?.role === 'ADMIN'
+        ? this.funcionarioEquipeService.adicionarAdmin(
+          this.equipeStoreId()!,
+          employeeId
+        )
+        : this.funcionarioEquipeService.adicionarMinhaEquipe(
+          employeeId
+        );
+
+    requisicao.subscribe({
+
+      next: () => {
+
+        this.salvandoEquipe.set(false);
+
+        this.funcionarioDisponivelId.set(null);
+
+        this.sucessoEquipe.set(
+          'Funcionário adicionado à equipe com sucesso!'
+        );
+
+        this.recarregarEquipe();
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        this.salvandoEquipe.set(false);
+
+        this.erroEquipe.set(
+          erro.error?.message ||
+          'Não foi possível adicionar o funcionário.'
+        );
+      }
+    });
+  }
+
+  recarregarEquipe(): void {
+
+    if (this.usuarioAtual()?.role === 'ADMIN') {
+
+      const storeId = this.equipeStoreId();
+
+      if (storeId !== null) {
+        this.selecionarUnidadeEquipe(storeId);
+      }
+
+      return;
+    }
+
+    this.carregarEquipe();
+  }
+
+  selecionarUnidadeEquipe(storeId: number): void {
+
+    this.equipeStoreId.set(storeId);
+
+    const loja = this.unidades().find(
+      item => item.id === storeId
+    );
+
+    this.nomeUnidadeEquipe.set(
+      loja?.nome || ''
+    );
+
+    this.carregandoEquipe.set(true);
+    this.erroEquipe.set('');
+    this.equipe.set([]);
+    this.disponiveisEquipe.set([]);
+
+    forkJoin({
+      equipe: this.funcionarioEquipeService.listarEquipeAdmin(storeId),
+      disponiveis: this.funcionarioEquipeService.listarDisponiveisAdmin(storeId)
+    }).subscribe({
+
+      next: (resposta) => {
+
+        this.equipe.set(resposta.equipe);
+        this.disponiveisEquipe.set(resposta.disponiveis);
+
+        this.carregandoEquipe.set(false);
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        this.carregandoEquipe.set(false);
+
+        this.erroEquipe.set(
+          erro.status === 403
+            ? 'Você não possui autorização para gerenciar esta equipe.'
+            : 'Não foi possível carregar os dados da equipe.'
+        );
+      }
+    });
+  }
+
+  private carregarEquipe(): void {
+
+    const perfil = this.usuarioAtual()?.role;
+
+    this.carregandoEquipe.set(true);
+    this.erroEquipe.set('');
+    this.sucessoEquipe.set('');
+
+    this.equipe.set([]);
+    this.disponiveisEquipe.set([]);
+
+    if (perfil === 'ADMIN') {
+
+      this.lojaService.listarTodasUnidadesAdmin()
+        .subscribe({
+
+          next: (lojas) => {
+
+            this.unidades.set(lojas);
+
+            if (lojas.length === 0) {
+
+              this.carregandoEquipe.set(false);
+
+              this.erroEquipe.set(
+                'Não existem unidades cadastradas.'
+              );
+
+              return;
+            }
+
+            const storeId =
+              this.equipeStoreId() ??
+              lojas.find(loja => loja.ativa)?.id ??
+              lojas[0].id;
+
+            this.selecionarUnidadeEquipe(storeId);
+
+          },
+
+          error: () => {
+
+            this.carregandoEquipe.set(false);
+
+            this.erroEquipe.set(
+              'Não foi possível carregar as unidades.'
+            );
+          }
+        });
+
+      return;
+    }
+
+    if (perfil === 'EMPLOYEE') {
+
+      forkJoin({
+        equipe: this.funcionarioEquipeService.listarMinhaEquipe(),
+        disponiveis: this.funcionarioEquipeService.listarDisponiveisMinhaEquipe(),
+        unidade: this.lojaService.buscarMinhaUnidade()
+      }).subscribe({
+
+        next: (resposta) => {
+
+          this.equipe.set(resposta.equipe);
+
+          this.disponiveisEquipe.set(
+            resposta.disponiveis
+          );
+
+          this.nomeUnidadeEquipe.set(
+            resposta.unidade.nome
+          );
+
+          this.equipeStoreId.set(
+            resposta.unidade.id
+          );
+
+          this.carregandoEquipe.set(false);
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          this.carregandoEquipe.set(false);
+
+          if (erro.status === 403) {
+
+            this.erroEquipe.set(
+              'Você não possui a permissão TEAM_MANAGE.'
+            );
+
+          } else if (erro.status === 0) {
+
+            this.erroEquipe.set(
+              'Não foi possível conectar ao Backend.'
+            );
+
+          } else {
+
+            this.erroEquipe.set(
+              `Erro ao carregar a equipe. HTTP ${erro.status}.`
+            );
+          }
+        }
+      });
+
+      return;
+    }
+
+    this.carregandoEquipe.set(false);
+
+    this.erroEquipe.set(
+      'Seu perfil não possui acesso a esta funcionalidade.'
+    );
+  }
+
+  private carregarOfertas(): void {
+
+    this.carregandoOfertas.set(true);
+
+    this.erroOfertas.set('');
+    this.sucessoOfertas.set('');
+
+    this.ofertaService.listar(false)
+      .subscribe({
+
+        next: (ofertas) => {
+
+          this.ofertas.set(ofertas);
+
+          this.carregandoOfertas.set(false);
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          this.carregandoOfertas.set(false);
+
+          this.erroOfertas.set(
+            erro.status === 0
+              ? 'Não foi possível conectar ao Backend.'
+              : `Erro ao carregar serviços. HTTP ${erro.status}.`
+          );
+        }
+      });
+  }
+
+  abrirNovaOferta(): void {
+
+    this.editandoOfertaId.set(null);
+
+    this.formularioOferta = {
+      id: null,
+      nome: '',
+      descricao: '',
+      preco: 0,
+      duracaoMinutos: 30,
+      ativo: true
+    };
+
+    this.erroOfertas.set('');
+    this.sucessoOfertas.set('');
+
+    this.mostrarFormularioOferta.set(true);
+  }
+
+  editarOferta(oferta: Oferta): void {
+
+    this.editandoOfertaId.set(oferta.id);
+
+    this.formularioOferta = {
+      ...oferta
+    };
+
+    this.erroOfertas.set('');
+    this.sucessoOfertas.set('');
+
+    this.mostrarFormularioOferta.set(true);
+  }
+
+  cancelarFormularioOferta(): void {
+
+    this.mostrarFormularioOferta.set(false);
+
+    this.editandoOfertaId.set(null);
+
+    this.formularioOferta = {
+      id: null,
+      nome: '',
+      descricao: '',
+      preco: 0,
+      duracaoMinutos: 30,
+      ativo: true
+    };
+
+    this.erroOfertas.set('');
+  }
+
+  salvarOferta(): void {
+
+    if (!this.temPermissao('OFFERINGS_MANAGE')) {
+
+      this.erroOfertas.set(
+        'Você não possui permissão para gerenciar serviços.'
+      );
+
+      return;
+    }
+
+    const dados = this.formularioOferta;
+
+    if (!dados.nome.trim()) {
+
+      this.erroOfertas.set(
+        'Informe o nome do serviço.'
+      );
+
+      return;
+    }
+
+    if (
+      !Number.isFinite(dados.preco) ||
+      dados.preco < 0
+    ) {
+
+      this.erroOfertas.set(
+        'Informe um preço válido.'
+      );
+
+      return;
+    }
+
+    if (
+      !Number.isInteger(dados.duracaoMinutos) ||
+      dados.duracaoMinutos <= 0
+    ) {
+
+      this.erroOfertas.set(
+        'Informe uma duração válida em minutos.'
+      );
+
+      return;
+    }
+
+    const requisicao =
+      this.editandoOfertaId() !== null
+        ? this.ofertaService.atualizar(
+          this.editandoOfertaId()!,
+          dados
+        )
+        : this.ofertaService.criar(dados);
+
+    this.salvandoOferta.set(true);
+    this.erroOfertas.set('');
+
+    requisicao.subscribe({
+
+      next: () => {
+
+        this.salvandoOferta.set(false);
+
+        this.cancelarFormularioOferta();
+
+        this.sucessoOfertas.set(
+          'Serviço salvo com sucesso!'
+        );
+
+        this.carregarOfertas();
+      },
+
+      error: (erro: HttpErrorResponse) => {
+
+        this.salvandoOferta.set(false);
+
+        this.erroOfertas.set(
+          erro.error?.message ||
+          'Não foi possível salvar o serviço.'
+        );
+      }
+    });
+  }
+
+  desativarOferta(oferta: Oferta): void {
+
+    if (!this.temPermissao('OFFERINGS_MANAGE')) {
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `Deseja desativar o serviço "${oferta.nome}"?`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.ofertaService.desativar(oferta.id!)
+      .subscribe({
+
+        next: () => {
+
+          this.sucessoOfertas.set(
+            'Serviço desativado com sucesso!'
+          );
+
+          this.carregarOfertas();
+        },
+
+        error: () => {
+
+          this.erroOfertas.set(
+            'Não foi possível desativar o serviço.'
+          );
+        }
+      });
+  }
+
+  reativarOferta(oferta: Oferta): void {
+
+    if (!this.temPermissao('OFFERINGS_MANAGE')) {
+      return;
+    }
+
+    this.ofertaService.atualizar(
+      oferta.id!,
+      {
+        ...oferta,
+        ativo: true
+      }
+    )
+      .subscribe({
+
+        next: () => {
+
+          this.sucessoOfertas.set(
+            'Serviço reativado com sucesso!'
+          );
+
+          this.carregarOfertas();
+        },
+
+        error: () => {
+
+          this.erroOfertas.set(
+            'Não foi possível reativar o serviço.'
+          );
+        }
+      });
   }
 
   private carregarAgendamentos(): void {

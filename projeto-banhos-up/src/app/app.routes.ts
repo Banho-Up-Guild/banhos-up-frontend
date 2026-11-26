@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { employeeGuard } from './guards/employee.guard';
+import { customerGuard } from './guards/customer.guard';
 
 export const routes: Routes = [
   {
@@ -11,6 +12,7 @@ export const routes: Routes = [
   {
     path: 'agendamento',
     title: 'BanhosUp! | Agendamento',
+    canActivate: [customerGuard],
     loadComponent: () =>
       import('./pages/agendamento/agendamento').then((m) => m.Agendamento),
   },
@@ -29,6 +31,7 @@ export const routes: Routes = [
   {
     path: 'perfil',
     title: 'BanhosUp! | Meu Perfil',
+    canActivate: [customerGuard],
     loadComponent: () =>
       import('./pages/perfil/perfil').then((m) => m.Perfil),
     children: [
@@ -68,19 +71,19 @@ export const routes: Routes = [
     ],
   },
   {
-  path: 'funcionario',
-  pathMatch: 'full',
-  redirectTo: 'funcionario/painel'
-},
-{
-  path: 'funcionario/:modulo',
-  title: 'BanhosUp! | Área do Funcionário',
-  canActivate: [employeeGuard],
-  loadComponent: () =>
-    import('./pages/funcionario/funcionario')
-      .then((m) => m.Funcionario),
-},
-{
+    path: 'funcionario',
+    pathMatch: 'full',
+    redirectTo: 'funcionario/painel',
+  },
+  {
+    path: 'funcionario/:modulo',
+    title: 'BanhosUp! | Área do Funcionário',
+    canActivate: [employeeGuard],
+    loadComponent: () =>
+      import('./pages/funcionario/funcionario')
+        .then((m) => m.Funcionario),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

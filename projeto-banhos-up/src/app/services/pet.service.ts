@@ -1,9 +1,24 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { PetCadastroRequest, PetResponse } from '../models/agendamento.model';
+
+export type PortePet = 'PEQUENO' | 'MEDIO' | 'GRANDE';
+
+export interface PetRequest {
+  nome: string;
+  especie: string;
+  raca: string | null;
+  dataNascimento: string | null;
+  porte: PortePet | null;
+  observacoes: string | null;
+}
+
+export interface PetResponse extends PetRequest {
+  id: number;
+  donoId: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +29,29 @@ export class PetService {
 
   private readonly apiUrl = `${environment.apiUrl}/pets`;
 
-  listarPorDono(donoId: number): Observable<PetResponse[]> {
-    const params = new HttpParams().set('donoId', String(donoId));
-    return this.http.get<PetResponse[]>(this.apiUrl, { params });
+  listarMeusPets(): Observable<PetResponse[]> {
+    return this.http.get<PetResponse[]>(this.apiUrl);
   }
 
-  criar(dados: PetCadastroRequest): Observable<PetResponse> {
+  buscarPorId(id: number): Observable<PetResponse> {
+    return this.http.get<PetResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  cadastrar(dados: PetRequest): Observable<PetResponse> {
     return this.http.post<PetResponse>(this.apiUrl, dados);
+  }
+
+  atualizar(
+    id: number,
+    dados: PetRequest
+  ): Observable<PetResponse> {
+    return this.http.put<PetResponse>(
+      `${this.apiUrl}/${id}`,
+      dados
+    );
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

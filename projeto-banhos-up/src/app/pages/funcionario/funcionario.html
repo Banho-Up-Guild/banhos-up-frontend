@@ -122,81 +122,68 @@
 
       @else if (modulo() === 'agendamentos') {
 
-  <article class="funcionario-card">
+      <article class="funcionario-card">
 
-    <h2>Gerenciamento de agendamentos</h2>
+        <h2>Gerenciamento de agendamentos</h2>
 
-    <p>Consulte os atendimentos da unidade e acompanhe seus status.</p>
+        <p>Consulte os atendimentos da unidade e acompanhe seus status.</p>
 
-    <div class="funcionario-filtros">
+        <div class="funcionario-filtros">
 
-      <label>
-        Data inicial
+          <label>
+            Data inicial
 
-        <input
-          type="date"
-          [value]="filtroDataInicio()"
-          (change)="filtroDataInicio.set($any($event.target).value)"
-        />
-      </label>
+            <input type="date" [value]="filtroDataInicio()"
+              (change)="filtroDataInicio.set($any($event.target).value)" />
+          </label>
 
-      <label>
-        Data final
+          <label>
+            Data final
 
-        <input
-          type="date"
-          [value]="filtroDataFim()"
-          (change)="filtroDataFim.set($any($event.target).value)"
-        />
-      </label>
+            <input type="date" [value]="filtroDataFim()" (change)="filtroDataFim.set($any($event.target).value)" />
+          </label>
 
-      <label>
-        Status
+          <label>
+            Status
 
-        <select
-          [value]="filtroStatus()"
-          (change)="filtroStatus.set($any($event.target).value)"
-        >
-          <option value="">Todos</option>
-          <option value="AWAITING_CONFIRMATION">Aguardando confirmação</option>
-          <option value="CONFIRMED">Confirmado</option>
-          <option value="CANCELED">Cancelado</option>
-        </select>
-      </label>
+            <select [value]="filtroStatus()" (change)="filtroStatus.set($any($event.target).value)">
+              <option value="">Todos</option>
+              <option value="AWAITING_CONFIRMATION">Aguardando confirmação</option>
+              <option value="CONFIRMED">Confirmado</option>
+              <option value="CANCELED">Cancelado</option>
+            </select>
+          </label>
 
-      <button
-        type="button"
-        (click)="aplicarFiltros()"
-      >
-        Filtrar
-      </button>
+          <button type="button" (click)="aplicarFiltros()">
+            Filtrar
+          </button>
 
-    </div>
+        </div>
 
-    @if (carregandoAgendamentos()) {
+        @if (carregandoAgendamentos()) {
 
-      <div class="funcionario-estado-vazio">
-        Carregando agendamentos...
-      </div>
+        <div class="funcionario-estado-vazio">
+          Carregando agendamentos...
+        </div>
 
-    } @else if (erroAgendamentos()) {
+        } @else if (erroAgendamentos()) {
 
-      <div class="funcionario-erro">
-        {{ erroAgendamentos() }}
-      </div>
+        <div class="funcionario-erro">
+          {{ erroAgendamentos() }}
+        </div>
 
-    } @else if (agendamentos().length === 0) {
+        } @else if (agendamentos().length === 0) {
 
-      <div class="funcionario-estado-vazio">
-        <strong>Nenhum agendamento encontrado</strong>
-        <p>Não existem atendimentos para os filtros selecionados.</p>
-      </div>
+        <div class="funcionario-estado-vazio">
+          <strong>Nenhum agendamento encontrado</strong>
+          <p>Não existem atendimentos para os filtros selecionados.</p>
+        </div>
 
-    } @else {
+        } @else {
 
-      <div class="funcionario-lista-agendamentos">
+        <div class="funcionario-lista-agendamentos">
 
-        @for (item of agendamentos(); track item.id) {
+          @for (item of agendamentos(); track item.id) {
 
           <article class="funcionario-agendamento-card">
 
@@ -225,10 +212,10 @@
 
               @for (servico of item.items; track $index) {
 
-                <p>
-                  {{ servico.petName }} —
-                  {{ servico.offeringName }}
-                </p>
+              <p>
+                {{ servico.petName }} —
+                {{ servico.offeringName }}
+              </p>
 
               }
 
@@ -240,108 +227,98 @@
             </p>
 
             @if (
-              item.status === 'AWAITING_CONFIRMATION' &&
-              temPermissao('APPOINTMENTS_CONFIRM')
+            item.status === 'AWAITING_CONFIRMATION' &&
+            temPermissao('APPOINTMENTS_CONFIRM')
             ) {
 
-              <div class="funcionario-agendamento-acoes">
+            <div class="funcionario-agendamento-acoes">
 
-                <button
-                  type="button"
-                  [disabled]="processandoAgendamento() === item.id"
-                  (click)="confirmarAgendamento(item.id)"
-                >
-                  Confirmar
-                </button>
+              <button type="button" [disabled]="processandoAgendamento() === item.id"
+                (click)="confirmarAgendamento(item.id)">
+                Confirmar
+              </button>
 
-                <button
-                  type="button"
-                  class="funcionario-botao-recusar"
-                  [disabled]="processandoAgendamento() === item.id"
-                  (click)="recusarAgendamento(item.id)"
-                >
-                  Recusar
-                </button>
+              <button type="button" class="funcionario-botao-recusar" [disabled]="processandoAgendamento() === item.id"
+                (click)="recusarAgendamento(item.id)">
+                Recusar
+              </button>
 
-              </div>
+            </div>
 
             }
 
           </article>
 
+          }
+
+        </div>
+
         }
 
-      </div>
+      </article>
 
-    }
-
-  </article>
-
-}
+      }
 
       @else if (modulo() === 'disponibilidade') {
 
-  <article class="funcionario-card">
+      <article class="funcionario-card">
 
-    <h2>Disponibilidade e horários</h2>
+        <h2>Disponibilidade e horários</h2>
 
-    <p>
-      Configure os dias de funcionamento, horários de abertura,
-      fechamento e intervalos da unidade.
-    </p>
+        <p>
+          Configure os dias de funcionamento, horários de abertura,
+          fechamento e intervalos da unidade.
+        </p>
 
-    @if (usuarioAtual()?.role === 'ADMIN') {
+        @if (usuarioAtual()?.role === 'ADMIN') {
 
-      <div class="funcionario-seletor-unidade">
+        <div class="funcionario-seletor-unidade">
 
-        <label for="unidadeDisponibilidade">
-          Unidade
-        </label>
+          <label for="unidadeDisponibilidade">
+            Unidade
+          </label>
 
-        <select
-          id="unidadeDisponibilidade"
-          [ngModel]="disponibilidadeStoreId()"
-          (ngModelChange)="selecionarUnidadeDisponibilidade(+$event)"
-        >
+          <select id="unidadeDisponibilidade" [ngModel]="disponibilidadeStoreId()"
+            (ngModelChange)="selecionarUnidadeDisponibilidade(+$event)">
 
-          @for (loja of unidades(); track loja.id) {
+            @for (loja of unidades(); track loja.id) {
 
             <option [ngValue]="loja.id">
               {{ loja.nome }}
             </option>
 
-          }
+            }
 
-        </select>
+          </select>
 
-      </div>
+        </div>
 
-    } @else {
+        } @else {
 
-      <p class="funcionario-unidade-identificacao">
-        <strong>Unidade:</strong>
-        {{ nomeUnidadeDisponibilidade() }}
-      </p>
+        <p class="funcionario-unidade-identificacao">
+          <strong>Unidade:</strong>
+          {{ nomeUnidadeDisponibilidade() }}
+        </p>
 
-    }
+        }
 
-    @if (carregandoDisponibilidade()) {
+        @if (carregandoDisponibilidade()) {
 
-      <div class="funcionario-estado-vazio">
-        Carregando horários...
-      </div>
+        <div class="funcionario-estado-vazio">
+          Carregando horários...
+        </div>
 
-    } @else if (erroDisponibilidade() && !diasDisponibilidade().length) {
+        } @else if (erroDisponibilidade() && !diasDisponibilidade().length) {
 
-      <div class="funcionario-erro">
-        {{ erroDisponibilidade() }}
-      </div>
+        <div class="funcionario-erro">
+          {{ erroDisponibilidade() }}
+        </div>
 
-    } @else {
+        } @else {
 
-      <div class="funcionario-horarios">
+        <div class="funcionario-horarios">
 
-        @for (dia of diasDisponibilidade(); track dia.dayOfWeek) {
+          @for (dia of diasDisponibilidade(); track dia.dayOfWeek) {
 
           <div class="funcionario-horario-linha">
 
@@ -350,15 +327,10 @@
               <strong>{{ dia.dayName }}</strong>
 
               <label>
-                <input
-                  type="checkbox"
-                  [ngModel]="!dia.closed"
-                  [ngModelOptions]="{standalone: true}"
-                  (ngModelChange)="atualizarDiaDisponibilidade(
+                <input type="checkbox" [ngModel]="!dia.closed" [ngModelOptions]="{standalone: true}" (ngModelChange)="atualizarDiaDisponibilidade(
                     dia.dayOfWeek,
                     { closed: !$event }
-                  )"
-                />
+                  )" />
 
                 Aberto
               </label>
@@ -367,148 +339,128 @@
 
             @if (!dia.closed) {
 
-              <div class="funcionario-horario-campos">
+            <div class="funcionario-horario-campos">
 
-                <label>
-                  Abertura
+              <label>
+                Abertura
 
-                  <input
-                    type="time"
-                    [ngModel]="dia.openingTime || ''"
-                    [ngModelOptions]="{standalone: true}"
-                    (ngModelChange)="atualizarDiaDisponibilidade(
+                <input type="time" [ngModel]="dia.openingTime || ''" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="atualizarDiaDisponibilidade(
                       dia.dayOfWeek,
                       { openingTime: $event }
-                    )"
-                  />
-                </label>
+                    )" />
+              </label>
 
-                <label>
-                  Fechamento
+              <label>
+                Fechamento
 
-                  <input
-                    type="time"
-                    [ngModel]="dia.closingTime || ''"
-                    [ngModelOptions]="{standalone: true}"
-                    (ngModelChange)="atualizarDiaDisponibilidade(
+                <input type="time" [ngModel]="dia.closingTime || ''" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="atualizarDiaDisponibilidade(
                       dia.dayOfWeek,
                       { closingTime: $event }
-                    )"
-                  />
-                </label>
+                    )" />
+              </label>
 
-                <label>
-                  Início do intervalo
+              <label>
+                Início do intervalo
 
-                  <input
-                    type="time"
-                    [ngModel]="dia.breakStart || ''"
-                    [ngModelOptions]="{standalone: true}"
-                    (ngModelChange)="atualizarDiaDisponibilidade(
+                <input type="time" [ngModel]="dia.breakStart || ''" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="atualizarDiaDisponibilidade(
                       dia.dayOfWeek,
                       { breakStart: $event || null }
-                    )"
-                  />
-                </label>
+                    )" />
+              </label>
 
-                <label>
-                  Fim do intervalo
+              <label>
+                Fim do intervalo
 
-                  <input
-                    type="time"
-                    [ngModel]="dia.breakEnd || ''"
-                    [ngModelOptions]="{standalone: true}"
-                    (ngModelChange)="atualizarDiaDisponibilidade(
+                <input type="time" [ngModel]="dia.breakEnd || ''" [ngModelOptions]="{standalone: true}" (ngModelChange)="atualizarDiaDisponibilidade(
                       dia.dayOfWeek,
                       { breakEnd: $event || null }
-                    )"
-                  />
-                </label>
+                    )" />
+              </label>
 
-              </div>
+            </div>
 
             } @else {
 
-              <span class="funcionario-dia-fechado">
-                Fechado
-              </span>
+            <span class="funcionario-dia-fechado">
+              Fechado
+            </span>
 
             }
 
           </div>
 
-        }
+          }
 
-      </div>
+        </div>
 
-      @if (erroDisponibilidade()) {
+        @if (erroDisponibilidade()) {
 
         <div class="funcionario-erro">
           {{ erroDisponibilidade() }}
         </div>
 
-      }
+        }
 
-      @if (sucessoDisponibilidade()) {
+        @if (sucessoDisponibilidade()) {
 
         <div class="funcionario-sucesso">
           {{ sucessoDisponibilidade() }}
         </div>
 
-      }
+        }
 
-      <div class="funcionario-disponibilidade-acoes">
+        <div class="funcionario-disponibilidade-acoes">
 
-        <button
-          type="button"
-          [disabled]="salvandoDisponibilidade() || !diasDisponibilidade().length"
-          (click)="salvarDisponibilidade()"
-        >
-          {{ salvandoDisponibilidade()
+          <button type="button" [disabled]="salvandoDisponibilidade() || !diasDisponibilidade().length"
+            (click)="salvarDisponibilidade()">
+            {{ salvandoDisponibilidade()
             ? 'Salvando...'
             : 'Salvar horários' }}
-        </button>
+          </button>
 
-      </div>
+        </div>
 
-    }
+        }
 
-  </article>
+      </article>
 
-}
+      }
 
       @else if (modulo() === 'solicitacoes') {
 
-  <article class="funcionario-card">
+      <article class="funcionario-card">
 
-    <h2>Solicitações de agendamento</h2>
+        <h2>Solicitações de agendamento</h2>
 
-    <p>Solicitações que aguardam confirmação ou recusa.</p>
+        <p>Solicitações que aguardam confirmação ou recusa.</p>
 
-    @if (carregandoAgendamentos()) {
+        @if (carregandoAgendamentos()) {
 
-      <div class="funcionario-estado-vazio">
-        Carregando solicitações...
-      </div>
+        <div class="funcionario-estado-vazio">
+          Carregando solicitações...
+        </div>
 
-    } @else if (erroAgendamentos()) {
+        } @else if (erroAgendamentos()) {
 
-      <div class="funcionario-erro">
-        {{ erroAgendamentos() }}
-      </div>
+        <div class="funcionario-erro">
+          {{ erroAgendamentos() }}
+        </div>
 
-    } @else if (agendamentos().length === 0) {
+        } @else if (agendamentos().length === 0) {
 
-      <div class="funcionario-estado-vazio">
-        <strong>Nenhuma solicitação pendente</strong>
-        <p>Não existem solicitações aguardando confirmação.</p>
-      </div>
+        <div class="funcionario-estado-vazio">
+          <strong>Nenhuma solicitação pendente</strong>
+          <p>Não existem solicitações aguardando confirmação.</p>
+        </div>
 
-    } @else {
+        } @else {
 
-      <div class="funcionario-lista-agendamentos">
+        <div class="funcionario-lista-agendamentos">
 
-        @for (item of agendamentos(); track item.id) {
+          @for (item of agendamentos(); track item.id) {
 
           <article class="funcionario-agendamento-card">
 
@@ -537,10 +489,10 @@
 
               @for (servico of item.items; track $index) {
 
-                <p>
-                  {{ servico.petName }} —
-                  {{ servico.offeringName }}
-                </p>
+              <p>
+                {{ servico.petName }} —
+                {{ servico.offeringName }}
+              </p>
 
               }
 
@@ -553,65 +505,253 @@
 
             @if (temPermissao('APPOINTMENTS_CONFIRM')) {
 
-              <div class="funcionario-agendamento-acoes">
+            <div class="funcionario-agendamento-acoes">
 
-                <button
-                  type="button"
-                  [disabled]="processandoAgendamento() === item.id"
-                  (click)="confirmarAgendamento(item.id)"
-                >
-                  Confirmar
-                </button>
+              <button type="button" [disabled]="processandoAgendamento() === item.id"
+                (click)="confirmarAgendamento(item.id)">
+                Confirmar
+              </button>
 
-                <button
-                  type="button"
-                  class="funcionario-botao-recusar"
-                  [disabled]="processandoAgendamento() === item.id"
-                  (click)="recusarAgendamento(item.id)"
-                >
-                  Recusar
-                </button>
+              <button type="button" class="funcionario-botao-recusar" [disabled]="processandoAgendamento() === item.id"
+                (click)="recusarAgendamento(item.id)">
+                Recusar
+              </button>
 
-              </div>
+            </div>
 
             } @else {
 
-              <p>Você não possui permissão para responder a esta solicitação.</p>
+            <p>Você não possui permissão para responder a esta solicitação.</p>
 
             }
 
           </article>
 
+          }
+
+        </div>
+
         }
 
-      </div>
+      </article>
 
-    }
-
-  </article>
-
-}
+      }
 
       @else if (modulo() === 'servicos') {
 
       <article class="funcionario-card">
 
-        <h2>Serviços e preços</h2>
+        <div class="funcionario-modulo-topo">
 
-        <p>
-          O catálogo de serviços e os preços serão compartilhados
-          por todas as unidades.
-        </p>
+          <div>
+            <h2>Serviços e preços</h2>
+
+            <p>
+              O catálogo é compartilhado entre todas as unidades.
+            </p>
+          </div>
+
+          @if (temPermissao('OFFERINGS_MANAGE')) {
+
+          <button type="button" class="funcionario-botao-principal" (click)="abrirNovaOferta()">
+            + Novo serviço
+          </button>
+
+          }
+
+        </div>
+
+        @if (sucessoOfertas()) {
+
+        <div class="funcionario-sucesso">
+          {{ sucessoOfertas() }}
+        </div>
+
+        }
+
+        @if (erroOfertas()) {
+
+        <div class="funcionario-erro">
+          {{ erroOfertas() }}
+        </div>
+
+        }
+
+        @if (!temPermissao('OFFERINGS_MANAGE')) {
+
+        <div class="funcionario-aviso">
+          <strong>Modo de consulta</strong>
+          <p>
+            Você pode consultar o catálogo, mas não possui autorização
+            para cadastrar, editar ou desativar serviços.
+          </p>
+        </div>
+
+        }
+
+        @if (mostrarFormularioOferta()) {
+
+        <div class="funcionario-formulario">
+
+          <h3>
+            {{ editandoOfertaId() !== null
+            ? 'Editar serviço'
+            : 'Cadastrar serviço' }}
+          </h3>
+
+          <div class="funcionario-formulario-grid">
+
+            <label>
+              Nome do serviço
+
+              <input type="text" [(ngModel)]="formularioOferta.nome" [ngModelOptions]="{standalone: true}"
+                maxlength="100" placeholder="Ex.: Banho completo" />
+            </label>
+
+            <label>
+              Preço (R$)
+
+              <input type="number" [(ngModel)]="formularioOferta.preco" [ngModelOptions]="{standalone: true}" min="0"
+                step="0.01" />
+            </label>
+
+            <label>
+              Duração em minutos
+
+              <input type="number" [(ngModel)]="formularioOferta.duracaoMinutos" [ngModelOptions]="{standalone: true}"
+                min="1" step="1" />
+            </label>
+
+            <label class="funcionario-campo-completo">
+              Descrição
+
+              <textarea [(ngModel)]="formularioOferta.descricao" [ngModelOptions]="{standalone: true}" maxlength="500"
+                rows="3" placeholder="Descreva o serviço..."></textarea>
+            </label>
+
+            <label class="funcionario-checkbox-label">
+              <input type="checkbox" [(ngModel)]="formularioOferta.ativo" [ngModelOptions]="{standalone: true}" />
+
+              Serviço ativo
+            </label>
+
+          </div>
+
+          <div class="funcionario-formulario-acoes">
+
+            <button type="button" class="funcionario-botao-secundario" (click)="cancelarFormularioOferta()">
+              Cancelar
+            </button>
+
+            <button type="button" class="funcionario-botao-principal" [disabled]="salvandoOferta()"
+              (click)="salvarOferta()">
+              {{ salvandoOferta() ? 'Salvando...' : 'Salvar serviço' }}
+            </button>
+
+          </div>
+
+        </div>
+
+        }
+
+        @if (carregandoOfertas()) {
+
+        <div class="funcionario-estado-vazio">
+          Carregando catálogo de serviços...
+        </div>
+
+        } @else if (ofertas().length === 0) {
 
         <div class="funcionario-estado-vazio">
           <span>◇</span>
-          <strong>Catálogo de serviços</strong>
-          <p>
-            Aqui serão disponibilizadas as operações de consultar,
-            cadastrar, editar e desativar serviços, conforme a permissão
-            concedida ao funcionário.
-          </p>
+          <strong>Nenhum serviço cadastrado</strong>
+          <p>O catálogo ainda não possui serviços.</p>
         </div>
+
+        } @else {
+
+        <div class="funcionario-tabela-container">
+
+          <table class="funcionario-tabela">
+
+            <thead>
+              <tr>
+                <th>Serviço</th>
+                <th>Preço</th>
+                <th>Duração</th>
+                <th>Situação</th>
+                @if (temPermissao('OFFERINGS_MANAGE')) {
+                <th>Ações</th>
+                }
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (oferta of ofertas(); track oferta.id) {
+
+              <tr>
+
+                <td>
+                  <strong>{{ oferta.nome }}</strong>
+                  <small>{{ oferta.descricao || 'Sem descrição' }}</small>
+                </td>
+
+                <td>
+                  {{ oferta.preco | currency:'BRL':'symbol':'1.2-2' }}
+                </td>
+
+                <td>
+                  {{ oferta.duracaoMinutos }} min
+                </td>
+
+                <td>
+                  <span class="funcionario-status" [class.funcionario-status-inativa]="!oferta.ativo">
+                    {{ oferta.ativo ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+
+                @if (temPermissao('OFFERINGS_MANAGE')) {
+
+                <td>
+
+                  <div class="funcionario-tabela-acoes">
+
+                    <button type="button" class="funcionario-botao-editar" (click)="editarOferta(oferta)">
+                      Editar
+                    </button>
+
+                    @if (oferta.ativo) {
+
+                    <button type="button" class="funcionario-botao-excluir" (click)="desativarOferta(oferta)">
+                      Desativar
+                    </button>
+
+                    } @else {
+
+                    <button type="button" class="funcionario-botao-reativar" (click)="reativarOferta(oferta)">
+                      Reativar
+                    </button>
+
+                    }
+
+                  </div>
+
+                </td>
+
+                }
+
+              </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        }
 
       </article>
 
@@ -621,31 +761,250 @@
 
       <article class="funcionario-card">
 
-        <h2>Gerir equipe das unidades</h2>
+        <div class="funcionario-modulo-topo">
 
-        <p>
-          Gerencie os membros vinculados à sua própria unidade.
+          <div>
+            <h2>Gerir equipe das unidades</h2>
+
+            <p>
+              Gerencie os funcionários vinculados à unidade.
+            </p>
+          </div>
+
+          @if (usuarioAtual()?.role === 'ADMIN') {
+
+          <div class="funcionario-seletor-unidade">
+
+            <label for="equipeStore">
+              Unidade
+            </label>
+
+            <select id="equipeStore" [ngModel]="equipeStoreId()" [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="selecionarUnidadeEquipe(+$event)">
+
+              @for (loja of unidades(); track loja.id) {
+
+              <option [ngValue]="loja.id">
+                {{ loja.nome }}
+              </option>
+
+              }
+
+            </select>
+
+          </div>
+
+          }
+
+        </div>
+
+        @if (usuarioAtual()?.role === 'EMPLOYEE') {
+
+        <p class="funcionario-unidade-identificacao">
+          <strong>Minha unidade:</strong>
+          {{ nomeUnidadeEquipe() }}
         </p>
+
+        }
 
         <div class="funcionario-aviso">
           <strong>Importante</strong>
 
           <p>
-            Esta funcionalidade permite gerenciar o vínculo dos
-            funcionários com a unidade. A criação de contas do sistema
-            e a concessão de permissões continuarão sendo
-            responsabilidades do ADMIN.
+            Esta seção gerencia somente os vínculos dos funcionários
+            com as unidades. A criação das contas e a concessão
+            de permissões continuam sendo responsabilidades do ADMIN.
           </p>
         </div>
 
+        @if (sucessoEquipe()) {
+
+        <div class="funcionario-sucesso">
+          {{ sucessoEquipe() }}
+        </div>
+
+        }
+
+        @if (erroEquipe()) {
+
+        <div class="funcionario-erro">
+          {{ erroEquipe() }}
+        </div>
+
+        }
+
+        @if (carregandoEquipe()) {
+
+        <div class="funcionario-estado-vazio">
+          Carregando equipe...
+        </div>
+
+        } @else {
+
+        @if (temPermissao('TEAM_MANAGE')) {
+
+        <div class="funcionario-adicionar-equipe">
+
+          <label for="funcionarioDisponivel">
+            Adicionar ou reativar funcionário
+          </label>
+
+          <div class="funcionario-adicionar-controles">
+
+            <select id="funcionarioDisponivel" [ngModel]="funcionarioDisponivelId()"
+              [ngModelOptions]="{standalone: true}" (ngModelChange)="funcionarioDisponivelId.set(
+                $event ? +$event : null
+              )">
+
+              <option [ngValue]="null">
+                Selecione um funcionário
+              </option>
+
+              @for (
+              funcionario of disponiveisEquipe();
+              track funcionario.id
+              ) {
+
+              <option [ngValue]="funcionario.id">
+
+                {{ funcionario.nome }}
+
+                @if (funcionario.storeId !== null) {
+                (Reativar vínculo)
+                }
+
+                @else {
+                (Sem unidade)
+                }
+
+              </option>
+
+              }
+
+            </select>
+
+            <button type="button" class="funcionario-botao-principal"
+              [disabled]="salvandoEquipe() || funcionarioDisponivelId() === null"
+              (click)="adicionarFuncionarioEquipe()">
+              Adicionar
+            </button>
+
+          </div>
+
+        </div>
+
+        }
+
+        <h3 class="funcionario-subtitulo">
+          Funcionários da equipe
+        </h3>
+
+        @if (equipe().length === 0) {
+
         <div class="funcionario-estado-vazio">
           <span>♧</span>
-          <strong>Equipe da unidade</strong>
+          <strong>Nenhum funcionário vinculado</strong>
           <p>
-            A listagem e o gerenciamento dos vínculos serão
-            conectados ao Backend.
+            Utilize a opção acima para adicionar funcionários à equipe.
           </p>
         </div>
+
+        } @else {
+
+        <div class="funcionario-tabela-container">
+
+          <table class="funcionario-tabela">
+
+            <thead>
+              <tr>
+                <th>Funcionário</th>
+                <th>E-mail</th>
+                <th>Matrícula</th>
+                <th>Cargo</th>
+                @if (temPermissao('TEAM_MANAGE')) {
+                <th>Ações</th>
+                }
+              </tr>
+            </thead>
+
+            <tbody>
+
+              @for (membro of equipe(); track membro.id) {
+
+              <tr>
+
+                <td>
+                  <strong>{{ membro.nome }}</strong>
+                </td>
+
+                <td>{{ membro.email }}</td>
+
+                <td>{{ membro.matricula || 'Não informado' }}</td>
+
+                <td>
+
+                  @if (membroEditandoId() === membro.id) {
+
+                  <input type="text" class="funcionario-input-inline" [ngModel]="cargoEdicao()"
+                    [ngModelOptions]="{standalone: true}" (ngModelChange)="cargoEdicao.set($event)" maxlength="100" />
+
+                  } @else {
+
+                  {{ membro.cargo || 'Não informado' }}
+
+                  }
+
+                </td>
+
+                @if (temPermissao('TEAM_MANAGE')) {
+
+                <td>
+
+                  <div class="funcionario-tabela-acoes">
+
+                    @if (membroEditandoId() === membro.id) {
+
+                    <button type="button" class="funcionario-botao-principal" [disabled]="salvandoEquipe()"
+                      (click)="salvarCargoFuncionario(membro.id)">
+                      Salvar
+                    </button>
+
+                    <button type="button" class="funcionario-botao-secundario" (click)="cancelarEdicaoCargo()">
+                      Cancelar
+                    </button>
+
+                    } @else {
+
+                    <button type="button" class="funcionario-botao-editar" (click)="iniciarEdicaoCargo(membro)">
+                      Editar cargo
+                    </button>
+
+                    <button type="button" class="funcionario-botao-excluir" [disabled]="salvandoEquipe()"
+                      (click)="removerFuncionarioEquipe(membro.id)">
+                      Remover
+                    </button>
+
+                    }
+
+                  </div>
+
+                </td>
+
+                }
+
+              </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        }
+
+        }
 
       </article>
 
@@ -655,17 +1014,120 @@
 
       <article class="funcionario-card">
 
-        <h2>
-          {{ usuarioAtual()?.role === 'ADMIN'
-          ? 'Unidades cadastradas'
-          : 'Minha unidade' }}
-        </h2>
+        <div class="funcionario-modulo-topo">
 
-        <p>
-          {{ usuarioAtual()?.role === 'ADMIN'
-          ? 'Consulte todas as unidades cadastradas no Banhos Up!.'
-          : 'Consulte as informações da unidade à qual você está vinculado.' }}
-        </p>
+          <div>
+            <h2>
+              {{ usuarioAtual()?.role === 'ADMIN'
+              ? 'Unidades cadastradas'
+              : 'Minha unidade' }}
+            </h2>
+
+            <p>
+              {{ usuarioAtual()?.role === 'ADMIN'
+              ? 'Cadastre, consulte e gerencie todas as unidades.'
+              : 'Consulte e edite as informações da sua própria unidade.' }}
+            </p>
+          </div>
+
+          @if (usuarioAtual()?.role === 'ADMIN') {
+
+          <button type="button" class="funcionario-botao-principal" (click)="abrirNovaUnidade()">
+            + Nova unidade
+          </button>
+
+          }
+
+        </div>
+
+        @if (sucessoFormularioUnidade()) {
+
+        <div class="funcionario-sucesso">
+          {{ sucessoFormularioUnidade() }}
+        </div>
+
+        }
+
+        @if (mostrarFormularioUnidade()) {
+
+        <div class="funcionario-formulario">
+
+          <h3>
+            {{ editandoUnidadeId() !== null
+            ? 'Editar unidade'
+            : 'Cadastrar unidade' }}
+          </h3>
+
+          @if (erroFormularioUnidade()) {
+
+          <div class="funcionario-erro">
+            {{ erroFormularioUnidade() }}
+          </div>
+
+          }
+
+          <div class="funcionario-formulario-grid">
+
+            <label>
+              Nome da unidade
+
+              <input type="text" [(ngModel)]="formularioUnidade.nome" [ngModelOptions]="{standalone: true}"
+                maxlength="100" />
+            </label>
+
+            <label>
+              CEP
+
+              <input type="text" [(ngModel)]="formularioUnidade.cep" [ngModelOptions]="{standalone: true}" maxlength="9"
+                placeholder="00000-000" />
+            </label>
+
+            <label>
+              Estado
+
+              <input type="text" [(ngModel)]="formularioUnidade.estado" [ngModelOptions]="{standalone: true}"
+                maxlength="2" placeholder="SP" />
+            </label>
+
+            <label>
+              Cidade
+
+              <input type="text" [(ngModel)]="formularioUnidade.cidade" [ngModelOptions]="{standalone: true}"
+                maxlength="100" />
+            </label>
+
+            <label>
+              Endereço
+
+              <input type="text" [(ngModel)]="formularioUnidade.endereco" [ngModelOptions]="{standalone: true}"
+                maxlength="150" />
+            </label>
+
+            <label>
+              Bairro
+
+              <input type="text" [(ngModel)]="formularioUnidade.bairro" [ngModelOptions]="{standalone: true}"
+                maxlength="100" />
+            </label>
+
+          </div>
+
+          <div class="funcionario-formulario-acoes">
+
+            <button type="button" class="funcionario-botao-secundario" (click)="cancelarFormularioUnidade()">
+              Cancelar
+            </button>
+
+            <button type="button" class="funcionario-botao-principal" [disabled]="salvandoUnidade()"
+              (click)="salvarUnidade()">
+              {{ salvandoUnidade() ? 'Salvando...' : 'Salvar unidade' }}
+            </button>
+
+          </div>
+
+        </div>
+
+        }
 
         @if (carregandoUnidades()) {
 
@@ -674,17 +1136,13 @@
           <p>Aguarde enquanto consultamos o banco de dados.</p>
         </div>
 
-        }
-
-        @else if (erroUnidades()) {
+        } @else if (erroUnidades()) {
 
         <div class="funcionario-erro">
           {{ erroUnidades() }}
         </div>
 
-        }
-
-        @else if (unidades().length === 0) {
+        } @else if (unidades().length === 0) {
 
         <div class="funcionario-estado-vazio">
           <span>⌖</span>
@@ -692,9 +1150,7 @@
           <p>Não encontramos unidades para apresentar.</p>
         </div>
 
-        }
-
-        @else {
+        } @else {
 
         <div class="funcionario-unidades-grid">
 
@@ -738,6 +1194,30 @@
                 <strong>CEP:</strong>
                 {{ loja.cep }}
               </p>
+
+            </div>
+
+            <div class="funcionario-tabela-acoes">
+
+              @if (
+              usuarioAtual()?.role === 'ADMIN' ||
+              temPermissao('STORES_MANAGE')
+              ) {
+
+              <button type="button" class="funcionario-botao-editar" (click)="editarUnidade(loja)">
+                Editar
+              </button>
+
+              }
+
+              @if (usuarioAtual()?.role === 'ADMIN') {
+
+              <button type="button" [class.funcionario-botao-reativar]="!loja.ativa"
+                [class.funcionario-botao-excluir]="loja.ativa" (click)="alterarStatusUnidade(loja)">
+                {{ loja.ativa ? 'Desativar' : 'Reativar' }}
+              </button>
+
+              }
 
             </div>
 

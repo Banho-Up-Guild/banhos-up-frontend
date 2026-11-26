@@ -1,207 +1,218 @@
+<section class="agendamentos-cliente">
 
-<section class="meus-agendamentos">
-
-  <!-- Cabeçalho -->
-  <header class="meus-agendamentos_cabecalho">
+  <header class="agendamentos-cliente__cabecalho">
 
     <div>
-      <h2>Meus Agendamentos</h2>
-      <p>Monitore e organize a rotina de higiene do seu pet</p>
+      <p class="agendamentos-cliente__sobretitulo">
+        Sua conta
+      </p>
+
+      <h1>Meus agendamentos</h1>
+
+      <p class="agendamentos-cliente__descricao">
+        Consulte os serviços agendados para seus pets.
+      </p>
     </div>
 
-    <a
-      routerLink="/agendamento"
-      class="meus-agendamentos_botao-agendar"
-    >
-      Agendar
-      <span aria-hidden="true">→</span>
-    </a>
+    <label class="agendamentos-cliente__filtro">
+
+      <span>Filtrar por status</span>
+
+      <select
+        [ngModel]="filtroStatus()"
+        (ngModelChange)="mudarFiltro($event)"
+      >
+        <option value="TODOS">Todos</option>
+
+        <option value="AWAITING_CONFIRMATION">
+          Aguardando confirmação
+        </option>
+
+        <option value="CONFIRMED">
+          Confirmados
+        </option>
+
+        <option value="CANCELED">
+          Cancelados
+        </option>
+
+      </select>
+
+    </label>
 
   </header>
 
+  @if (carregando()) {
 
-  <!-- Abas -->
-  <nav class="meus-agendamentos_abas" aria-label="Abas de agendamentos">
+    <div class="agendamentos-cliente__aviso" role="status">
 
-    <button
-      type="button"
-      [class.ativa]="abaAtiva() === 'proximos'"
-      [attr.aria-selected]="abaAtiva() === 'proximos'"
-      (click)="selecionarAba('proximos')"
+      <span class="agendamentos-cliente__spinner"></span>
+
+      Carregando seus agendamentos...
+
+    </div>
+
+  } @else if (erro()) {
+
+    <div
+      class="agendamentos-cliente__aviso agendamentos-cliente__aviso--erro"
+      role="alert"
     >
-      Próximos
-    </button>
 
-    <button
-      type="button"
-      [class.ativa]="abaAtiva() === 'anteriores'"
-      [attr.aria-selected]="abaAtiva() === 'anteriores'"
-      (click)="selecionarAba('anteriores')"
-    >
-      Anteriores
-    </button>
+      <p>{{ erro() }}</p>
 
-  </nav>
+      <button
+        type="button"
+        (click)="carregarAgendamentos()"
+      >
+        Tentar novamente
+      </button>
 
+    </div>
 
-  <!-- Lista de agendamentos -->
-  <div class="meus-agendamentos_lista">
+  } @else if (agendamentos().length === 0) {
 
-    @if (agendamentosExibidos.length > 0) {
+    <div class="agendamentos-cliente__vazio">
 
-      @for (agendamento of agendamentosExibidos; track agendamento.id) {
+      <div class="agendamentos-cliente__vazio-icone">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+          <path d="M16 3v4M8 3v4M3 10h18"></path>
+        </svg>
+      </div>
 
-        <article class="agendamento_card">
+      <h2>Você ainda não tem agendamentos</h2>
 
-          <!-- Cabeçalho do cartão -->
-          <div class="agendamento_card-cabecalho">
+      <p>
+        Quando fizer um agendamento, ele aparecerá aqui.
+      </p>
 
-            <div class="agendamento_pet">
+    </div>
 
-              <!-- Ícones dos pets -->
-              <div
-                class="agendamento_pet-icone"
-                [class.grupo-um]="agendamento.pets.length === 1"
-                [class.grupo-dois]="agendamento.pets.length === 2"
-                [class.grupo-tres]="agendamento.pets.length === 3"
-                [attr.aria-label]="formatarNomesPets(agendamento.pets)"
-              >
+  } @else if (agendamentosFiltrados().length === 0) {
 
-                @for (pet of agendamento.pets; track pet.nome) {
+    <div class="agendamentos-cliente__vazio">
 
-                  @if (pet.tipoPet === 'cachorro') {
-                    <svg lucideDog aria-hidden="true"></svg>
-                  }
+      <h2>Nenhum agendamento com esse status</h2>
 
-                  @if (pet.tipoPet === 'gato') {
-                    <svg lucideCat aria-hidden="true"></svg>
-                  }
+      <p>
+        Escolha outro filtro para consultar seus pedidos.
+      </p>
 
-                  @if (pet.tipoPet === 'outro') {
-                    <svg lucideBubbles aria-hidden="true"></svg>
-                  }
+    </div>
 
-                }
+  } @else {
+
+    <div class="agendamentos-cliente__lista">
+
+      @for (
+        agendamento of agendamentosFiltrados();
+        track agendamento.id
+      ) {
+
+        <article class="agendamento-card">
+
+          <header class="agendamento-card__topo">
+
+            <div>
+
+              <span class="agendamento-card__identificador">
+                Agendamento #{{ agendamento.id }}
+              </span>
+
+              <h2>
+                {{
+                  agendamento.dateTimeAppointment
+                    | date:'dd/MM/yyyy':'':'pt-BR'
+                }}
+              </h2>
+
+              <p class="agendamento-card__hora">
+                {{
+                  agendamento.dateTimeAppointment
+                    | date:'HH:mm':'':'pt-BR'
+                }}
+              </p>
+
+            </div>
+
+            <span
+              class="agendamento-card__status"
+              [ngClass]="classeStatus(agendamento.status)"
+            >
+              {{ statusDescricao(agendamento.status) }}
+            </span>
+
+          </header>
+
+          <div class="agendamento-card__itens">
+
+            <h3>Serviços</h3>
+
+            @for (item of agendamento.items; track $index) {
+
+              <div class="agendamento-card__item">
+
+                <div>
+
+                  <strong>{{ item.offeringName }}</strong>
+
+                  <span>
+                    {{ item.petName }} · {{ item.species }}
+                  </span>
+
+                </div>
+
+                <span>
+                  {{
+                    item.offeringPrice
+                      | currency:'BRL':'symbol':'1.2-2':'pt-BR'
+                  }}
+                </span>
 
               </div>
 
-              <span>{{ formatarNomesPets(agendamento.pets) }}</span>
-
-            </div>
-
-
-            <!-- Status -->
-            <span
-              class="agendamento_status"
-              [class.status-agendado]="agendamento.status === 'agendado'"
-              [class.status-cancelado]="agendamento.status === 'cancelado'"
-              [class.status-realizado]="agendamento.status === 'realizado'"
-            >
-
-              @if (agendamento.status === 'agendado') {
-                Agendado
-              }
-
-              @if (agendamento.status === 'cancelado') {
-                Cancelado
-              }
-
-              @if (agendamento.status === 'realizado') {
-                Realizado
-              }
-
-            </span>
+            }
 
           </div>
 
+          <footer class="agendamento-card__rodape">
 
-          <!-- Informações do agendamento -->
-          <div class="agendamento_card-informacoes">
+            <div>
+              <span>Profissional</span>
 
-            <div class="agendamento_informacao">
+              <strong>
+                {{
+                  agendamento.employeeName ||
+                  'A definir pela unidade'
+                }}
+              </strong>
+            </div>
 
-              <svg lucideStore></svg>
+            <div class="agendamento-card__total">
 
-              <span class="agendamento_informacao-label">
-                Loja
-              </span>
+              <span>Total</span>
 
-              <span class="agendamento_informacao-valor">
-                {{ agendamento.loja }}
-              </span>
+              <strong>
+                {{
+                  agendamento.totalPrice
+                    | currency:'BRL':'symbol':'1.2-2':'pt-BR'
+                }}
+              </strong>
 
             </div>
 
+          </footer>
 
-            <div class="agendamento_informacao">
+          @if (agendamento.observation) {
 
-              <svg lucideCalendar></svg>
+            <p class="agendamento-card__observacao">
 
-              <span class="agendamento_informacao-label">
-                Data
-              </span>
+              <strong>Observação:</strong>
 
-              <span class="agendamento_informacao-valor">
-                {{ formatarData(agendamento.data) }}
-              </span>
+              {{ agendamento.observation }}
 
-            </div>
-
-
-            <div class="agendamento_informacao">
-
-              <svg lucideClock></svg>
-
-              <span class="agendamento_informacao-label">
-                Horário
-              </span>
-
-              <span class="agendamento_informacao-valor">
-                {{ agendamento.horario }}
-              </span>
-
-            </div>
-
-
-            <div class="agendamento_informacao">
-
-              <svg lucideDollarSign></svg>
-
-              <span class="agendamento_informacao-label">
-                Pagamento
-              </span>
-
-              <span class="agendamento_informacao-valor">
-                {{ agendamento.pagamento }}
-              </span>
-
-            </div>
-
-          </div>
-
-
-          <!-- Ações dos agendamentos ativos -->
-          @if (agendamento.status === 'agendado') {
-
-            <div class="agendamento_card-acoes">
-
-              <button
-                type="button"
-                class="agendamento_reagendar"
-                (click)="abrirModalReagendar(agendamento)"
-              >
-                Reagendar
-              </button>
-
-              <button
-                type="button"
-                class="agendamento_cancelar"
-                (click)="abrirModalCancelar(agendamento)"
-              >
-                Cancelar
-              </button>
-
-            </div>
+            </p>
 
           }
 
@@ -209,232 +220,8 @@
 
       }
 
-    } @else {
+    </div>
 
-      <!-- Mensagem de lista vazia -->
-      <div class="meus-agendamentos_vazio">
-
-        <p>
-          @if (abaAtiva() === 'proximos') {
-            Você não possui agendamentos próximos.
-          } @else {
-            Você ainda não possui agendamentos anteriores.
-          }
-        </p>
-
-        @if (abaAtiva() === 'proximos') {
-          <a routerLink="/agendamento">
-            Que tal agendar um banho para seu pet?
-          </a>
-        }
-
-      </div>
-
-    }
-
-  </div>
-
-
-  <!-- Rodapé -->
-  <footer class="perfil_footer">
-    <p>Copyright© 2026 Banhos UP S/A</p>
-    <p>Todos os direitos reservados</p>
-  </footer>
+  }
 
 </section>
-
-
-<!-- Modal de reagendamento -->
-@if (modalReagendarAberto()) {
-
-  <div
-    class="meus-agendamentos_overlay"
-    (click)="fecharModalReagendar()"
-  >
-
-    <section
-      class="meus-agendamentos_modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="titulo-modal-reagendar"
-      (click)="$event.stopPropagation()"
-    >
-
-      <div class="meus-agendamentos_modal-cabecalho">
-
-        <div>
-          <h2 id="titulo-modal-reagendar">Reagendar atendimento</h2>
-          <p>Escolha uma nova data e horário para seu pet.</p>
-        </div>
-
-        <button
-          type="button"
-          class="meus-agendamentos_fechar"
-          aria-label="Fechar modal"
-          (click)="fecharModalReagendar()"
-        >
-          &times;
-        </button>
-
-      </div>
-
-
-      <!-- Formulário -->
-      <form
-        class="meus-agendamentos_formulario"
-        (ngSubmit)="salvarReagendamento()"
-        novalidate
-      >
-
-        <div class="meus-agendamentos_campo">
-
-          <label for="nova-data">Nova data</label>
-
-          <input
-            id="nova-data"
-            type="date"
-            name="novaData"
-            [(ngModel)]="novaData"
-            [min]="dataMinima"
-          />
-
-          @if (tentouSalvarReagendamento &&
-            (!novaData || novaData < dataMinima)) {
-
-            <small class="meus-agendamentos_erro">
-              Selecione uma data válida a partir de hoje.
-            </small>
-
-          }
-
-        </div>
-
-
-        <div class="meus-agendamentos_campo">
-
-          <label for="novo-horario">Novo horário</label>
-
-          <input
-            id="novo-horario"
-            type="time"
-            name="novoHorario"
-            [(ngModel)]="novoHorario"
-          />
-
-          @if (tentouSalvarReagendamento && !novoHorario) {
-
-            <small class="meus-agendamentos_erro">
-              Selecione um horário.
-            </small>
-
-          }
-
-        </div>
-
-
-        <!-- Aviso -->
-        <div class="meus-agendamentos_aviso">
-
-          <svg lucideTriangleExclamationPoint></svg>
-
-          <p>
-            Caso queira alterar o local, pet ou a forma de pagamento,
-            será necessário cancelar este agendamento e realizar
-            um novo.
-          </p>
-
-        </div>
-
-
-        <!-- Botões -->
-        <div class="meus-agendamentos_modal-acoes">
-
-          <button
-            type="button"
-            class="meus-agendamentos_botao-cancelar"
-            (click)="fecharModalReagendar()"
-          >
-            Voltar
-          </button>
-
-          <button
-            type="submit"
-            class="meus-agendamentos_botao-confirmar"
-          >
-            Salvar alterações
-          </button>
-
-        </div>
-
-      </form>
-
-    </section>
-
-  </div>
-
-}
-
-
-<!-- Modal de confirmação de cancelamento -->
-@if (modalCancelarAberto()) {
-
-  <div
-    class="meus-agendamentos_overlay"
-    (click)="fecharModalCancelar()"
-  >
-
-    <section
-      class="meus-agendamentos_modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="titulo-modal-cancelar"
-      (click)="$event.stopPropagation()"
-    >
-
-      <div class="meus-agendamentos_modal-cabecalho">
-
-        <div>
-          <h2 id="titulo-modal-cancelar">Cancelar agendamento</h2>
-
-          <p>
-            Tem certeza de que deseja cancelar este agendamento?
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="meus-agendamentos_fechar"
-          aria-label="Fechar modal"
-          (click)="fecharModalCancelar()"
-        >
-          &times;
-        </button>
-
-      </div>
-
-
-      <div class="meus-agendamentos_modal-acoes">
-
-        <button
-          type="button"
-          class="meus-agendamentos_botao-cancelar"
-          (click)="fecharModalCancelar()"
-        >
-          Voltar
-        </button>
-
-        <button
-          type="button"
-          class="meus-agendamentos_botao-remover"
-          (click)="confirmarCancelamento()"
-        >
-          Confirmar cancelamento
-        </button>
-
-      </div>
-
-    </section>
-
-  </div>
-
-}

@@ -1,180 +1,63 @@
-<main class="alterar-senha">
+<section class="alterar-senha">
+  <header class="alterar-senha__cabecalho">
+    <p>Segurança da conta</p>
+    <h1>Alterar senha</h1>
+    <span>Para proteger sua conta, informe sua senha atual e escolha uma nova senha.</span>
+  </header>
 
-  <h1 class="alterar-senha_titulo">Alterar senha</h1>
+  <form class="alterar-senha__formulario" (ngSubmit)="salvar()">
+    <label>
+      Senha atual
+      <input
+        type="password"
+        name="senhaAtual"
+        [(ngModel)]="senhaAtual"
+        autocomplete="current-password"
+        placeholder="Digite sua senha atual"
+        required
+      >
+    </label>
 
-  <section class="alterar-senha_card">
+    <label>
+      Nova senha
+      <input
+        type="password"
+        name="novaSenha"
+        [(ngModel)]="novaSenha"
+        autocomplete="new-password"
+        placeholder="Digite sua nova senha"
+        minlength="8"
+        maxlength="72"
+        required
+      >
+    </label>
 
-    <form
-      class="alterar-senha_formulario"
-      (ngSubmit)="alterarSenha()"
-      novalidate
-    >
+    <label>
+      Confirmar nova senha
+      <input
+        type="password"
+        name="confirmarNovaSenha"
+        [(ngModel)]="confirmarNovaSenha"
+        autocomplete="new-password"
+        placeholder="Digite novamente a nova senha"
+        minlength="8"
+        maxlength="72"
+        required
+      >
+    </label>
 
-      <div class="alterar-senha_campo">
-        <label for="senhaAtual">Senha atual</label>
+    <p class="alterar-senha__dica">A senha deve ter de 8 a 72 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.</p>
 
-        <div class="alterar-senha_input-container">
-          <input
-            [type]="mostrarSenhaAtual() ? 'text' : 'password'"
-            id="senhaAtual"
-            name="senhaAtual"
-            placeholder="Digite sua senha atual"
-            autocomplete="current-password"
-            [(ngModel)]="senhaAtual"
-            [class.campo-erro]="tentouAlterar && !senhaAtualValida"
-            [attr.aria-invalid]="tentouAlterar && !senhaAtualValida"
-          />
+    @if (erro()) {
+      <div class="alterar-senha__mensagem alterar-senha__mensagem--erro" role="alert">{{ erro() }}</div>
+    }
 
-          <button
-            type="button"
-            class="alterar-senha_visibilidade"
-            (click)="alternarSenhaAtual()"
-            [attr.aria-label]="mostrarSenhaAtual() ? 'Ocultar senha' : 'Mostrar senha'"
-            [attr.aria-pressed]="mostrarSenhaAtual()"
-          >
-            @if (mostrarSenhaAtual()) {
-              <svg lucideEyeOff class="alterar-senha_icone"></svg>
-            } @else {
-              <svg lucideEye class="alterar-senha_icone"></svg>
-            }
-          </button>
-        </div>
+    @if (sucesso()) {
+      <div class="alterar-senha__mensagem alterar-senha__mensagem--sucesso" role="status">{{ sucesso() }}</div>
+    }
 
-        @if (tentouAlterar && !senhaAtualValida) {
-          <small class="alterar-senha_erro">
-            <svg lucideCircleExclamationPoint></svg>
-
-            @if (!senhaAtual) {
-              Informe sua senha atual.
-            } @else {
-              A senha atual informada está incorreta.
-            }
-          </small>
-        }
-      </div>
-
-      <div class="alterar-senha_campo">
-        <label for="novaSenha">Nova senha</label>
-
-        <div class="alterar-senha_input-container">
-          <input
-            [type]="mostrarNovaSenha() ? 'text' : 'password'"
-            id="novaSenha"
-            name="novaSenha"
-            placeholder="Digite sua nova senha"
-            autocomplete="new-password"
-            [(ngModel)]="novaSenha"
-            [class.campo-erro]="tentouAlterar && !novaSenhaValida"
-            [attr.aria-invalid]="tentouAlterar && !novaSenhaValida"
-          />
-
-          <button
-            type="button"
-            class="alterar-senha_visibilidade"
-            (click)="alternarNovaSenha()"
-            [attr.aria-label]="mostrarNovaSenha() ? 'Ocultar senha' : 'Mostrar senha'"
-            [attr.aria-pressed]="mostrarNovaSenha()"
-          >
-            @if (mostrarNovaSenha()) {
-              <svg lucideEyeOff class="alterar-senha_icone"></svg>
-            } @else {
-              <svg lucideEye class="alterar-senha_icone"></svg>
-            }
-          </button>
-        </div>
-
-        @if (tentouAlterar && novaSenha.length > 0 && !senhaDiferente) {
-          <small class="alterar-senha_erro">
-            <svg lucideCircleExclamationPoint></svg>
-            A nova senha deve ser diferente da senha atual.
-          </small>
-        }
-      </div>
-
-      <div class="alterar-senha_campo">
-        <label for="confirmarSenha">Confirmar nova senha</label>
-
-        <div class="alterar-senha_input-container">
-          <input
-            [type]="mostrarConfirmacaoSenha() ? 'text' : 'password'"
-            id="confirmarSenha"
-            name="confirmarSenha"
-            placeholder="Confirme sua nova senha"
-            autocomplete="new-password"
-            [(ngModel)]="confirmarSenha"
-            [class.campo-erro]="tentouAlterar && !confirmacaoValida"
-            [attr.aria-invalid]="tentouAlterar && !confirmacaoValida"
-          />
-
-          <button
-            type="button"
-            class="alterar-senha_visibilidade"
-            (click)="alternarConfirmacaoSenha()"
-            [attr.aria-label]="mostrarConfirmacaoSenha() ? 'Ocultar senha' : 'Mostrar senha'"
-            [attr.aria-pressed]="mostrarConfirmacaoSenha()"
-          >
-            @if (mostrarConfirmacaoSenha()) {
-              <svg lucideEyeOff class="alterar-senha_icone"></svg>
-            } @else {
-              <svg lucideEye class="alterar-senha_icone"></svg>
-            }
-          </button>
-        </div>
-
-        @if (tentouAlterar && !confirmacaoValida) {
-          <small class="alterar-senha_erro">
-            <svg lucideCircleExclamationPoint></svg>
-            @if (!confirmarSenha) {
-              Confirme sua nova senha.
-            } @else {
-              As senhas não coincidem.
-            }
-          </small>
-        }
-      </div>
-
-      <!-- REQUISITOS -->
-      <div class="alterar-senha_requisitos">
-        <strong>Padrão da nova senha</strong>
-
-        <ul>
-          <li [class.requisito-valido]="senhaMinima">
-            Mínimo 8 caracteres
-          </li>
-          <li [class.requisito-valido]="senhaMaiuscula">
-            Letra maiúscula
-          </li>
-          <li [class.requisito-valido]="senhaMinuscula">
-            Letra minúscula
-          </li>
-          <li [class.requisito-valido]="senhaEspecial">
-            Caractere especial
-          </li>
-          <li [class.requisito-valido]="senhaNumero">
-            Número
-          </li>
-        </ul>
-      </div>
-
-      @if (tentouAlterar && novaSenha.length > 0 && !novaSenhaValida &&
-      senhaDiferente) {
-        <small class="alterar-senha_erro">
-          <svg lucideCircleExclamationPoint></svg>
-          A nova senha não atende a todos os requisitos.
-        </small>
-      }
-
-      <button type="submit" class="alterar-senha_botao">
-        ALTERAR SENHA
-      </button>
-
-    </form>
-
-  </section>
-
-  <footer class="alterar-senha_footer">
-    <p>Copyright© 2026 Banhos UP S/A</p>
-    <p>Todos os direitos reservados</p>
-  </footer>
-
-</main>
+    <button type="submit" [disabled]="carregando()">
+      {{ carregando() ? 'Salvando...' : 'Salvar nova senha' }}
+    </button>
+  </form>
+</section>

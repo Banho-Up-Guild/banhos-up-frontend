@@ -1,281 +1,150 @@
-import { Component, signal } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { TimeoutError, finalize, timeout } from 'rxjs';
 
 import {
-  LucideTriangleExclamationPoint,
-  LucideDog,
-  LucideCat,
-  LucideBubbles,
-  LucideStore,
-  LucideCalendar,
-  LucideClock,
-  LucideDollarSign
-} from '@lucide/angular';
+  AgendamentoClienteResponse,
+  MeusAgendamentosService,
+  StatusAgendamentoCliente,
+} from '../../../../services/meus-agendamentos.service';
 
-export const MAX_PETS_POR_AGENDAMENTO = 3;
-
-export interface PetAgendamento {
-  nome: string;
-  tipoPet: 'cachorro' | 'gato' | 'outro';
-}
-
-type StatusAgendamento = 'agendado' | 'cancelado' | 'realizado';
-type AbaAgendamentos = 'proximos' | 'anteriores';
-
-interface Agendamento {
-  id: number;
-  pets: PetAgendamento[];
-  loja: string;
-  data: string;
-  horario: string;
-  pagamento: string;
-  status: StatusAgendamento;
-}
+type FiltroStatus = 'TODOS' | StatusAgendamentoCliente;
 
 @Component({
   selector: 'app-meus-agendamentos',
   standalone: true,
-  imports: [
-    FormsModule,
-    RouterLink,
-    LucideTriangleExclamationPoint,
-    LucideDog,
-    LucideCat,
-    LucideBubbles,
-    LucideStore,
-    LucideCalendar,
-    LucideClock,
-    LucideDollarSign
-  ],
+  imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe],
   templateUrl: './meus-agendamentos.html',
-  styleUrl: './meus-agendamentos.css'
+  styleUrl: './meus-agendamentos.css',
 })
-export class MeusAgendamentos {
-  readonly limitePets = MAX_PETS_POR_AGENDAMENTO;
+export class MeusAgendamentos implements OnInit {
 
-  abaAtiva = signal<AbaAgendamentos>('proximos');
+  private readonly service = inject(MeusAgendamentosService);
 
-  agendamentos = signal<Agendamento[]>([
-    {
-      id: 1,
-      pets: [
-        { nome: 'Pet 1', tipoPet: 'cachorro' }
-      ],
-      loja: 'BanhosUp Diadema',
-      data: '2026-12-17',
-      horario: '09:30 até 11:00',
-      pagamento: 'Pendente',
-      status: 'agendado'
-    },
-    {
-      id: 2,
-      pets: [
-        { nome: 'Pet 2', tipoPet: 'gato' }
-      ],
-      loja: 'BanhosUp Diadema',
-      data: '2026-09-20',
-      horario: '10:00 até 11:30',
-      pagamento: 'Cancelado',
-      status: 'cancelado'
-    },
-    {
-      id: 3,
-      pets: [
-        { nome: 'Pet 3', tipoPet: 'outro' }
-      ],
-      loja: 'BanhosUp Diadema',
-      data: '2026-09-15',
-      horario: '14:00 até 15:30',
-      pagamento: 'Pago',
-      status: 'realizado'
-    },
-    {
-      id: 4,
-      pets: [
-        { nome: 'Pet 4', tipoPet: 'cachorro' },
-        { nome: 'Pet 5', tipoPet: 'cachorro' },
-        { nome: 'Pet 6', tipoPet: 'cachorro' }
-      ],
-      loja: 'BanhosUp Diadema',
-      data: '2026-12-03',
-      horario: '09:30 até 11:00',
-      pagamento: 'Pendente',
-      status: 'agendado'
-    },
-    {
-      id: 5,
-      pets: [
-        { nome: 'Pet 7', tipoPet: 'gato' },
-        { nome: 'Pet 8', tipoPet: 'outro' }
-      ],
-      loja: 'BanhosUp Diadema',
-      data: '2026-12-05',
-      horario: '14:00 até 15:30',
-      pagamento: 'Pendente',
-      status: 'agendado'
+  readonly agendamentos = signal<AgendamentoClienteResponse[]>([]);
+  readonly carregando = signal(false);
+  readonly erro = signal('');
+
+  readonly filtroStatus = signal<FiltroStatus>('TODOS');
+
+  readonly agendamentosFiltrados = computed(() => {
+    const filtro = this.filtroStatus();
+    const lista = this.agendamentos();
+
+    if (filtro === 'TODOS') {
+      return lista;
     }
-  ]);
 
-  modalReagendarAberto = signal(false);
-  modalCancelarAberto = signal(false);
-
-  agendamentoSelecionado: number | null = null;
-
-  novaData = '';
-  novoHorario = '';
-
-  tentouSalvarReagendamento = false;
-
-  get agendamentosProximos(): Agendamento[] {
-    return this.agendamentos().filter(
-      agendamento => agendamento.status === 'agendado'
+    return lista.filter(
+      agendamento => agendamento.status === filtro
     );
+  });
+
+  ngOnInit(): void {
+    this.carregarAgendamentos();
   }
 
-  get agendamentosAnteriores(): Agendamento[] {
-    return this.agendamentos().filter(
-      agendamento =>
-        agendamento.status === 'cancelado' ||
-        agendamento.status === 'realizado'
-    );
+  mudarFiltro(status: FiltroStatus): void {
+    this.filtroStatus.set(status);
   }
 
-  get agendamentosExibidos(): Agendamento[] {
-    return this.abaAtiva() === 'proximos'
-      ? this.agendamentosProximos
-      : this.agendamentosAnteriores;
-  }
+  carregarAgendamentos(): void {
 
-  selecionarAba(aba: AbaAgendamentos): void {
-    this.abaAtiva.set(aba);
-  }
+    this.carregando.set(true);
+    this.erro.set('');
 
-  quantidadePetsValida(pets: PetAgendamento[]): boolean {
-    return pets.length >= 1 && pets.length <= this.limitePets;
-  }
+    this.service.listar()
+      .pipe(
+        timeout({ first: 20000 }),
+        finalize(() => this.carregando.set(false))
+      )
+      .subscribe({
 
-  formatarNomesPets(pets: PetAgendamento[]): string {
-    const nomes = pets.map(pet => pet.nome);
+        next: (resposta: AgendamentoClienteResponse[]) => {
 
-    if (nomes.length === 1) {
-      return nomes[0];
-    }
+          const lista = Array.isArray(resposta) ? resposta : [];
 
-    if (nomes.length === 2) {
-      return `${nomes[0]} e ${nomes[1]}`;
-    }
+          this.agendamentos.set(
+            [...lista].sort(
+              (a, b) =>
+                new Date(b.dateTimeAppointment).getTime() -
+                new Date(a.dateTimeAppointment).getTime()
+            )
+          );
+        },
 
-    return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
-  }
+        error: (erro: unknown) => {
 
-  abrirModalReagendar(agendamento: Agendamento): void {
-    this.agendamentoSelecionado = agendamento.id;
-    this.novaData = agendamento.data;
-    this.novoHorario = agendamento.horario.split(' até ')[0];
-    this.tentouSalvarReagendamento = false;
+          console.error('Erro ao carregar agendamentos:', erro);
 
-    this.modalReagendarAberto.set(true);
-  }
+          if (erro instanceof TimeoutError) {
+            this.erro.set(
+              'O servidor demorou para responder. Tente novamente.'
+            );
+            return;
+          }
 
-  fecharModalReagendar(): void {
-    this.modalReagendarAberto.set(false);
-    this.agendamentoSelecionado = null;
-    this.novaData = '';
-    this.novoHorario = '';
-    this.tentouSalvarReagendamento = false;
-  }
+          if (erro instanceof HttpErrorResponse) {
 
-  salvarReagendamento(): void {
-    this.tentouSalvarReagendamento = true;
-
-    if (!this.novaData || !this.novoHorario) {
-      return;
-    }
-
-    const dataSelecionada = new Date(`${this.novaData}T00:00:00`);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    if (
-      Number.isNaN(dataSelecionada.getTime()) ||
-      dataSelecionada < hoje
-    ) {
-      return;
-    }
-
-    this.agendamentos.update(lista =>
-      lista.map(agendamento =>
-        agendamento.id === this.agendamentoSelecionado
-          ? {
-              ...agendamento,
-              data: this.novaData,
-              horario: `${this.novoHorario} até ${this.calcularHorarioFinal(this.novoHorario)}`
+            if (erro.status === 401 || erro.status === 403) {
+              this.erro.set(
+                'Sua sessão não está válida. Entre novamente na sua conta.'
+              );
+              return;
             }
-          : agendamento
-      )
-    );
 
-    this.fecharModalReagendar();
+            if (erro.status === 0) {
+              this.erro.set(
+                'Não foi possível conectar ao Backend. Verifique se o servidor está ligado.'
+              );
+              return;
+            }
+
+            this.erro.set(
+              erro.error?.message ||
+              'Não foi possível carregar seus agendamentos.'
+            );
+
+            return;
+          }
+
+          this.erro.set(
+            'Ocorreu um erro inesperado ao carregar seus agendamentos.'
+          );
+        }
+      });
   }
 
-  calcularHorarioFinal(horarioInicial: string): string {
-    const [hora, minuto] = horarioInicial.split(':').map(Number);
+  statusDescricao(status: StatusAgendamentoCliente): string {
 
-    const totalMinutos = hora * 60 + minuto + 90;
-    const horaFinal = Math.floor(totalMinutos / 60) % 24;
-    const minutoFinal = totalMinutos % 60;
+    switch (status) {
+      case 'CONFIRMED':
+        return 'Confirmado';
 
-    return `${String(horaFinal).padStart(2, '0')}:${String(minutoFinal).padStart(2, '0')}`;
-  }
+      case 'CANCELED':
+        return 'Cancelado';
 
-  abrirModalCancelar(agendamento: Agendamento): void {
-    this.agendamentoSelecionado = agendamento.id;
-    this.modalCancelarAberto.set(true);
-  }
+      case 'AWAITING_CONFIRMATION':
+        return 'Aguardando confirmação';
 
-  fecharModalCancelar(): void {
-    this.modalCancelarAberto.set(false);
-    this.agendamentoSelecionado = null;
-  }
-
-  confirmarCancelamento(): void {
-    if (this.agendamentoSelecionado === null) {
-      return;
+      default:
+        return status;
     }
-
-    this.agendamentos.update(lista =>
-      lista.map(agendamento =>
-        agendamento.id === this.agendamentoSelecionado
-          ? { ...agendamento, status: 'cancelado' as StatusAgendamento }
-          : agendamento
-      )
-    );
-
-    this.fecharModalCancelar();
   }
 
-  formatarData(data: string): string {
-    const [ano, mes, dia] = data.split('-').map(Number);
-    const dataFormatada = new Date(ano, mes - 1, dia);
+  classeStatus(status: StatusAgendamentoCliente): string {
 
-    const diaSemana = new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long'
-    }).format(dataFormatada);
+    switch (status) {
+      case 'CONFIRMED':
+        return 'status--confirmado';
 
-    const dataNumerica =
-      `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}`;
+      case 'CANCELED':
+        return 'status--cancelado';
 
-    return `${diaSemana.charAt(0).toUpperCase()}${diaSemana.slice(1)}, ${dataNumerica}`;
-  }
-
-  get dataMinima(): string {
-    const hoje = new Date();
-
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-
-    return `${ano}-${mes}-${dia}`;
+      default:
+        return 'status--aguardando';
+    }
   }
 }
