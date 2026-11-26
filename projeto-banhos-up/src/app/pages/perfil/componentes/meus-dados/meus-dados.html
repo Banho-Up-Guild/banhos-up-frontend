@@ -1,1 +1,246 @@
-<p>meus-dados works!</p>
+
+<section class="meus-dados">
+
+  <header class="meus-dados__cabecalho">
+    <div>
+      <p class="meus-dados__sobretitulo">MINHA CONTA</p>
+      <h1>Meus dados</h1>
+
+      <p class="meus-dados__descricao">
+        Consulte e mantenha suas informações pessoais atualizadas.
+      </p>
+    </div>
+
+    <span
+      class="meus-dados__status"
+      [class.inativo]="perfil() && !perfil()?.active"
+    >
+      {{ perfil()?.active ? 'Conta ativa' : 'Conta' }}
+    </span>
+  </header>
+
+  @if (carregando()) {
+
+    <div class="meus-dados__estado" role="status">
+      Carregando seus dados...
+    </div>
+
+  } @else if (perfil()) {
+
+    <form
+      class="meus-dados__formulario"
+      (ngSubmit)="salvar()"
+    >
+
+      <!-- Informações pessoais -->
+      <div class="meus-dados__secao">
+
+        <h2>Informações pessoais</h2>
+
+        <p>Seus dados principais de identificação.</p>
+
+        <div class="meus-dados__grade">
+
+          <div class="meus-dados__campo">
+            <label for="perfilNome">Nome completo</label>
+
+            <input
+              id="perfilNome"
+              name="nome"
+              type="text"
+              [(ngModel)]="nome"
+              maxlength="100"
+              autocomplete="name"
+              required
+            />
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilCpf">CPF</label>
+
+            <input
+              id="perfilCpf"
+              name="cpf"
+              type="text"
+              [value]="perfil()?.cpf || ''"
+              readonly
+            />
+
+            <small>
+              O CPF não pode ser alterado por esta página.
+            </small>
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilEmail">E-mail</label>
+
+            <input
+              id="perfilEmail"
+              name="email"
+              type="email"
+              [value]="perfil()?.email || ''"
+              readonly
+            />
+
+            <small>
+              O e-mail não pode ser alterado por esta página.
+            </small>
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilNascimento">Data de nascimento</label>
+
+            <input
+              id="perfilNascimento"
+              name="dataNascimento"
+              type="date"
+              [(ngModel)]="dataNascimento"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Contato -->
+      <div class="meus-dados__secao">
+
+        <h2>Contato</h2>
+
+        <p>
+          Utilizamos essas informações para falar com você sobre seus agendamentos.
+        </p>
+
+        <div class="meus-dados__grade">
+
+          <div class="meus-dados__campo">
+            <label for="perfilCelular">Celular</label>
+
+            <input
+              id="perfilCelular"
+              name="celular"
+              type="tel"
+              [(ngModel)]="celular"
+              maxlength="15"
+              autocomplete="tel"
+              placeholder="DDD + celular"
+              required
+            />
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilTelefone">
+              Telefone secundário <span>(opcional)</span>
+            </label>
+
+            <input
+              id="perfilTelefone"
+              name="telefoneSecundario"
+              type="tel"
+              [(ngModel)]="telefoneSecundario"
+              maxlength="15"
+              placeholder="DDD + telefone"
+            />
+          </div>
+
+          <div class="meus-dados__campo">
+            <label for="perfilGenero">
+              Gênero <span>(opcional)</span>
+            </label>
+
+            <select
+              id="perfilGenero"
+              name="genero"
+              [(ngModel)]="genero"
+            >
+              <option value="">Não informado</option>
+              <option value="feminino">Feminino</option>
+              <option value="masculino">Masculino</option>
+              <option value="nao-informar">Prefiro não informar</option>
+            </select>
+          </div>
+
+          <div class="meus-dados__campo meus-dados__campo--largura-total">
+            <label for="perfilEndereco">
+              Endereço <span>(opcional)</span>
+            </label>
+
+            <input
+              id="perfilEndereco"
+              name="endereco"
+              type="text"
+              [(ngModel)]="endereco"
+              maxlength="255"
+              autocomplete="street-address"
+              placeholder="Rua, número, bairro, cidade e CEP"
+            />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      @if (erro()) {
+        <p
+          class="meus-dados__mensagem erro"
+          role="alert"
+        >
+          {{ erro() }}
+        </p>
+      }
+
+      @if (sucesso()) {
+        <p
+          class="meus-dados__mensagem sucesso"
+          role="status"
+        >
+          {{ sucesso() }}
+        </p>
+      }
+
+      <!-- Botões -->
+      <footer class="meus-dados__acoes">
+
+        <button
+          class="meus-dados__botao secundario"
+          type="button"
+          (click)="restaurarDados()"
+          [disabled]="salvando()"
+        >
+          Descartar alterações
+        </button>
+
+        <button
+          class="meus-dados__botao primario"
+          type="submit"
+          [disabled]="salvando()"
+        >
+          {{ salvando() ? 'Salvando...' : 'Salvar alterações' }}
+        </button>
+
+      </footer>
+
+    </form>
+
+    <p class="meus-dados__rodape">
+      Cliente desde {{ perfil()?.registeredAt | date:'dd/MM/yyyy' }}.
+    </p>
+
+  } @else {
+
+    <div class="meus-dados__estado">
+
+      <p>Não foi possível carregar seu perfil.</p>
+
+      <button
+        class="meus-dados__botao primario"
+        type="button"
+        (click)="carregarPerfil()"
+      >
+        Tentar novamente
+      </button>
+
+    </div>
+
+  }
+
+</section>
