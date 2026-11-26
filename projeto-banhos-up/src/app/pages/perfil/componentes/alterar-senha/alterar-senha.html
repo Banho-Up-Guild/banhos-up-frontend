@@ -1,1 +1,63 @@
-<p>alterar-senha works!</p>
+<section class="alterar-senha">
+  <header class="alterar-senha__cabecalho">
+    <p>Segurança da conta</p>
+    <h1>Alterar senha</h1>
+    <span>Para proteger sua conta, informe sua senha atual e escolha uma nova senha.</span>
+  </header>
+
+  <form class="alterar-senha__formulario" (ngSubmit)="salvar()">
+    <label>
+      Senha atual
+      <input
+        type="password"
+        name="senhaAtual"
+        [(ngModel)]="senhaAtual"
+        autocomplete="current-password"
+        placeholder="Digite sua senha atual"
+        required
+      >
+    </label>
+
+    <label>
+      Nova senha
+      <input
+        type="password"
+        name="novaSenha"
+        [(ngModel)]="novaSenha"
+        autocomplete="new-password"
+        placeholder="Digite sua nova senha"
+        minlength="8"
+        maxlength="72"
+        required
+      >
+    </label>
+
+    <label>
+      Confirmar nova senha
+      <input
+        type="password"
+        name="confirmarNovaSenha"
+        [(ngModel)]="confirmarNovaSenha"
+        autocomplete="new-password"
+        placeholder="Digite novamente a nova senha"
+        minlength="8"
+        maxlength="72"
+        required
+      >
+    </label>
+
+    <p class="alterar-senha__dica">A senha deve ter de 8 a 72 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.</p>
+
+    @if (erro()) {
+      <div class="alterar-senha__mensagem alterar-senha__mensagem--erro" role="alert">{{ erro() }}</div>
+    }
+
+    @if (sucesso()) {
+      <div class="alterar-senha__mensagem alterar-senha__mensagem--sucesso" role="status">{{ sucesso() }}</div>
+    }
+
+    <button type="submit" [disabled]="carregando()">
+      {{ carregando() ? 'Salvando...' : 'Salvar nova senha' }}
+    </button>
+  </form>
+</section>

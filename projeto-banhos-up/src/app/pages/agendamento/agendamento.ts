@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, forkJoin } from 'rxjs';
+import { Router } from '@angular/router';
 
 import {
   Pet,
@@ -33,6 +34,8 @@ import { DisponibilidadeCalendarioResponse } from '../../models/disponibilidade.
   styleUrl: './agendamento.css',
 })
 export class Agendamento implements OnInit {
+
+  private readonly router = inject(Router);
 
   private readonly lojaService = inject(LojaService);
 
@@ -911,7 +914,11 @@ export class Agendamento implements OnInit {
 
     if (this.etapa > 0) {
       this.etapa--;
+      return;
     }
+
+    // Na primeira etapa, a seta leva o cliente de volta à Home.
+    this.router.navigateByUrl('/');
 
   }
 

@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -50,6 +49,11 @@ export interface AtualizarPerfilClienteRequest {
   address: string | null;
 }
 
+export interface AlterarSenhaRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -78,6 +82,15 @@ export class ClienteService {
   ): Observable<PerfilClienteResponse> {
     return this.http.put<PerfilClienteResponse>(
       `${this.usersUrl}/me/profile`,
+      dados
+    );
+  }
+
+  alterarMinhaSenha(
+    dados: AlterarSenhaRequest
+  ): Observable<void> {
+    return this.http.put<void>(
+      `${this.usersUrl}/me/password`,
       dados
     );
   }

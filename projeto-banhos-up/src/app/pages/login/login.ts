@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 
@@ -31,7 +31,8 @@ export class Login {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute
   ) {}
 
   alternarVisibilidadeSenha(): void {
@@ -62,13 +63,25 @@ export class Login {
 
         const perfil = resposta.user.role;
 
+        // Funcionários e administradores continuam indo para o painel.
         if (perfil === 'EMPLOYEE' || perfil === 'ADMIN') {
           this.router.navigate(['/funcionario/painel']);
           return;
         }
 
+        // Customer retorna à página que tentou acessar.
         if (perfil === 'CUSTOMER') {
-          this.router.navigate(['/']);
+          const destinoSolicitado =
+            this.activatedRoute.snapshot.queryParamMap.get('returnUrl');
+
+          const destinoSeguro =
+            destinoSolicitado &&
+            destinoSolicitado.startsWith('/') &&
+            !destinoSolicitado.startsWith('//')
+              ? destinoSolicitado
+              : '/';
+
+          this.router.navigateByUrl(destinoSeguro);
         }
       },
 

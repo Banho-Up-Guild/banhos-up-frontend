@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -8,6 +9,8 @@ import { RouterLink } from '@angular/router';
   styleUrl: './header.css',
 })
 export class Header {
+  readonly authService = inject(AuthService);
+
   menuAberto = signal(false);
 
   alternarMenu(): void {
@@ -16,5 +19,10 @@ export class Header {
 
   fecharMenu(): void {
     this.menuAberto.set(false);
+  }
+
+  get customerAutenticado(): boolean {
+    return this.authService.estaAutenticado() &&
+      this.authService.usuarioAtual()?.role === 'CUSTOMER';
   }
 }

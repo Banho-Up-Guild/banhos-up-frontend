@@ -1,1 +1,227 @@
-<p>meus-agendamentos works!</p>
+<section class="agendamentos-cliente">
+
+  <header class="agendamentos-cliente__cabecalho">
+
+    <div>
+      <p class="agendamentos-cliente__sobretitulo">
+        Sua conta
+      </p>
+
+      <h1>Meus agendamentos</h1>
+
+      <p class="agendamentos-cliente__descricao">
+        Consulte os serviços agendados para seus pets.
+      </p>
+    </div>
+
+    <label class="agendamentos-cliente__filtro">
+
+      <span>Filtrar por status</span>
+
+      <select
+        [ngModel]="filtroStatus()"
+        (ngModelChange)="mudarFiltro($event)"
+      >
+        <option value="TODOS">Todos</option>
+
+        <option value="AWAITING_CONFIRMATION">
+          Aguardando confirmação
+        </option>
+
+        <option value="CONFIRMED">
+          Confirmados
+        </option>
+
+        <option value="CANCELED">
+          Cancelados
+        </option>
+
+      </select>
+
+    </label>
+
+  </header>
+
+  @if (carregando()) {
+
+    <div class="agendamentos-cliente__aviso" role="status">
+
+      <span class="agendamentos-cliente__spinner"></span>
+
+      Carregando seus agendamentos...
+
+    </div>
+
+  } @else if (erro()) {
+
+    <div
+      class="agendamentos-cliente__aviso agendamentos-cliente__aviso--erro"
+      role="alert"
+    >
+
+      <p>{{ erro() }}</p>
+
+      <button
+        type="button"
+        (click)="carregarAgendamentos()"
+      >
+        Tentar novamente
+      </button>
+
+    </div>
+
+  } @else if (agendamentos().length === 0) {
+
+    <div class="agendamentos-cliente__vazio">
+
+      <div class="agendamentos-cliente__vazio-icone">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+          <path d="M16 3v4M8 3v4M3 10h18"></path>
+        </svg>
+      </div>
+
+      <h2>Você ainda não tem agendamentos</h2>
+
+      <p>
+        Quando fizer um agendamento, ele aparecerá aqui.
+      </p>
+
+    </div>
+
+  } @else if (agendamentosFiltrados().length === 0) {
+
+    <div class="agendamentos-cliente__vazio">
+
+      <h2>Nenhum agendamento com esse status</h2>
+
+      <p>
+        Escolha outro filtro para consultar seus pedidos.
+      </p>
+
+    </div>
+
+  } @else {
+
+    <div class="agendamentos-cliente__lista">
+
+      @for (
+        agendamento of agendamentosFiltrados();
+        track agendamento.id
+      ) {
+
+        <article class="agendamento-card">
+
+          <header class="agendamento-card__topo">
+
+            <div>
+
+              <span class="agendamento-card__identificador">
+                Agendamento #{{ agendamento.id }}
+              </span>
+
+              <h2>
+                {{
+                  agendamento.dateTimeAppointment
+                    | date:'dd/MM/yyyy':'':'pt-BR'
+                }}
+              </h2>
+
+              <p class="agendamento-card__hora">
+                {{
+                  agendamento.dateTimeAppointment
+                    | date:'HH:mm':'':'pt-BR'
+                }}
+              </p>
+
+            </div>
+
+            <span
+              class="agendamento-card__status"
+              [ngClass]="classeStatus(agendamento.status)"
+            >
+              {{ statusDescricao(agendamento.status) }}
+            </span>
+
+          </header>
+
+          <div class="agendamento-card__itens">
+
+            <h3>Serviços</h3>
+
+            @for (item of agendamento.items; track $index) {
+
+              <div class="agendamento-card__item">
+
+                <div>
+
+                  <strong>{{ item.offeringName }}</strong>
+
+                  <span>
+                    {{ item.petName }} · {{ item.species }}
+                  </span>
+
+                </div>
+
+                <span>
+                  {{
+                    item.offeringPrice
+                      | currency:'BRL':'symbol':'1.2-2':'pt-BR'
+                  }}
+                </span>
+
+              </div>
+
+            }
+
+          </div>
+
+          <footer class="agendamento-card__rodape">
+
+            <div>
+              <span>Profissional</span>
+
+              <strong>
+                {{
+                  agendamento.employeeName ||
+                  'A definir pela unidade'
+                }}
+              </strong>
+            </div>
+
+            <div class="agendamento-card__total">
+
+              <span>Total</span>
+
+              <strong>
+                {{
+                  agendamento.totalPrice
+                    | currency:'BRL':'symbol':'1.2-2':'pt-BR'
+                }}
+              </strong>
+
+            </div>
+
+          </footer>
+
+          @if (agendamento.observation) {
+
+            <p class="agendamento-card__observacao">
+
+              <strong>Observação:</strong>
+
+              {{ agendamento.observation }}
+
+            </p>
+
+          }
+
+        </article>
+
+      }
+
+    </div>
+
+  }
+
+</section>

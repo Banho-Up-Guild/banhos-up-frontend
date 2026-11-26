@@ -1,0 +1,100 @@
+.alterar-senha {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  color: #172b3a;
+}
+
+.alterar-senha__cabecalho p {
+  margin: 0 0 5px;
+  color: #2595e4;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.alterar-senha__cabecalho h1 {
+  margin: 0;
+  color: #013e73;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.alterar-senha__cabecalho span {
+  display: block;
+  margin-top: 8px;
+  color: #6b7782;
+  line-height: 1.5;
+}
+
+.alterar-senha__formulario {
+  display: grid;
+  gap: 17px;
+  margin-top: 28px;
+  padding: 25px;
+  border: 1px solid #e0eaf1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(1 62 115 / 5%);
+}
+
+.alterar-senha__formulario label {
+  display: grid;
+  gap: 7px;
+  color: #25445b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.alterar-senha__formulario input {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 13px;
+  border: 1px solid #cbd9e4;
+  border-radius: 7px;
+  outline: none;
+  color: #183b57;
+  font: inherit;
+  font-weight: 400;
+}
+
+.alterar-senha__formulario input:focus {
+  border-color: #2595e4;
+  box-shadow: 0 0 0 3px rgb(37 149 228 / 12%);
+}
+
+.alterar-senha__dica {
+  margin: -4px 0 0;
+  color: #75838d;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.alterar-senha__mensagem {
+  padding: 11px 13px;
+  border-radius: 7px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.alterar-senha__mensagem--erro { color: #9d2929; background: #fff0f0; }
+.alterar-senha__mensagem--sucesso { color: #187143; background: #eaf7ef; }
+
+.alterar-senha__formulario button {
+  min-height: 46px;
+  justify-self: start;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 7px;
+  background: #013e73;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.alterar-senha__formulario button:hover:not(:disabled) { background: #07558e; }
+.alterar-senha__formulario button:disabled { opacity: 0.65; cursor: wait; }
+
+@media (max-width: 520px) {
+  .alterar-senha__formulario { padding: 18px 15px; }
+  .alterar-senha__formulario button { width: 100%; }
+}

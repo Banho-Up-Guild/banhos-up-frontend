@@ -1,13 +1,19 @@
 <main class="agendamento">
 
   <!-- CABEÇALHO -->
-  <div class="topo-agendamento">
-    <button type="button" class="voltar" (click)="voltar()" [disabled]="etapa === 0" aria-label="Voltar">
-      ‹
-    </button>
+<div class="topo-agendamento">
+  <button
+    type="button"
+    class="voltar"
+    (click)="voltar()"
+    [attr.aria-label]="etapa === 0 ? 'Voltar para a página inicial' : 'Voltar para a etapa anterior'"
+    [title]="etapa === 0 ? 'Voltar para a Home' : 'Etapa anterior'"
+  >
+    ‹
+  </button>
 
-    <h1>Agendamento</h1>
-  </div>
+  <h1>Agendamento</h1>
+</div>
 
   <div class="layout-agendamento">
 
