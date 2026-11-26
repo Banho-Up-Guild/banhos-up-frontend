@@ -1,353 +1,138 @@
 <section class="meus-pets">
-
-  <header class="meus-pets__cabecalho">
-
-    <div>
-      <p class="meus-pets__sobretitulo">MINHA CONTA</p>
-
-      <h1>Meus Pets</h1>
-
-      <p class="meus-pets__descricao">
-        Cadastre e mantenha atualizadas as informações dos seus companheiros.
-      </p>
-    </div>
-
-    <button
-      type="button"
-      class="meus-pets__botao primario"
-      (click)="abrirCadastro()"
-      [disabled]="carregando() || formularioAberto()"
-    >
-      + Adicionar pet
-    </button>
-
+  <header class="meus-pets_cabecalho">
+    <h2>Meus Pets</h2>
+    <p>Clique nos campos para alterar as informações dos seus animais.</p>
   </header>
 
-  <!-- Mensagens -->
-  @if (erro()) {
-    <p class="meus-pets__mensagem erro" role="alert">
-      {{ erro() }}
-    </p>
-  }
+  @if (erro()) { <p class="meus-pets_feedback erro" role="alert">{{ erro() }}</p> }
+  @if (sucesso()) { <p class="meus-pets_feedback sucesso" role="status">{{ sucesso() }}</p> }
 
-  @if (sucesso()) {
-    <p class="meus-pets__mensagem sucesso" role="status">
-      {{ sucesso() }}
-    </p>
-  }
-
-  <!-- Carregamento -->
   @if (carregando()) {
+    <div class="meus-pets_estado">Carregando seus pets...</div>
+  } @else {
+    <div class="meus-pets_lista">
+      <button type="button" class="meus-pets_adicionar" (click)="abrirCadastro()">
+        <span class="meus-pets_adicionar-icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14"></path><path d="M5 12h14"></path><circle cx="12" cy="12" r="10"></circle>
+          </svg>
+        </span>
+        <span>Adicionar novo PET</span>
+      </button>
 
-    <div class="meus-pets__estado" role="status">
-      Carregando seus pets...
+      @for (pet of pets(); track pet.id) {
+        <article class="meus-pets_card">
+          <div class="meus-pets_acoes">
+            <button type="button" class="meus-pets_remover" (click)="solicitarExclusao(pet.id)">Remover</button>
+            <button type="button" class="meus-pets_editar" (click)="editar(pet)">Editar</button>
+          </div>
+          <div class="meus-pets_informacoes">
+            <strong>{{ pet.nome }}</strong>
+            <span>{{ pet.especie }}</span>
+            <span>Raça: {{ pet.raca || 'Não informada' }}</span>
+            <span>Porte: {{ porteDescricao(pet.porte) }}</span>
+            <span>Nascimento: {{ formatarData(pet.dataNascimento) }}</span>
+            @if (pet.observacoes) { <span>Observações: {{ pet.observacoes }}</span> }
+          </div>
+        </article>
+      }
     </div>
 
-  } @else {
-
-    <!-- Formulário de cadastro ou edição -->
-    @if (formularioAberto()) {
-
-      <form
-        class="meus-pets__formulario"
-        (ngSubmit)="salvar()"
-      >
-
-        <div class="meus-pets__formulario-cabecalho">
-
-          <div>
-            <h2>
-              {{ petEditandoId() !== null ? 'Editar pet' : 'Cadastrar novo pet' }}
-            </h2>
-
-            <p>
-              Preencha as informações abaixo.
-            </p>
-          </div>
-
-        </div>
-
-        <div class="meus-pets__grade">
-
-          <div class="meus-pets__campo">
-            <label for="petNome">Nome do pet *</label>
-
-            <input
-              id="petNome"
-              name="nome"
-              type="text"
-              [(ngModel)]="nome"
-              maxlength="100"
-              placeholder="Ex.: Mel"
-              required
-            />
-          </div>
-
-          <div class="meus-pets__campo">
-            <label for="petEspecie">Espécie *</label>
-
-            <select
-              id="petEspecie"
-              name="especie"
-              [(ngModel)]="especie"
-              required
-            >
-              <option value="Cachorro">Cachorro</option>
-              <option value="Gato">Gato</option>
-              <option value="Outro">Outro</option>
-            </select>
-          </div>
-
-          <div class="meus-pets__campo">
-            <label for="petRaca">Raça</label>
-
-            <input
-              id="petRaca"
-              name="raca"
-              type="text"
-              [(ngModel)]="raca"
-              maxlength="80"
-              placeholder="Informe a raça"
-            />
-          </div>
-
-          <div class="meus-pets__campo">
-            <label for="petNascimento">Data de nascimento</label>
-
-            <input
-              id="petNascimento"
-              name="dataNascimento"
-              type="date"
-              [(ngModel)]="dataNascimento"
-            />
-          </div>
-
-          <div class="meus-pets__campo">
-            <label for="petPorte">Porte</label>
-
-            <select
-              id="petPorte"
-              name="porte"
-              [(ngModel)]="porte"
-            >
-              <option value="">Não informado</option>
-              <option value="PEQUENO">Pequeno</option>
-              <option value="MEDIO">Médio</option>
-              <option value="GRANDE">Grande</option>
-            </select>
-          </div>
-
-          <div class="meus-pets__campo meus-pets__campo--total">
-            <label for="petObservacoes">
-              Observações <span>(opcional)</span>
-            </label>
-
-            <textarea
-              id="petObservacoes"
-              name="observacoes"
-              [(ngModel)]="observacoes"
-              maxlength="500"
-              rows="4"
-              placeholder="Informe alergias, cuidados especiais ou outras observações importantes."
-            ></textarea>
-
-            <small>
-              Máximo de 500 caracteres.
-            </small>
-          </div>
-
-        </div>
-
-        @if (erro()) {
-          <p class="meus-pets__mensagem erro" role="alert">
-            {{ erro() }}
-          </p>
-        }
-
-        <footer class="meus-pets__acoes">
-
-          <button
-            type="button"
-            class="meus-pets__botao secundario"
-            (click)="cancelarFormulario()"
-            [disabled]="salvando()"
-          >
-            Cancelar
-          </button>
-
-          <button
-            type="submit"
-            class="meus-pets__botao primario"
-            [disabled]="salvando()"
-          >
-            {{
-              salvando()
-                ? 'Salvando...'
-                : petEditandoId() !== null
-                  ? 'Salvar alterações'
-                  : 'Cadastrar pet'
-            }}
-          </button>
-
-        </footer>
-
-      </form>
-
+    @if (pets().length === 0) {
+      <div class="meus-pets_vazio">
+        <h3>Você ainda não cadastrou nenhum pet.</h3>
+        <p>Cadastre seu primeiro companheiro para facilitar seus próximos agendamentos.</p>
+        <button type="button" class="meus-pets_botao-confirmar" (click)="abrirCadastro()">Cadastrar meu primeiro pet</button>
+      </div>
     }
-
-    <!-- Lista de pets -->
-    @if (pets().length > 0) {
-
-      <div class="meus-pets__resumo">
-        {{ pets().length }}
-        {{ pets().length === 1 ? 'pet cadastrado' : 'pets cadastrados' }}
-      </div>
-
-      <div class="meus-pets__lista">
-
-        @for (pet of pets(); track pet.id) {
-
-          <article class="meus-pets__card">
-
-            <div class="meus-pets__card-icone" aria-hidden="true">
-              🐾
-            </div>
-
-            <div class="meus-pets__card-conteudo">
-
-              <div class="meus-pets__card-titulo">
-                <h2>{{ pet.nome }}</h2>
-
-                <span class="meus-pets__especie">
-                  {{ pet.especie }}
-                </span>
-              </div>
-
-              <div class="meus-pets__detalhes">
-
-                <p>
-                  <strong>Raça:</strong>
-                  {{ pet.raca || 'Não informada' }}
-                </p>
-
-                <p>
-                  <strong>Nascimento:</strong>
-                  {{ formatarData(pet.dataNascimento) }}
-                </p>
-
-                <p>
-                  <strong>Porte:</strong>
-                  {{ porteDescricao(pet.porte) }}
-                </p>
-
-              </div>
-
-              @if (pet.observacoes) {
-
-                <p class="meus-pets__observacoes">
-                  <strong>Observações:</strong>
-                  {{ pet.observacoes }}
-                </p>
-
-              }
-
-              <div class="meus-pets__card-acoes">
-
-                <button
-                  type="button"
-                  class="meus-pets__botao pequeno secundario"
-                  (click)="editar(pet)"
-                >
-                  Editar
-                </button>
-
-                <button
-                  type="button"
-                  class="meus-pets__botao pequeno perigo"
-                  (click)="solicitarExclusao(pet.id)"
-                >
-                  Excluir
-                </button>
-
-              </div>
-
-              @if (petParaExcluir() === pet.id) {
-
-                <div class="meus-pets__confirmacao">
-
-                  <p>
-                    Tem certeza de que deseja excluir
-                    <strong>{{ pet.nome }}</strong>?
-                  </p>
-
-                  <small>
-                    Pets com histórico de agendamentos não podem ser excluídos.
-                  </small>
-
-                  <div class="meus-pets__confirmacao-acoes">
-
-                    <button
-                      type="button"
-                      class="meus-pets__botao pequeno secundario"
-                      (click)="cancelarExclusao()"
-                      [disabled]="excluindo()"
-                    >
-                      Voltar
-                    </button>
-
-                    <button
-                      type="button"
-                      class="meus-pets__botao pequeno perigo"
-                      (click)="confirmarExclusao()"
-                      [disabled]="excluindo()"
-                    >
-                      {{
-                        excluindo()
-                          ? 'Excluindo...'
-                          : 'Confirmar exclusão'
-                      }}
-                    </button>
-
-                  </div>
-
-                </div>
-
-              }
-
-            </div>
-
-          </article>
-
-        }
-
-      </div>
-
-    } @else if (!formularioAberto()) {
-
-      <div class="meus-pets__vazio">
-
-        <div class="meus-pets__vazio-icone" aria-hidden="true">
-          🐶
-        </div>
-
-        <h2>Você ainda não cadastrou nenhum pet</h2>
-
-        <p>
-          Cadastre seu primeiro companheiro para facilitar seus próximos agendamentos.
-        </p>
-
-        <button
-          type="button"
-          class="meus-pets__botao primario"
-          (click)="abrirCadastro()"
-        >
-          Cadastrar meu primeiro pet
-        </button>
-
-      </div>
-
-    }
-
   }
 
+  <footer class="perfil_footer">
+    <p>Copyright© 2026 Banhos UP S/A</p>
+    <p>Todos os direitos reservados</p>
+  </footer>
 </section>
+
+@if (formularioAberto()) {
+  <div class="meus-pets_overlay" (click)="cancelarFormulario()">
+    <section class="meus-pets_modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-pet" (click)="$event.stopPropagation()">
+      <div class="meus-pets_modal-cabecalho">
+        <div>
+          <h2 id="titulo-modal-pet">{{ petEditandoId() !== null ? 'Editar Pet' : 'Adicionar novo PET' }}</h2>
+          <p>{{ petEditandoId() !== null ? 'Altere as informações do seu pet' : 'Preencha as informações do seu pet' }}</p>
+        </div>
+        <button type="button" class="meus-pets_fechar" aria-label="Fechar modal" (click)="cancelarFormulario()">&times;</button>
+      </div>
+
+      <form class="meus-pets_formulario" (ngSubmit)="salvar()" novalidate>
+        <div class="meus-pets_campo">
+          <label for="pet-nome">Nome</label>
+          <input id="pet-nome" type="text" name="nome" placeholder="Digite o nome do pet" [(ngModel)]="nome" maxlength="100" required />
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-tipo">Espécie</label>
+          <select id="pet-tipo" name="especie" [(ngModel)]="especie" required>
+            <option value="Cachorro">Cachorro</option>
+            <option value="Gato">Gato</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-raca">Raça <span>(opcional)</span></label>
+          <input id="pet-raca" type="text" name="raca" placeholder="Digite a raça do pet" [(ngModel)]="raca" maxlength="80" />
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-porte">Porte <span>(opcional)</span></label>
+          <select id="pet-porte" name="porte" [(ngModel)]="porte">
+            <option value="">Não informado</option>
+            <option value="PEQUENO">Pequeno</option>
+            <option value="MEDIO">Médio</option>
+            <option value="GRANDE">Grande</option>
+          </select>
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-nascimento">Data de nascimento <span>(opcional)</span></label>
+          <input id="pet-nascimento" type="date" name="dataNascimento" [(ngModel)]="dataNascimento" [max]="'9999-12-31'" />
+        </div>
+
+        <div class="meus-pets_campo">
+          <label for="pet-observacoes">Observações <span>(opcional)</span></label>
+          <textarea id="pet-observacoes" name="observacoes" [(ngModel)]="observacoes" maxlength="500" placeholder="Alergias, temperamento ou cuidados especiais"></textarea>
+        </div>
+
+        @if (erro()) { <small class="meus-pets_erro" role="alert">{{ erro() }}</small> }
+
+        <div class="meus-pets_modal-acoes">
+          <button type="button" class="meus-pets_botao-cancelar" (click)="cancelarFormulario()" [disabled]="salvando()">Cancelar</button>
+          <button type="submit" class="meus-pets_botao-confirmar" [disabled]="salvando()">
+            {{ salvando() ? 'Salvando...' : (petEditandoId() !== null ? 'Salvar alterações' : 'Cadastrar pet') }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (petParaExcluir() !== null) {
+  <div class="meus-pets_overlay" (click)="cancelarExclusao()">
+    <section class="meus-pets_modal meus-pets_modal-remocao" role="dialog" aria-modal="true" aria-labelledby="titulo-remocao-pet" (click)="$event.stopPropagation()">
+      <div class="meus-pets_modal-cabecalho">
+        <div>
+          <h2 id="titulo-remocao-pet">Remover pet</h2>
+          <p>Tem certeza de que deseja remover este cadastro?</p>
+        </div>
+        <button type="button" class="meus-pets_fechar" aria-label="Fechar modal" (click)="cancelarExclusao()">&times;</button>
+      </div>
+      @if (erro()) { <p class="meus-pets_feedback erro" role="alert">{{ erro() }}</p> }
+      <p class="meus-pets_aviso-remocao">Pets com histórico de agendamentos não podem ser excluídos.</p>
+      <div class="meus-pets_modal-acoes">
+        <button type="button" class="meus-pets_botao-cancelar" (click)="cancelarExclusao()" [disabled]="excluindo()">Cancelar</button>
+        <button type="button" class="meus-pets_botao-remover" (click)="confirmarExclusao()" [disabled]="excluindo()">{{ excluindo() ? 'Removendo...' : 'Remover' }}</button>
+      </div>
+    </section>
+  </div>
+}

@@ -1,414 +1,395 @@
-:host {
-  display: block;
-  width: 100%;
-  color: #152b3b;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 .meus-pets {
   width: 100%;
-  max-width: 1050px;
-  margin: 0 auto;
+  padding: 0 0 30px;
+  color: #174b75;
+  font-family: inherit;
 }
 
-.meus-pets__cabecalho {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 25px;
+.meus-pets_cabecalho {
+  margin-bottom: 36px;
 }
 
-.meus-pets__sobretitulo {
-  margin: 0 0 6px;
-  color: #2595e4;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-}
-
-.meus-pets__cabecalho h1 {
-  margin: 0;
-  color: #013e73;
-  font-size: clamp(1.55rem, 3vw, 2rem);
-}
-
-.meus-pets__descricao {
-  margin: 8px 0 0;
-  color: #647789;
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-.meus-pets__formulario {
-  margin-bottom: 26px;
-  padding: 23px;
-  border: 1px solid #e4edf3;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 3px 14px rgba(1, 62, 115, 0.045);
-}
-
-.meus-pets__formulario-cabecalho {
-  margin-bottom: 22px;
-}
-
-.meus-pets__formulario-cabecalho h2 {
-  margin: 0;
-  color: #013e73;
-  font-size: 1.12rem;
-}
-
-.meus-pets__formulario-cabecalho p {
-  margin: 6px 0 0;
-  color: #748493;
-  font-size: 0.84rem;
-}
-
-.meus-pets__grade {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 20px;
-}
-
-.meus-pets__campo {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
-
-.meus-pets__campo label {
-  color: #243b4d;
-  font-size: 0.86rem;
+.meus-pets_cabecalho h2 {
+  margin: 0 0 2px;
+  color: #174b75;
+  font-size: 20px;
   font-weight: 700;
 }
 
-.meus-pets__campo label span {
-  color: #8997a2;
-  font-weight: 400;
-}
-
-.meus-pets__campo input,
-.meus-pets__campo select,
-.meus-pets__campo textarea {
-  width: 100%;
-  min-height: 43px;
-  padding: 10px 12px;
-  border: 1px solid #cbd8e1;
-  border-radius: 6px;
-  outline: none;
-  background: #fff;
-  color: #203849;
-  font: inherit;
-  font-size: 0.88rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.meus-pets__campo textarea {
-  resize: vertical;
-  min-height: 95px;
-}
-
-.meus-pets__campo input:focus,
-.meus-pets__campo select:focus,
-.meus-pets__campo textarea:focus {
-  border-color: #2595e4;
-  box-shadow: 0 0 0 3px rgba(37, 149, 228, 0.12);
-}
-
-.meus-pets__campo small {
-  color: #82919d;
-  font-size: 0.72rem;
-}
-
-.meus-pets__campo--total {
-  grid-column: 1 / -1;
-}
-
-.meus-pets__acoes {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.meus-pets__resumo {
-  margin-bottom: 14px;
-  color: #718493;
-  font-size: 0.84rem;
+.meus-pets_cabecalho p {
+  margin: 0;
+  color: #7d9bb5;
+  font-size: 13px;
   font-weight: 600;
 }
 
-.meus-pets__lista {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 17px;
-}
-
-.meus-pets__card {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-  min-width: 0;
-  padding: 20px;
-  border: 1px solid #e4edf3;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 3px 14px rgba(1, 62, 115, 0.045);
-}
-
-.meus-pets__card-icone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: #eaf6fd;
-  font-size: 1.55rem;
-}
-
-.meus-pets__card-conteudo {
-  flex: 1;
-  min-width: 0;
-}
-
-.meus-pets__card-titulo {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9px;
-}
-
-.meus-pets__card-titulo h2 {
-  margin: 0;
-  color: #013e73;
-  font-size: 1.05rem;
-}
-
-.meus-pets__especie {
-  padding: 4px 9px;
-  border-radius: 20px;
-  background: #edf7fd;
-  color: #247eb9;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.meus-pets__detalhes {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-  margin-top: 14px;
-}
-
-.meus-pets__detalhes p,
-.meus-pets__observacoes {
-  margin: 0;
-  color: #647789;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
-.meus-pets__detalhes strong,
-.meus-pets__observacoes strong {
-  color: #345064;
-}
-
-.meus-pets__observacoes {
-  margin-top: 12px;
-}
-
-.meus-pets__card-acoes {
+.meus-pets_lista {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 17px;
+  align-items: stretch;
+  gap: 12px;
 }
 
-.meus-pets__botao {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 43px;
-  padding: 10px 17px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+.meus-pets_adicionar,
+.meus-pets_card {
+  width: 194px;
+  min-height: 125px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 9px;
+  background: #eeeeee;
 }
 
-.meus-pets__botao:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.meus-pets__botao.primario {
-  border-color: #013e73;
-  background: #013e73;
-  color: #fff;
-}
-
-.meus-pets__botao.primario:hover:not(:disabled) {
-  border-color: #075b9b;
-  background: #075b9b;
-}
-
-.meus-pets__botao.secundario {
-  border-color: #b8c8d4;
-  background: #fff;
-  color: #345064;
-}
-
-.meus-pets__botao.secundario:hover:not(:disabled) {
-  background: #f5f9fc;
-}
-
-.meus-pets__botao.perigo {
-  border-color: #e3b9b9;
-  background: #fff;
-  color: #a12626;
-}
-
-.meus-pets__botao.perigo:hover:not(:disabled) {
-  background: #fff0f0;
-}
-
-.meus-pets__botao.pequeno {
-  min-height: 34px;
-  padding: 7px 12px;
-  font-size: 0.78rem;
-}
-
-.meus-pets__confirmacao {
-  margin-top: 15px;
-  padding: 13px;
-  border: 1px solid #f0d3d3;
-  border-radius: 7px;
-  background: #fff8f8;
-}
-
-.meus-pets__confirmacao p {
-  margin: 0;
-  color: #743b3b;
-  font-size: 0.83rem;
-}
-
-.meus-pets__confirmacao small {
-  display: block;
-  margin-top: 6px;
-  color: #8e6a6a;
-  font-size: 0.74rem;
-  line-height: 1.4;
-}
-
-.meus-pets__confirmacao-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.meus-pets__vazio,
-.meus-pets__estado {
+.meus-pets_adicionar {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 13px;
-  padding: 45px 20px;
-  border: 1px solid #e4edf3;
-  border-radius: 12px;
-  background: #fff;
-  text-align: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 14px;
+  color: #174b75;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.2s ease;
 }
 
-.meus-pets__vazio-icone {
-  font-size: 2.7rem;
+.meus-pets_adicionar:hover {
+  background: #e4eaf0;
 }
 
-.meus-pets__vazio h2 {
+.meus-pets_adicionar-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.meus-pets_adicionar-icone svg {
+  width: 40px;
+  height: 40px;
+}
+
+.meus-pets_card {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 11px;
+  color: #174b75;
+}
+
+.meus-pets_acoes {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+
+.meus-pets_acoes button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #174b75;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.meus-pets_acoes button:hover {
+  text-decoration: underline;
+}
+
+.meus-pets_informacoes {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.meus-pets_informacoes strong {
+  color: #174b75;
+  font-weight: 700;
+}
+
+.meus-pets_informacoes span {
+  color: #7896b0;
+  font-weight: 600;
+}
+
+
+/* Fundo e estrutura dos modais */
+
+.meus-pets_overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(13, 35, 54, 0.48);
+}
+
+.meus-pets_modal {
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 26px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.16);
+  color: #174b75;
+}
+
+.meus-pets_modal-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.meus-pets_modal-cabecalho h2 {
+  margin: 0 0 5px;
+  color: #174b75;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.meus-pets_modal-cabecalho p {
   margin: 0;
-  color: #013e73;
-  font-size: 1.08rem;
+  color: #7d9bb5;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
-.meus-pets__vazio p {
-  max-width: 410px;
-  margin: 0 0 8px;
-  color: #748493;
-  font-size: 0.86rem;
-  line-height: 1.5;
+.meus-pets_fechar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #eeeeee;
+  color: #174b75;
+  cursor: pointer;
+  font-size: 23px;
+  line-height: 1;
 }
 
-.meus-pets__estado {
-  color: #647789;
+.meus-pets_fechar:hover {
+  background: #dfe8ef;
 }
 
-.meus-pets__mensagem {
-  margin: 0 0 16px;
-  padding: 12px 14px;
-  border-radius: 7px;
-  font-size: 0.86rem;
-  line-height: 1.45;
+
+/* Formulário */
+
+.meus-pets_formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.meus-pets__mensagem.erro {
-  border: 1px solid #f1c6c6;
-  background: #fff0f0;
-  color: #a12626;
+.meus-pets_campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
-.meus-pets__mensagem.sucesso {
-  border: 1px solid #c6e8d0;
-  background: #edfaf1;
-  color: #206d3c;
+.meus-pets_campo > label:first-child {
+  color: #174b75;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-@media (max-width: 760px) {
-  .meus-pets__cabecalho {
-    flex-direction: column;
+.meus-pets_campo input:not([type="checkbox"]),
+.meus-pets_campo select {
+  width: 100%;
+  height: 43px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #d6e0e8;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #174b75;
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.meus-pets_campo input:focus,
+.meus-pets_campo select:focus {
+  border-color: #397eae;
+  box-shadow: 0 0 0 3px rgba(57, 126, 174, 0.12);
+}
+
+.meus-pets_campo input::placeholder {
+  color: #a0b1bf;
+}
+
+.meus-pets_campo input:disabled {
+  cursor: not-allowed;
+  background: #f0f2f4;
+  color: #9aa9b5;
+}
+
+.meus-pets_checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  color: #64839e;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.meus-pets_checkbox input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #174b75;
+  cursor: pointer;
+}
+
+.meus-pets_erro {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: #d34c4c;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.meus-pets_erro svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+
+/* Botões dos modais */
+
+.meus-pets_modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.meus-pets_modal-acoes button {
+  min-height: 40px;
+  padding: 0 17px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+
+.meus-pets_botao-cancelar {
+  background: #edf1f4;
+  color: #52718b;
+}
+
+.meus-pets_botao-cancelar:hover {
+  background: #dfe6eb;
+}
+
+.meus-pets_botao-confirmar {
+  background: #174b75;
+  color: #ffffff;
+}
+
+.meus-pets_botao-confirmar:hover {
+  background: #103b60;
+}
+
+.meus-pets_botao-remover {
+  background: #d94c4c;
+  color: #ffffff;
+}
+
+.meus-pets_botao-remover:hover {
+  background: #bd3838;
+}
+
+.meus-pets_modal-remocao .meus-pets_modal-acoes {
+  margin-top: 24px;
+}
+
+.perfil_footer {
+  margin-top: auto;
+  padding-top: 28px;
+
+  color: #101820;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.perfil_footer p {
+  margin: 3px 0;
+}
+
+/* Responsividade */
+
+@media (max-width: 600px) {
+  .meus-pets_lista {
+    gap: 10px;
   }
 
-  .meus-pets__cabecalho > button {
+  .meus-pets_adicionar,
+  .meus-pets_card {
+    width: calc(50% - 5px);
+    min-width: 145px;
+  }
+
+  .meus-pets_modal {
+    padding: 21px;
+  }
+}
+
+@media (max-width: 380px) {
+  .meus-pets_adicionar,
+  .meus-pets_card {
     width: 100%;
   }
 
-  .meus-pets__lista {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 560px) {
-  .meus-pets__formulario {
-    padding: 18px 15px;
-  }
-
-  .meus-pets__grade {
-    grid-template-columns: 1fr;
-  }
-
-  .meus-pets__campo--total {
-    grid-column: auto;
-  }
-
-  .meus-pets__acoes {
+  .meus-pets_modal-acoes {
     flex-direction: column-reverse;
   }
 
-  .meus-pets__acoes .meus-pets__botao {
+  .meus-pets_modal-acoes button {
     width: 100%;
   }
-
-  .meus-pets__card {
-    padding: 15px;
-  }
 }
+
+.meus-pets_feedback { margin: 0 0 12px; font-size: .82rem; line-height: 1.4; }
+.meus-pets_feedback.erro, .meus-pets_erro { color: #d93025; }
+.meus-pets_feedback.sucesso { color: #218838; }
+.meus-pets_estado, .meus-pets_vazio { padding: 26px; border: 1px dashed #c6d5e0; border-radius: 10px; color: #718da5; text-align: center; }
+.meus-pets_vazio h3 { margin: 0 0 8px; color: #174b75; }
+.meus-pets_vazio p { margin: 0 0 16px; }
+.meus-pets_campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.meus-pets_campo label { color: #174b75; font-size: .85rem; font-weight: 700; }
+.meus-pets_campo label span { color: #999; font-weight: 400; }
+.meus-pets_campo input, .meus-pets_campo select, .meus-pets_campo textarea { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid #c8d5df; border-radius: 5px; background: #fff; color: #174b75; font: inherit; font-size: .82rem; }
+.meus-pets_campo textarea { min-height: 80px; resize: vertical; }
+.meus-pets_modal-acoes { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.meus-pets_botao-cancelar, .meus-pets_botao-confirmar, .meus-pets_botao-remover { min-height: 40px; padding: 0 15px; border-radius: 5px; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.meus-pets_botao-cancelar { border: 1px solid #aebfcd; background: #fff; color: #174b75; }
+.meus-pets_botao-confirmar { border: 0; background: #084879; color: #fff; }
+.meus-pets_botao-remover { border: 0; background: #a83232; color: #fff; }
+.meus-pets_botao-cancelar:disabled, .meus-pets_botao-confirmar:disabled, .meus-pets_botao-remover:disabled { opacity: .6; cursor: wait; }
+.meus-pets_aviso-remocao { color: #7d9bb5; font-size: .8rem; line-height: 1.45; }
+.meus-pets_modal { max-height: 90vh; overflow-y: auto; }

@@ -238,41 +238,6 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   margin: 3px 0;
 }
 
-/* Mensagens de retorno do cadastro */
-
-.cadastro_feedback {
-  width: 100%;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  text-align: center;
-  line-height: 1.5;
-}
-
-.cadastro_erro {
-  color: #a32121;
-  background: #ffeaea;
-  border: 1px solid #f4caca;
-}
-
-.cadastro_sucesso {
-  color: #176b35;
-  background: #e7f7ec;
-  border: 1px solid #bce5c8;
-}
-
-.cadastro_botao:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.cadastro_link-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
 /* Notebook e telas intermediárias */
 @media (max-width: 1024px) {
   .cadastro {
@@ -468,3 +433,9 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   outline: 2px solid #d93025;
   outline-offset: 2px;
 }
+
+.cadastro_botao:disabled { opacity: .65; cursor: wait; }
+.cadastro_feedback { margin: 0; padding: 10px 12px; border-radius: 5px; font-size: .78rem; line-height: 1.4; }
+.cadastro_feedback-erro { background: #fff0f0; color: #b42318; }
+.cadastro_feedback-sucesso { background: #edf8f0; color: #218838; }
+.cadastro_botao-login { display: flex; align-items: center; justify-content: center; text-decoration: none; }

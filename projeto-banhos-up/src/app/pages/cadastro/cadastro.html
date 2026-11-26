@@ -1,347 +1,193 @@
 <app-header-v2></app-header-v2>
 
 <main class="cadastro">
-
   <h1 class="cadastro_titulo">Crie sua conta</h1>
 
   <section class="cadastro_card">
-
-    <form
-      class="cadastro_formulario"
-      (ngSubmit)="cadastrar()"
-    >
+    <form class="cadastro_formulario" (ngSubmit)="cadastrar()" novalidate>
 
       <div class="cadastro_campo">
-
         <label for="nome">Nome e sobrenome</label>
-
         <input
-          type="text"
-          id="nome"
-          name="nome"
-          [(ngModel)]="nome"
+          type="text" id="nome" name="nome"
           placeholder="Digite seu nome e sobrenome"
-          autocomplete="name"
-          maxlength="100"
-          required
+          autocomplete="name" maxlength="100"
+          [(ngModel)]="nome"
+          [class.campo-erro]="tentouCadastrar && !nomeValido"
+          [attr.aria-invalid]="tentouCadastrar && !nomeValido"
         />
-
+        @if (tentouCadastrar && !nomeValido) {
+          <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>Informe seu nome completo.</small>
+        }
       </div>
 
       <div class="cadastro_campo">
-
         <label for="cpf">CPF</label>
-
         <input
-          type="text"
-          id="cpf"
-          name="cpf"
-          [(ngModel)]="cpf"
-          placeholder="Digite o seu CPF"
-          inputmode="numeric"
-          maxlength="14"
-          autocomplete="off"
-          required
+          type="text" id="cpf" name="cpf"
+          placeholder="Digite o seu CPF" inputmode="numeric" maxlength="14"
+          [(ngModel)]="cpf" (ngModelChange)="formatarCpf($event)"
+          [class.campo-erro]="tentouCadastrar && !cpfValido"
+          [attr.aria-invalid]="tentouCadastrar && !cpfValido"
         />
-
+        @if (tentouCadastrar && !cpfValido) {
+          <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>Informe um CPF válido.</small>
+        }
       </div>
 
       <div class="cadastro_campo">
-
         <label for="email">E-mail</label>
-
         <input
-          type="text"
-          id="email"
-          name="email"
+          type="email" id="email" name="email"
+          placeholder="Digite seu e-mail" autocomplete="email" maxlength="254"
           [(ngModel)]="email"
-          placeholder="Digite seu e-mail"
-          autocomplete="email"
-          maxlength="150"
-          required
+          [class.campo-erro]="tentouCadastrar && !emailValido"
+          [attr.aria-invalid]="tentouCadastrar && !emailValido"
         />
-
+        @if (tentouCadastrar && !emailValido) {
+          <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>Informe um e-mail válido.</small>
+        }
       </div>
 
       <div class="cadastro_campo">
-
         <label for="celular">Celular</label>
-
         <input
-          type="tel"
-          id="celular"
-          name="celular"
-          [(ngModel)]="celular"
-          placeholder="DDD + Celular"
-          autocomplete="tel-national"
-          maxlength="15"
-          required
+          type="tel" id="celular" name="celular"
+          placeholder="DDD + Celular" autocomplete="tel-national" maxlength="16" inputmode="tel"
+          [(ngModel)]="celular" (ngModelChange)="formatarCelular($event)"
+          [class.campo-erro]="tentouCadastrar && !celularValido"
+          [attr.aria-invalid]="tentouCadastrar && !celularValido"
         />
-
+        @if (tentouCadastrar && !celularValido) {
+          <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>Informe o DDD e um celular válido.</small>
+        }
       </div>
 
-      <!-- Telefone opcional -->
       <div class="cadastro_campo">
-
-        <label for="telefone">
-          Telefone <span>(opcional)</span>
-        </label>
-
+        <label for="telefone">Telefone <span>(opcional)</span></label>
         <input
-          type="tel"
-          id="telefone"
-          name="telefone"
+          type="tel" id="telefone" name="telefone"
+          placeholder="DDD + Telefone" maxlength="15" inputmode="tel"
           [(ngModel)]="telefone"
-          placeholder="DDD + Telefone"
-          maxlength="15"
         />
-
       </div>
 
-      <!-- Gênero -->
       <div class="cadastro_campo">
-
-        <label for="genero">
-          Gênero <span>(opcional)</span>
-        </label>
-
-        <select
-          id="genero"
-          name="genero"
-          [(ngModel)]="genero"
-        >
-          <option value="" disabled>
-            Escolha o gênero
-          </option>
-
-          <option value="feminino">
-            Feminino
-          </option>
-
-          <option value="masculino">
-            Masculino
-          </option>
-
-          <option value="nao-informar">
-            Prefiro não opinar
-          </option>
-
+        <label for="genero">Gênero <span>(opcional)</span></label>
+        <select id="genero" name="genero" [(ngModel)]="genero">
+          <option value="">Escolha o gênero</option>
+          <option value="feminino">Feminino</option>
+          <option value="masculino">Masculino</option>
+          <option value="nao-informar">Prefiro não opinar</option>
         </select>
-
       </div>
 
       <div class="cadastro_campo">
-
-        <label for="nascimento">
-          Data de nascimento <span>(opcional)</span>
-        </label>
-
+        <label for="nascimento">Data de nascimento <span>(opcional)</span></label>
         <input
-          type="date"
-          id="nascimento"
-          name="nascimento"
+          type="date" id="nascimento" name="nascimento" autocomplete="bday"
           [(ngModel)]="nascimento"
-          autocomplete="bday"
           [class.campo-erro]="tentouCadastrar && !nascimentoValido"
           [attr.aria-invalid]="tentouCadastrar && !nascimentoValido"
         />
-
+        @if (tentouCadastrar && !nascimentoValido) {
+          <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>Informe uma data válida no passado.</small>
+        }
       </div>
 
       <div class="cadastro_senhas">
-
         <div class="cadastro_campo">
-
           <label for="senha">Senha</label>
-
           <div class="cadastro_senha-container">
-
             <input
               [type]="mostrarSenha() ? 'text' : 'password'"
-              id="senha"
-              name="senha"
+              id="senha" name="senha" placeholder="Digite sua senha"
+              autocomplete="new-password" maxlength="72"
               [(ngModel)]="senha"
-              placeholder="Digite sua senha"
-              autocomplete="new-password"
-              minlength="8"
-              maxlength="72"
-              required
+              [class.campo-erro]="tentouCadastrar && !senhaValida"
+              [attr.aria-invalid]="tentouCadastrar && !senhaValida"
             />
-
-            <button
-              type="button"
-              class="cadastro_senha-botao"
+            <button type="button" class="cadastro_senha-botao"
               (click)="alternarVisibilidadeSenha()"
               [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'"
-              [attr.aria-pressed]="mostrarSenha()"
-            >
-
-              @if (mostrarSenha()) {
-                <svg lucideEyeOff class="cadastro_icone-senha"></svg>
-              } @else {
-                <svg lucideEye class="cadastro_icone-senha"></svg>
-              }
-
+              [attr.aria-pressed]="mostrarSenha()">
+              @if (mostrarSenha()) { <svg lucideEyeOff class="cadastro_icone-senha"></svg> }
+              @else { <svg lucideEye class="cadastro_icone-senha"></svg> }
             </button>
-
           </div>
-
         </div>
 
         <div class="cadastro_campo">
-
           <label for="confirmarSenha">Confirmar a senha</label>
-
           <div class="cadastro_senha-container">
-
             <input
               [type]="mostrarConfirmacaoSenha() ? 'text' : 'password'"
-              id="confirmarSenha"
-              name="confirmarSenha"
+              id="confirmarSenha" name="confirmarSenha"
+              placeholder="Confirmar sua senha" autocomplete="new-password" maxlength="72"
               [(ngModel)]="confirmarSenha"
-              placeholder="Confirmar sua senha"
-              autocomplete="new-password"
-              minlength="8"
-              maxlength="72"
-              required
+              [class.campo-erro]="tentouCadastrar && !confirmacaoValida"
+              [attr.aria-invalid]="tentouCadastrar && !confirmacaoValida"
             />
-
-            <button
-              type="button"
-              class="cadastro_senha-botao"
+            <button type="button" class="cadastro_senha-botao"
               (click)="alternarVisibilidadeConfirmacao()"
               [attr.aria-label]="mostrarConfirmacaoSenha() ? 'Ocultar senha' : 'Mostrar senha'"
-              [attr.aria-pressed]="mostrarConfirmacaoSenha()"
-            >
-
-              @if (mostrarConfirmacaoSenha()) {
-                <svg lucideEyeOff class="cadastro_icone-senha"></svg>
-              } @else {
-                <svg lucideEye class="cadastro_icone-senha"></svg>
-              }
-
+              [attr.aria-pressed]="mostrarConfirmacaoSenha()">
+              @if (mostrarConfirmacaoSenha()) { <svg lucideEyeOff class="cadastro_icone-senha"></svg> }
+              @else { <svg lucideEye class="cadastro_icone-senha"></svg> }
             </button>
-
           </div>
-
+          @if (tentouCadastrar && !confirmacaoValida) {
+            <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>As senhas não coincidem ou o campo está vazio.</small>
+          }
         </div>
-
       </div>
 
       <div class="cadastro_requisitos">
-
         <strong>Padrão de senha</strong>
-
         <ul>
-          <li [class.requisito-valido]="senhaMinima">
-            Mínimo 8 caracteres
-          </li>
-
-          <li [class.requisito-valido]="senhaMaiuscula">
-            Letra maiúscula
-          </li>
-
-          <li [class.requisito-valido]="senhaMinuscula">
-            Letra minúscula
-          </li>
-
-          <li [class.requisito-valido]="senhaEspecial">
-            Caractere especial
-          </li>
-
-          <li [class.requisito-valido]="senhaNumero">
-            Número
-          </li>
+          <li [class.requisito-valido]="senhaMinima">Mínimo 8 caracteres</li>
+          <li [class.requisito-valido]="senhaMaiuscula">Letra maiúscula</li>
+          <li [class.requisito-valido]="senhaMinuscula">Letra minúscula</li>
+          <li [class.requisito-valido]="senhaEspecial">Caractere especial</li>
+          <li [class.requisito-valido]="senhaNumero">Número</li>
         </ul>
-
       </div>
 
       @if (tentouCadastrar && !senhaValida) {
-        <small class="cadastro_mensagem-erro">
-          <svg lucideCircleExclamationPoint></svg>
-          A senha não atende a todos os requisitos.
-        </small>
+        <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>A senha não atende a todos os requisitos.</small>
       }
 
+      <!-- Mantém o bloco visual original da Camila. O cadastro de foto não está disponível na API atual. -->
       <section class="cadastro_foto">
-
         <h2>Foto de Perfil <span>(opcional)</span></h2>
-
-        <p>Escolha sua foto de perfil</p>
-
+        <p>O envio de foto será disponibilizado futuramente.</p>
       </section>
 
       <div class="cadastro_termos">
-
-        <input
-          type="checkbox"
-          id="termos"
-          name="termos"
-          [(ngModel)]="termosAceitos"
-          required
-        />
-
-        <label for="termos">
-          Concordo com os
-          <a routerLink="/termos">termos e condições</a>
-        </label>
-
+        <input type="checkbox" id="termos" name="termos" [(ngModel)]="termosAceitos" />
+        <label for="termos">Concordo com os <a routerLink="/termos">termos e condições</a></label>
       </div>
+      @if (tentouCadastrar && !termosAceitos) {
+        <small class="cadastro_mensagem-erro"><svg lucideCircleExclamationPoint></svg>É necessário aceitar os termos e condições.</small>
+      }
 
-      <!-- Mensagem de erro -->
       @if (erro()) {
-
-        <p
-          class="cadastro_feedback cadastro_erro"
-          role="alert"
-        >
-          {{ erro() }}
-        </p>
-
+        <p class="cadastro_feedback cadastro_feedback-erro" role="alert">{{ erro() }}</p>
       }
-
-      <!-- Mensagem de sucesso -->
       @if (sucesso()) {
-
-        <p
-          class="cadastro_feedback cadastro_sucesso"
-          role="status"
-        >
-          {{ sucesso() }}
-        </p>
-
-        <a
-          routerLink="/login"
-          class="cadastro_botao cadastro_link-login"
-        >
-          Acessar minha conta
-        </a>
-
-      }
-
-      <!-- Botão de cadastro -->
-      @if (!sucesso()) {
-
-        <button
-          type="submit"
-          class="cadastro_botao"
-          [disabled]="carregando()"
-        >
+        <p class="cadastro_feedback cadastro_feedback-sucesso" role="status">{{ sucesso() }}</p>
+        <a routerLink="/login" class="cadastro_botao cadastro_botao-login">Acessar minha conta</a>
+      } @else {
+        <button type="submit" class="cadastro_botao" [disabled]="carregando()">
           {{ carregando() ? 'CADASTRANDO...' : 'CADASTRAR' }}
         </button>
-
       }
 
     </form>
-
   </section>
 
   <footer class="cadastro_footer">
-
     <p>Copyright© 2026 Banhos UP S/A</p>
-
     <p>Todos os direitos reservados</p>
-
   </footer>
-
 </main>

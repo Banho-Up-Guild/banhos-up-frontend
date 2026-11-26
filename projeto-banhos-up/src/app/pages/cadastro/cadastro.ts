@@ -5,11 +5,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 
 import { HeaderV2 } from '../../header/header-v2/header-v2';
-import { LucideCircleExclamationPoint, LucideEye, LucideEyeOff } from '@lucide/angular';
+
+import {
+  LucideCircleExclamationPoint,
+  LucideEye,
+  LucideEyeOff
+} from '@lucide/angular';
+
 import { ClienteService } from '../../services/cliente.service';
 
 @Component({
   selector: 'app-cadastro',
+  standalone: true,
   imports: [
     FormsModule,
     RouterLink,
@@ -29,224 +36,537 @@ export class Cadastro {
     this.clienteService = clienteService;
   }
 
-  // Controle de visibilidade das senhas.
+  // =========================================
+  // CONTROLE DE VISIBILIDADE DAS SENHAS
+  // =========================================
+
   mostrarSenha = signal(false);
+
   mostrarConfirmacaoSenha = signal(false);
 
-  // Estados da requisição.
+  alternarVisibilidadeSenha(): void {
+    this.mostrarSenha.update(valor => !valor);
+  }
+
+  alternarVisibilidadeConfirmacao(): void {
+    this.mostrarConfirmacaoSenha.update(valor => !valor);
+  }
+
+  // =========================================
+  // ESTADOS DO CADASTRO
+  // =========================================
+
   carregando = signal(false);
+
   erro = signal('');
+
   sucesso = signal('');
 
-  // Campos do formulário.
-  nome = '';
-  cpf = '';
-  email = '';
-  celular = '';
-  telefone = '';
-  genero = '';
-  nascimento = '';
-  senha = '';
-  confirmarSenha = '';
-  termosAceitos = false;
-
-  // Controla quando as mensagens de validação devem aparecer.
   tentouCadastrar = false;
 
+  // =========================================
+  // CAMPOS DO FORMULÁRIO
+  // =========================================
+
+  nome = '';
+
+  cpf = '';
+
+  email = '';
+
+  celular = '';
+
+  telefone = '';
+
+  genero = '';
+
+  nascimento = '';
+
+  senha = '';
+
+  confirmarSenha = '';
+
+  termosAceitos = false;
+
+  // =========================================
+  // VALIDAÇÃO DO NOME
+  // =========================================
+
+  get nomeValido(): boolean {
+
+    return this.nome.trim().length >= 3;
+
+  }
+
+  // =========================================
+  // FORMATAÇÃO E VALIDAÇÃO DO CPF
+  // =========================================
+
+  formatarCpf(valor: string): void {
+
+    const numeros = (valor || '')
+      .replace(/\D/g, '')
+      .slice(0, 11);
+
+    if (numeros.length <= 3) {
+
+      this.cpf = numeros;
+
+    } else if (numeros.length <= 6) {
+
+      this.cpf = numeros.replace(
+        /^(\d{3})(\d+)/,
+        '$1.$2'
+      );
+
+    } else if (numeros.length <= 9) {
+
+      this.cpf = numeros.replace(
+        /^(\d{3})(\d{3})(\d+)/,
+        '$1.$2.$3'
+      );
+
+    } else {
+
+      this.cpf = numeros.replace(
+        /^(\d{3})(\d{3})(\d{3})(\d{1,2})/,
+        '$1.$2.$3-$4'
+      );
+
+    }
+
+  }
+
+  get cpfValido(): boolean {
+
+    const cpf = this.cpf.replace(/\D/g, '');
+
+    if (cpf.length !== 11) {
+      return false;
+    }
+
+    // CPF com todos os números iguais é inválido.
+    if (/^(\d)\1{10}$/.test(cpf)) {
+      return false;
+    }
+
+    const calcularDigito = (base: string, pesoInicial: number): number => {
+
+      let soma = 0;
+
+      for (let i = 0; i < base.length; i++) {
+
+        soma += Number(base[i]) * (pesoInicial - i);
+
+      }
+
+      const resto = (soma * 10) % 11;
+
+      return resto === 10 ? 0 : resto;
+
+    };
+
+    const primeiroDigito = calcularDigito(
+      cpf.substring(0, 9),
+      10
+    );
+
+    if (primeiroDigito !== Number(cpf[9])) {
+      return false;
+    }
+
+    const segundoDigito = calcularDigito(
+      cpf.substring(0, 10),
+      11
+    );
+
+    return segundoDigito === Number(cpf[10]);
+
+  }
+
+  // =========================================
+  // VALIDAÇÃO DO E-MAIL
+  // =========================================
+
+  get emailValido(): boolean {
+
+    const email = this.email.trim();
+
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    return regex.test(email);
+
+  }
+
+  // =========================================
+  // FORMATAÇÃO E VALIDAÇÃO DO CELULAR
+  // =========================================
+
+  formatarCelular(valor: string): void {
+
+    const numeros = (valor || '')
+      .replace(/\D/g, '')
+      .slice(0, 11);
+
+    if (numeros.length === 0) {
+
+      this.celular = '';
+
+      return;
+
+    }
+
+    if (numeros.length <= 2) {
+
+      this.celular = `(${numeros}`;
+
+    } else if (numeros.length <= 10) {
+
+      this.celular = numeros.replace(
+        /^(\d{2})(\d{0,4})(\d{0,4})$/,
+        (_, ddd, parte1, parte2) => {
+
+          return parte2
+            ? `(${ddd}) ${parte1}-${parte2}`
+            : `(${ddd}) ${parte1}`;
+
+        }
+      );
+
+    } else {
+
+      this.celular = numeros.replace(
+        /^(\d{2})(\d{5})(\d{0,4})$/,
+        '($1) $2-$3'
+      );
+
+    }
+
+  }
+
+  get celularValido(): boolean {
+
+    const celular = this.celular.replace(/\D/g, '');
+
+    return celular.length === 10 || celular.length === 11;
+
+  }
+
+  // =========================================
+  // VALIDAÇÃO DA DATA DE NASCIMENTO
+  // =========================================
+
   get nascimentoValido(): boolean {
+
+    // A data é opcional.
     if (!this.nascimento) {
       return true;
     }
 
-    const dataNascimento = new Date(`${this.nascimento}T00:00:00`);
+    const data = new Date(
+      `${this.nascimento}T00:00:00`
+    );
+
     const hoje = new Date();
+
     hoje.setHours(0, 0, 0, 0);
 
-    return Number.isFinite(dataNascimento.getTime()) && dataNascimento < hoje;
+    return Number.isFinite(data.getTime()) && data < hoje;
+
   }
 
+  // =========================================
+  // VALIDAÇÃO DA SENHA
+  // =========================================
+
   get senhaMinima(): boolean {
-    return this.senha.length >= 8 && this.senha.length <= 72;
+
+    return this.senha.length >= 8 &&
+      this.senha.length <= 72;
+
   }
 
   get senhaMaiuscula(): boolean {
+
     return /[A-Z]/.test(this.senha);
+
   }
 
   get senhaMinuscula(): boolean {
+
     return /[a-z]/.test(this.senha);
+
   }
 
   get senhaEspecial(): boolean {
+
     return /[^A-Za-z0-9]/.test(this.senha);
+
   }
 
   get senhaNumero(): boolean {
+
     return /\d/.test(this.senha);
+
   }
 
   get senhaValida(): boolean {
+
     return this.senhaMinima &&
       this.senhaMaiuscula &&
       this.senhaMinuscula &&
       this.senhaEspecial &&
       this.senhaNumero;
+
   }
 
-  alternarVisibilidadeSenha(): void {
-    this.mostrarSenha.update((visivel) => !visivel);
+  // =========================================
+  // CONFIRMAÇÃO DA SENHA
+  // =========================================
+
+  get confirmacaoValida(): boolean {
+
+    return this.confirmarSenha.length > 0 &&
+      this.confirmarSenha === this.senha;
+
   }
 
-  alternarVisibilidadeConfirmacao(): void {
-    this.mostrarConfirmacaoSenha.update((visivel) => !visivel);
+  // =========================================
+  // VALIDAÇÃO DE TELEFONE SECUNDÁRIO
+  // =========================================
+
+  private get telefoneValido(): boolean {
+
+    const telefone = this.telefone.replace(/\D/g, '');
+
+    // O telefone é opcional.
+    if (!telefone) {
+      return true;
+    }
+
+    return telefone.length === 10 ||
+      telefone.length === 11;
+
   }
+
+  // =========================================
+  // CADASTRO DO CLIENTE
+  // =========================================
 
   cadastrar(): void {
 
     this.tentouCadastrar = true;
+
     this.erro.set('');
+
     this.sucesso.set('');
 
     if (this.carregando()) {
       return;
     }
 
-    const nome = this.nome.trim();
-    const email = this.email.trim().toLowerCase();
+    // Verifica os dados antes de enviar ao Backend.
 
-    const cpf = this.cpf.replace(/\D/g, '');
-    const celular = this.celular.replace(/\D/g, '');
-    const telefone = this.telefone.replace(/\D/g, '');
+    if (!this.nomeValido) {
 
-    // Validações do formulário.
-
-    if (!nome) {
       this.erro.set('Informe seu nome completo.');
+
       return;
+
     }
 
-    if (!email) {
-      this.erro.set('Informe seu e-mail.');
+    if (!this.cpfValido) {
+
+      this.erro.set('Informe um CPF válido.');
+
       return;
+
     }
 
-    if (!this.termosAceitos) {
-      this.erro.set('Você precisa aceitar os termos e condições.');
+    if (!this.emailValido) {
+
+      this.erro.set('Informe um e-mail válido.');
+
       return;
+
     }
 
-    if (this.senha !== this.confirmarSenha) {
-      this.erro.set('As senhas não são iguais.');
+    if (!this.celularValido) {
+
+      this.erro.set('Informe um celular válido com DDD.');
+
       return;
+
     }
 
-    if (this.senha.length < 8 || this.senha.length > 72) {
-      this.erro.set('A senha deve possuir entre 8 e 72 caracteres.');
-      return;
-    }
+    if (!this.telefoneValido) {
 
-    if (!this.senhaValida) {
-      this.erro.set(
-        'A senha precisa conter letra maiúscula, minúscula, número e caractere especial.'
-      );
-      return;
-    }
+      this.erro.set('Informe um telefone secundário válido.');
 
-    if (cpf.length !== 11) {
-      this.erro.set('Informe um CPF válido com 11 dígitos.');
       return;
-    }
 
-    if (celular.length !== 10 && celular.length !== 11) {
-      this.erro.set('Informe um número de celular válido com DDD.');
-      return;
-    }
-
-    if (telefone && telefone.length !== 10 && telefone.length !== 11) {
-      this.erro.set('O telefone opcional informado é inválido.');
-      return;
     }
 
     if (!this.nascimentoValido) {
-      this.erro.set('A data de nascimento deve ser uma data válida no passado.');
+
+      this.erro.set('Informe uma data de nascimento válida.');
+
       return;
+
     }
 
-    // Envia os dados para o Backend.
+    if (!this.senhaValida) {
+
+      this.erro.set(
+        'A senha não atende aos requisitos de segurança.'
+      );
+
+      return;
+
+    }
+
+    if (!this.confirmacaoValida) {
+
+      this.erro.set('As senhas não coincidem.');
+
+      return;
+
+    }
+
+    if (!this.termosAceitos) {
+
+      this.erro.set(
+        'Você precisa aceitar os termos e condições.'
+      );
+
+      return;
+
+    }
+
+    // =========================================
+    // NORMALIZAÇÃO DOS DADOS
+    // =========================================
+
+    const dados = {
+
+      name: this.nome.trim(),
+
+      email: this.email.trim().toLowerCase(),
+
+      password: this.senha,
+
+      phone: this.celular.replace(/\D/g, ''),
+
+      cpf: this.cpf.replace(/\D/g, ''),
+
+      secondaryPhone: this.telefone
+        ? this.telefone.replace(/\D/g, '')
+        : null,
+
+      gender: this.genero || null,
+
+      dateOfBirth: this.nascimento || null
+
+    };
+
+    // =========================================
+    // ENVIO PARA O BACKEND
+    // =========================================
+
     this.carregando.set(true);
 
-    this.clienteService.cadastrar({
-      name: nome,
-      email,
-      password: this.senha,
-      phone: celular,
-      cpf,
-      secondaryPhone: telefone || null,
-      gender: this.genero || null,
-      dateOfBirth: this.nascimento || null
-    })
-    .pipe(
-      finalize(() => this.carregando.set(false))
-    )
-    .subscribe({
+    this.clienteService.cadastrar(dados)
 
-      next: () => {
+      .pipe(
+        finalize(() => this.carregando.set(false))
+      )
 
-        this.sucesso.set(
-          'Cadastro realizado com sucesso! Agora você já pode acessar sua conta.'
-        );
+      .subscribe({
 
-        // Limpa os campos após o cadastro.
-        this.nome = '';
-        this.cpf = '';
-        this.email = '';
-        this.celular = '';
-        this.telefone = '';
-        this.genero = '';
-        this.nascimento = '';
-        this.senha = '';
-        this.confirmarSenha = '';
-        this.termosAceitos = false;
-        this.tentouCadastrar = false;
+        next: () => {
 
-        this.mostrarSenha.set(false);
-        this.mostrarConfirmacaoSenha.set(false);
-
-      },
-
-      error: (erro: HttpErrorResponse) => {
-
-        if (erro.status === 409) {
-          this.erro.set(
-            'Este e-mail ou CPF já está cadastrado.'
+          this.sucesso.set(
+            'Cadastro realizado com sucesso! Agora você já pode acessar sua conta.'
           );
-          return;
+
+          // Limpa os dados do formulário.
+          this.nome = '';
+
+          this.cpf = '';
+
+          this.email = '';
+
+          this.celular = '';
+
+          this.telefone = '';
+
+          this.genero = '';
+
+          this.nascimento = '';
+
+          this.senha = '';
+
+          this.confirmarSenha = '';
+
+          this.termosAceitos = false;
+
+          this.tentouCadastrar = false;
+
+          this.mostrarSenha.set(false);
+
+          this.mostrarConfirmacaoSenha.set(false);
+
+        },
+
+        error: (erro: HttpErrorResponse) => {
+
+          console.error(
+            'Erro ao cadastrar cliente:',
+            erro
+          );
+
+          if (erro.status === 409) {
+
+            this.erro.set(
+              'Este CPF ou e-mail já está cadastrado.'
+            );
+
+            return;
+
+          }
+
+          if (erro.status === 400) {
+
+            const mensagem = erro.error?.message;
+
+            this.erro.set(
+              typeof mensagem === 'string' && mensagem.trim()
+                ? mensagem
+                : 'Alguns dados são inválidos. Confira as informações preenchidas.'
+            );
+
+            return;
+
+          }
+
+          if (erro.status === 0) {
+
+            this.erro.set(
+              'Não foi possível conectar ao servidor. Verifique se o Backend está funcionando.'
+            );
+
+            return;
+
+          }
+
+          this.erro.set(
+            'Ocorreu um erro ao realizar o cadastro. Tente novamente.'
+          );
+
         }
 
-        if (erro.status === 400) {
-          const mensagemBackend = erro.error?.message;
+      });
 
-          this.erro.set(
-            typeof mensagemBackend === 'string' && mensagemBackend.trim()
-              ? mensagemBackend
-              : 'Alguns dados são inválidos. Confira as informações preenchidas.'
-          );
-          return;
-        }
-
-        if (erro.status === 0) {
-          this.erro.set(
-            'Não foi possível conectar ao servidor. Verifique se o Backend está funcionando.'
-          );
-          return;
-        }
-
-        this.erro.set(
-          'Ocorreu um erro ao realizar o cadastro. Tente novamente.'
-        );
-
-      }
-
-    });
   }
+
 }

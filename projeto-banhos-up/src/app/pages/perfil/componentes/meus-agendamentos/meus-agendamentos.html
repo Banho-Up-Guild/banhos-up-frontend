@@ -1,227 +1,89 @@
-<section class="agendamentos-cliente">
-
-  <header class="agendamentos-cliente__cabecalho">
-
+<section class="meus-agendamentos">
+  <header class="meus-agendamentos_cabecalho">
     <div>
-      <p class="agendamentos-cliente__sobretitulo">
-        Sua conta
-      </p>
-
-      <h1>Meus agendamentos</h1>
-
-      <p class="agendamentos-cliente__descricao">
-        Consulte os serviços agendados para seus pets.
-      </p>
+      <h2>Meus Agendamentos</h2>
+      <p>Monitore e organize a rotina de higiene do seu pet.</p>
     </div>
-
-    <label class="agendamentos-cliente__filtro">
-
-      <span>Filtrar por status</span>
-
-      <select
-        [ngModel]="filtroStatus()"
-        (ngModelChange)="mudarFiltro($event)"
-      >
-        <option value="TODOS">Todos</option>
-
-        <option value="AWAITING_CONFIRMATION">
-          Aguardando confirmação
-        </option>
-
-        <option value="CONFIRMED">
-          Confirmados
-        </option>
-
-        <option value="CANCELED">
-          Cancelados
-        </option>
-
-      </select>
-
-    </label>
-
+    <a routerLink="/agendamento" class="meus-agendamentos_botao-agendar">Agendar <span aria-hidden="true">→</span></a>
   </header>
 
+  <nav class="meus-agendamentos_abas" aria-label="Filtrar agendamentos por status">
+    <button type="button" [class.ativa]="filtroStatus() === 'TODOS'" (click)="mudarFiltro('TODOS')">Todos</button>
+    <button type="button" [class.ativa]="filtroStatus() === 'AWAITING_CONFIRMATION'" (click)="mudarFiltro('AWAITING_CONFIRMATION')">Aguardando</button>
+    <button type="button" [class.ativa]="filtroStatus() === 'CONFIRMED'" (click)="mudarFiltro('CONFIRMED')">Confirmados</button>
+    <button type="button" [class.ativa]="filtroStatus() === 'CANCELED'" (click)="mudarFiltro('CANCELED')">Cancelados</button>
+  </nav>
+
   @if (carregando()) {
-
-    <div class="agendamentos-cliente__aviso" role="status">
-
-      <span class="agendamentos-cliente__spinner"></span>
-
-      Carregando seus agendamentos...
-
-    </div>
-
+    <div class="meus-agendamentos_vazio">Carregando seus agendamentos...</div>
   } @else if (erro()) {
-
-    <div
-      class="agendamentos-cliente__aviso agendamentos-cliente__aviso--erro"
-      role="alert"
-    >
-
+    <div class="meus-agendamentos_vazio" role="alert">
       <p>{{ erro() }}</p>
-
-      <button
-        type="button"
-        (click)="carregarAgendamentos()"
-      >
-        Tentar novamente
-      </button>
-
+      <button type="button" class="meus-agendamentos_botao-tentar" (click)="carregarAgendamentos()">Tentar novamente</button>
     </div>
-
   } @else if (agendamentos().length === 0) {
-
-    <div class="agendamentos-cliente__vazio">
-
-      <div class="agendamentos-cliente__vazio-icone">
-        <svg viewBox="0 0 24 24">
-          <rect x="3" y="5" width="18" height="16" rx="2"></rect>
-          <path d="M16 3v4M8 3v4M3 10h18"></path>
-        </svg>
-      </div>
-
-      <h2>Você ainda não tem agendamentos</h2>
-
-      <p>
-        Quando fizer um agendamento, ele aparecerá aqui.
-      </p>
-
+    <div class="meus-agendamentos_vazio">
+      <p>Você ainda não possui agendamentos.</p>
+      <a routerLink="/agendamento">Que tal agendar um banho para seu pet?</a>
     </div>
-
   } @else if (agendamentosFiltrados().length === 0) {
-
-    <div class="agendamentos-cliente__vazio">
-
-      <h2>Nenhum agendamento com esse status</h2>
-
-      <p>
-        Escolha outro filtro para consultar seus pedidos.
-      </p>
-
-    </div>
-
+    <div class="meus-agendamentos_vazio"><p>Nenhum agendamento encontrado com esse status.</p></div>
   } @else {
-
-    <div class="agendamentos-cliente__lista">
-
-      @for (
-        agendamento of agendamentosFiltrados();
-        track agendamento.id
-      ) {
-
-        <article class="agendamento-card">
-
-          <header class="agendamento-card__topo">
-
-            <div>
-
-              <span class="agendamento-card__identificador">
-                Agendamento #{{ agendamento.id }}
-              </span>
-
-              <h2>
-                {{
-                  agendamento.dateTimeAppointment
-                    | date:'dd/MM/yyyy':'':'pt-BR'
-                }}
-              </h2>
-
-              <p class="agendamento-card__hora">
-                {{
-                  agendamento.dateTimeAppointment
-                    | date:'HH:mm':'':'pt-BR'
-                }}
-              </p>
-
+    <div class="meus-agendamentos_lista">
+      @for (agendamento of agendamentosFiltrados(); track agendamento.id) {
+        <article class="agendamento_card">
+          <div class="agendamento_card-cabecalho">
+            <div class="agendamento_pet">
+              <div class="agendamento_pet-icone grupo-um" aria-hidden="true">🐾</div>
+              <span>{{ formatarNomesPets(itensDoAgendamento(agendamento)) }}</span>
             </div>
-
-            <span
-              class="agendamento-card__status"
-              [ngClass]="classeStatus(agendamento.status)"
-            >
+            <span class="agendamento_status" [class.status-agendado]="agendamento.status === 'AWAITING_CONFIRMATION'" [class.status-realizado]="agendamento.status === 'CONFIRMED'" [class.status-cancelado]="agendamento.status === 'CANCELED'">
               {{ statusDescricao(agendamento.status) }}
             </span>
-
-          </header>
-
-          <div class="agendamento-card__itens">
-
-            <h3>Serviços</h3>
-
-            @for (item of agendamento.items; track $index) {
-
-              <div class="agendamento-card__item">
-
-                <div>
-
-                  <strong>{{ item.offeringName }}</strong>
-
-                  <span>
-                    {{ item.petName }} · {{ item.species }}
-                  </span>
-
-                </div>
-
-                <span>
-                  {{
-                    item.offeringPrice
-                      | currency:'BRL':'symbol':'1.2-2':'pt-BR'
-                  }}
-                </span>
-
-              </div>
-
-            }
-
           </div>
 
-          <footer class="agendamento-card__rodape">
-
-            <div>
-              <span>Profissional</span>
-
-              <strong>
-                {{
-                  agendamento.employeeName ||
-                  'A definir pela unidade'
-                }}
-              </strong>
+          <div class="agendamento_card-informacoes">
+            <div class="agendamento_informacao">
+              <span class="agendamento_informacao-icone">📅</span>
+              <span class="agendamento_informacao-label">Data</span>
+              <span class="agendamento_informacao-valor">{{ formatarData(agendamento.dateTimeAppointment) }}</span>
             </div>
-
-            <div class="agendamento-card__total">
-
-              <span>Total</span>
-
-              <strong>
-                {{
-                  agendamento.totalPrice
-                    | currency:'BRL':'symbol':'1.2-2':'pt-BR'
-                }}
-              </strong>
-
+            <div class="agendamento_informacao">
+              <span class="agendamento_informacao-icone">◷</span>
+              <span class="agendamento_informacao-label">Horário</span>
+              <span class="agendamento_informacao-valor">{{ formatarHora(agendamento.dateTimeAppointment) }}</span>
             </div>
-
-          </footer>
+            <div class="agendamento_informacao">
+              <span class="agendamento_informacao-icone">✂</span>
+              <span class="agendamento_informacao-label">Serviços</span>
+              <span class="agendamento_informacao-valor agendamento_informacao-servicos">
+                @for (item of itensDoAgendamento(agendamento); track $index) {
+                  <span>{{ item.offeringName }} — {{ item.petName }} ({{ formatarPreco(item.offeringPrice) }})</span>
+                }
+              </span>
+            </div>
+            <div class="agendamento_informacao">
+              <span class="agendamento_informacao-icone">♙</span>
+              <span class="agendamento_informacao-label">Profissional</span>
+              <span class="agendamento_informacao-valor">{{ agendamento.employeeName || 'A definir' }}</span>
+            </div>
+            <div class="agendamento_informacao">
+              <span class="agendamento_informacao-icone">R$</span>
+              <span class="agendamento_informacao-label">Total</span>
+              <span class="agendamento_informacao-valor">{{ formatarPreco(agendamento.totalPrice) }}</span>
+            </div>
+          </div>
 
           @if (agendamento.observation) {
-
-            <p class="agendamento-card__observacao">
-
-              <strong>Observação:</strong>
-
-              {{ agendamento.observation }}
-
-            </p>
-
+            <p class="agendamento_observacao"><strong>Observações:</strong> {{ agendamento.observation }}</p>
           }
-
         </article>
-
       }
-
     </div>
-
   }
 
+  <footer class="perfil_footer">
+    <p>Copyright© 2026 Banhos UP S/A</p>
+    <p>Todos os direitos reservados</p>
+  </footer>
 </section>
