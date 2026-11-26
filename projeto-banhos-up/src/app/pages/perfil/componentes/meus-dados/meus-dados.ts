@@ -27,7 +27,6 @@ export class MeusDados implements OnInit {
   nome = '';
   dddCelular = '';
   celularLocal = '';
-  telefoneSecundario = '';
   genero = '';
   dataNascimento = '';
   endereco = '';
@@ -61,21 +60,16 @@ export class MeusDados implements OnInit {
 
     const nome = this.nome.trim();
     const celular = `${this.dddCelular.replace(/\D/g, '')}${this.celularLocal.replace(/\D/g, '')}`;
-    const telefone = this.telefoneSecundario.replace(/\D/g, '');
 
     if (!nome) return this.erro.set('Informe seu nome completo.');
     if (this.dddCelular.replace(/\D/g, '').length !== 2 ||
         (celular.length !== 10 && celular.length !== 11)) {
       return this.erro.set('Informe um celular válido com DDD.');
     }
-    if (telefone && telefone.length !== 10 && telefone.length !== 11) {
-      return this.erro.set('Informe um telefone secundário válido com DDD.');
-    }
 
     const dados: AtualizarPerfilClienteRequest = {
       name: nome,
       phone: celular,
-      secondaryPhone: telefone || null,
       gender: this.genero || null,
       dateOfBirth: this.dataNascimento || null,
       address: this.endereco.trim() || null
@@ -109,7 +103,6 @@ export class MeusDados implements OnInit {
     const celular = (perfil.phone ?? '').replace(/\D/g, '');
     this.dddCelular = celular.slice(0, 2);
     this.celularLocal = celular.slice(2);
-    this.telefoneSecundario = perfil.secondaryPhone ?? '';
     this.genero = perfil.gender ?? '';
     this.dataNascimento = perfil.dateOfBirth ?? '';
     this.endereco = perfil.address ?? '';
