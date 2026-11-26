@@ -1,5 +1,5 @@
 
-export type EspeciePet = 'Cachorro' | 'Gato';
+export type EspeciePet = 'Cachorro' | 'Gato' | 'Outro';
 
 export interface Pet {
   id: number;

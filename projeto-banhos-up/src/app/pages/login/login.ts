@@ -68,7 +68,7 @@ export class Login {
         }
 
         if (perfil === 'CUSTOMER') {
-          this.router.navigate(['/perfil']);
+          this.router.navigate(['/']);
         }
       },
 

@@ -15,7 +15,8 @@ import {
   Pet,
   Servico,
   CalendarioAgendamentoResponse,
-  Profissional
+  Profissional,
+  EspeciePet
 } from '../../models/agendamento.model';
 
 import { Loja } from '../../models/loja.model';
@@ -64,9 +65,18 @@ export class Agendamento implements OnInit {
 
   petsSelecionados: number[] = [1];
 
+  // Limite de pets por agendamento.
+  readonly limitePetsPorAgendamento = 3;
+
+  // Exibe o aviso quando o limite é atingido.
+  get mostrarAvisoLimitePets(): boolean {
+    return this.petsSelecionados.length >=
+      this.limitePetsPorAgendamento;
+  }
+
   novoPet = {
     nome: '',
-    especie: 'Cachorro' as 'Cachorro' | 'Gato',
+    especie: 'Cachorro' as EspeciePet,
     porte: 'Médio'
   };
 
@@ -913,16 +923,39 @@ export class Agendamento implements OnInit {
 
     this.garantirBanho(id);
 
-    this.petsSelecionados =
-      this.petsSelecionados.includes(id)
-        ? this.petsSelecionados.filter(x => x !== id)
-        : [...this.petsSelecionados, id];
+    // Se já estiver selecionado, permite desmarcar.
+    if (this.petsSelecionados.includes(id)) {
 
+      this.petsSelecionados =
+        this.petsSelecionados.filter(x => x !== id);
+
+      return;
+    }
+
+    // Impede ultrapassar o limite.
+    if (
+      this.petsSelecionados.length >=
+      this.limitePetsPorAgendamento
+    ) {
+      return;
+    }
+
+    this.petsSelecionados = [
+      ...this.petsSelecionados,
+      id
+    ];
   }
 
   adicionarPet(): void {
 
     if (!this.novoPet.nome.trim()) {
+      return;
+    }
+
+    if (
+      this.petsSelecionados.length >=
+      this.limitePetsPorAgendamento
+    ) {
       return;
     }
 

@@ -5,14 +5,31 @@ import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+
   const authService = inject(AuthService);
 
-  // Só adiciona o token nas requisições feitas para o nosso backend.
   if (!req.url.startsWith(environment.apiUrl)) {
     return next(req);
   }
 
-  // Verifica se a sessão ainda é válida.
+  // Identifica as rotas públicas.
+  const urlSemParametros = req.url.split('?')[0];
+
+  const rotasPublicas = [
+    `${environment.apiUrl}/auth/login`,
+    `${environment.apiUrl}/users/register`
+  ];
+
+  // Remove qualquer Authorization antigo dessas requisições.
+  if (rotasPublicas.includes(urlSemParametros)) {
+    return next(
+      req.clone({
+        headers: req.headers.delete('Authorization')
+      })
+    );
+  }
+
+  // Rotas protegidas.
   if (!authService.estaAutenticado()) {
     return next(req);
   }
@@ -23,12 +40,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  // Envia o JWT no cabeçalho Authorization.
-  const requisicaoAutenticada = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  return next(requisicaoAutenticada);
+  return next(
+    req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+  );
 };
