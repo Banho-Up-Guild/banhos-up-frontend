@@ -274,7 +274,6 @@
   margin: 2px 0;
 }
 
-.campo_telefone-secundario { grid-column: span 5; }
 .campo_endereco { grid-column: span 7; }
 .campo_ajuda { color: #7d9bb5; font-size: 0.68rem; line-height: 1.3; }
 .meus-dados_estado { padding: 28px; border: 1px solid #d7e7f2; border-radius: 8px; color: #477397; text-align: center; }
@@ -282,10 +281,3 @@
 .botao_descartar { min-height: 42px; padding: 0 16px; border: 1px solid #a8bfd3; border-radius: 5px; background: #fff; color: #315d7f; font: inherit; font-size: .85rem; cursor: pointer; }
 .botao_descartar:disabled, .botao_salvar:disabled { opacity: .6; cursor: wait; }
 .mensagem-erro { margin: 0; color: #d93025; font-size: .78rem; }
-@media (max-width: 768px) {
-  .campo_telefone-secundario { grid-column: span 3; }
-  .campo_endereco { grid-column: span 6; }
-}
-@media (max-width: 600px) {
-  .campo_telefone-secundario, .campo_endereco { grid-column: span 2; }
-}

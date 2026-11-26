@@ -76,8 +76,6 @@ export class Cadastro {
 
   celular = '';
 
-  telefone = '';
-
   genero = '';
 
   nascimento = '';
@@ -332,24 +330,6 @@ export class Cadastro {
   }
 
   // =========================================
-  // VALIDAÇÃO DE TELEFONE SECUNDÁRIO
-  // =========================================
-
-  private get telefoneValido(): boolean {
-
-    const telefone = this.telefone.replace(/\D/g, '');
-
-    // O telefone é opcional.
-    if (!telefone) {
-      return true;
-    }
-
-    return telefone.length === 10 ||
-      telefone.length === 11;
-
-  }
-
-  // =========================================
   // CADASTRO DO CLIENTE
   // =========================================
 
@@ -394,14 +374,6 @@ export class Cadastro {
     if (!this.celularValido) {
 
       this.erro.set('Informe um celular válido com DDD.');
-
-      return;
-
-    }
-
-    if (!this.telefoneValido) {
-
-      this.erro.set('Informe um telefone secundário válido.');
 
       return;
 
@@ -459,10 +431,6 @@ export class Cadastro {
 
       cpf: this.cpf.replace(/\D/g, ''),
 
-      secondaryPhone: this.telefone
-        ? this.telefone.replace(/\D/g, '')
-        : null,
-
       gender: this.genero || null,
 
       dateOfBirth: this.nascimento || null
@@ -497,8 +465,6 @@ export class Cadastro {
           this.email = '';
 
           this.celular = '';
-
-          this.telefone = '';
 
           this.genero = '';
 

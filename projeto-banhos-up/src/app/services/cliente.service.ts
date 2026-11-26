@@ -10,7 +10,6 @@ export interface CadastroClienteRequest {
   password: string;
   phone: string;
   cpf: string;
-  secondaryPhone: string | null;
   gender: string | null;
   dateOfBirth: string | null;
 }
@@ -30,7 +29,6 @@ export interface PerfilClienteResponse {
   name: string;
   email: string;
   phone: string;
-  secondaryPhone: string | null;
   cpf: string;
   gender: string | null;
   dateOfBirth: string | null;
@@ -43,7 +41,6 @@ export interface PerfilClienteResponse {
 export interface AtualizarPerfilClienteRequest {
   name: string;
   phone: string;
-  secondaryPhone: string | null;
   gender: string | null;
   dateOfBirth: string | null;
   address: string | null;
