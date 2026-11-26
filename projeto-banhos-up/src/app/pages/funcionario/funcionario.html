@@ -89,25 +89,39 @@
 
         <article class="funcionario-card-indicador">
           <span>Agendamentos de hoje</span>
-          <strong>—</strong>
+          <strong>
+            {{ carregandoDashboard() ? '...' : (dashboard()?.agendamentosHoje ?? '—') }}
+          </strong>
         </article>
 
         <article class="funcionario-card-indicador">
           <span>Solicitações pendentes</span>
-          <strong>—</strong>
+          <strong>
+            {{ carregandoDashboard() ? '...' : (dashboard()?.solicitacoesPendentes ?? '—') }}
+          </strong>
         </article>
 
         <article class="funcionario-card-indicador">
           <span>Serviços cadastrados</span>
-          <strong>—</strong>
+          <strong>
+            {{ carregandoDashboard() ? '...' : (dashboard()?.servicosCadastrados ?? '—') }}
+          </strong>
         </article>
 
         <article class="funcionario-card-indicador">
           <span>Membros da equipe</span>
-          <strong>—</strong>
+          <strong>
+            {{ carregandoDashboard() ? '...' : (dashboard()?.membrosEquipe ?? '—') }}
+          </strong>
         </article>
 
       </div>
+
+      @if (erroDashboard()) {
+      <div class="funcionario-erro">
+        {{ erroDashboard() }}
+      </div>
+      }
 
       <article class="funcionario-card">
         <h2>Atalhos</h2>
@@ -117,6 +131,7 @@
           as funcionalidades disponíveis.
         </p>
       </article>
+
 
       }
 
@@ -794,6 +809,11 @@
 
           </div>
 
+            <button type="button" class="funcionario-botao-principal"
+              (click)="abrirModalNovoFuncionario()">
+              + Novo funcionário
+            </button>
+
           }
 
         </div>
@@ -1008,6 +1028,97 @@
 
       </article>
 
+      }
+
+      @if (modalNovoFuncionario()) {
+      <div class="funcionario-modal-overlay" role="presentation" (click)="fecharModalNovoFuncionario()">
+        <div class="funcionario-modal" role="dialog" aria-modal="true" aria-labelledby="novo-funcionario-titulo"
+          (click)="$event.stopPropagation()">
+          <h2 id="novo-funcionario-titulo">Cadastrar novo funcionário</h2>
+          <p>Preencha os dados e selecione a loja ativa onde ele trabalhará.</p>
+
+          @if (erroNovoFuncionario()) {
+          <div class="funcionario-erro">{{ erroNovoFuncionario() }}</div>
+          }
+
+          <div class="funcionario-modal-grid">
+            <label>
+              Nome completo
+              <input type="text" [(ngModel)]="novoFuncionarioNome" maxlength="100"
+                [ngModelOptions]="{standalone: true}" placeholder="Nome do funcionário" />
+            </label>
+
+            <label>
+              E-mail
+              <input type="email" [(ngModel)]="novoFuncionarioEmail"
+                [ngModelOptions]="{standalone: true}" placeholder="funcionario@email.com" />
+            </label>
+
+            <label>
+              Senha
+              <input type="password" [(ngModel)]="novoFuncionarioSenha" maxlength="72"
+                [ngModelOptions]="{standalone: true}" placeholder="Mínimo 8 caracteres" />
+            </label>
+
+            <label>
+              Confirmar senha
+              <input type="password" [(ngModel)]="novoFuncionarioConfirmarSenha" maxlength="72"
+                [ngModelOptions]="{standalone: true}" placeholder="Digite a senha novamente" />
+            </label>
+
+            <label>
+              Telefone
+              <input type="tel" [ngModel]="novoFuncionarioTelefone"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="formatarTelefoneFuncionario($event)"
+                inputmode="numeric" placeholder="DDD + número" />
+            </label>
+
+            <label>
+              CPF
+              <input type="text" [ngModel]="novoFuncionarioCpf"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="formatarCpfFuncionario($event)"
+                inputmode="numeric" maxlength="11" placeholder="Somente números" />
+            </label>
+
+            <label>
+              Matrícula
+              <input type="text" [(ngModel)]="novoFuncionarioMatricula" maxlength="50"
+                [ngModelOptions]="{standalone: true}" placeholder="Ex.: FUNC-001" />
+            </label>
+
+            <label>
+              Cargo
+              <input type="text" [(ngModel)]="novoFuncionarioCargo" maxlength="100"
+                [ngModelOptions]="{standalone: true}" placeholder="Ex.: Banhista" />
+            </label>
+
+            <label class="funcionario-modal-campo-completo">
+              Loja
+              <select [(ngModel)]="novoFuncionarioStoreId" [ngModelOptions]="{standalone: true}">
+                <option [ngValue]="null">Selecione uma loja ativa</option>
+                @for (loja of lojasAtivasEquipe; track loja.id) {
+                <option [ngValue]="loja.id">{{ loja.nome }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <div class="funcionario-modal-acoes">
+            <button type="button" class="funcionario-botao-secundario"
+              [disabled]="salvandoNovoFuncionario()"
+              (click)="fecharModalNovoFuncionario()">
+              Cancelar
+            </button>
+            <button type="button" class="funcionario-botao-principal"
+              [disabled]="salvandoNovoFuncionario()"
+              (click)="criarFuncionarioEquipe()">
+              {{ salvandoNovoFuncionario() ? 'Cadastrando...' : 'Cadastrar funcionário' }}
+            </button>
+          </div>
+        </div>
+      </div>
       }
 
       @else if (modulo() === 'unidade') {

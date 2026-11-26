@@ -6,7 +6,8 @@ import { environment } from '../../environments/environment';
 
 import {
   FuncionarioEquipe,
-  AlterarCargoRequest
+  AlterarCargoRequest,
+  CriarFuncionarioRequest
 } from '../models/funcionario-equipe.model';
 
 @Injectable({
@@ -65,6 +66,16 @@ export class FuncionarioEquipeService {
 
 
   // ADMIN: consultar equipe de uma unidade.
+  criarFuncionarioAdmin(
+    storeId: number,
+    request: CriarFuncionarioRequest
+  ): Observable<FuncionarioEquipe> {
+    return this.http.post<FuncionarioEquipe>(
+      `${this.baseUrl}/admin/lojas/${storeId}/equipe/novo`,
+      request
+    );
+  }
+
   listarEquipeAdmin(storeId: number): Observable<FuncionarioEquipe[]> {
     return this.http.get<FuncionarioEquipe[]>(
       `${this.baseUrl}/admin/lojas/${storeId}/equipe`

@@ -37,6 +37,7 @@ import { OfertaService } from '../../services/oferta.service';
 import { Oferta } from '../../models/oferta.model';
 
 import { LojaRequest } from '../../models/loja.model';
+import { DashboardResponse, DashboardService } from '../../services/dashboard.service';
 
 type ModuloFuncionario =
   | 'painel'
@@ -85,6 +86,19 @@ export class Funcionario {
   readonly membroEditandoId = signal<number | null>(null);
 
   readonly cargoEdicao = signal('');
+
+  readonly modalNovoFuncionario = signal(false);
+  readonly salvandoNovoFuncionario = signal(false);
+  readonly erroNovoFuncionario = signal('');
+  novoFuncionarioNome = '';
+  novoFuncionarioEmail = '';
+  novoFuncionarioSenha = '';
+  novoFuncionarioConfirmarSenha = '';
+  novoFuncionarioTelefone = '';
+  novoFuncionarioCpf = '';
+  novoFuncionarioMatricula = '';
+  novoFuncionarioCargo = '';
+  novoFuncionarioStoreId: number | null = null;
 
   private readonly funcionarioEquipeService =
     inject(FuncionarioEquipeService);
@@ -142,6 +156,12 @@ export class Funcionario {
   readonly erroUnidades = signal('');
 
   readonly modulo = signal<ModuloFuncionario>('painel');
+
+  readonly dashboard = signal<DashboardResponse | null>(null);
+  readonly carregandoDashboard = signal(false);
+  readonly erroDashboard = signal('');
+
+  private readonly dashboardService = inject(DashboardService);
 
   // SERVIÇOS E PREÇOS
 
@@ -285,6 +305,10 @@ export class Funcionario {
 
           this.modulo.set(modulo as ModuloFuncionario);
 
+          if (modulo === 'painel') {
+            this.carregarDashboard();
+          }
+
           if (
             modulo === 'agendamentos' ||
             modulo === 'solicitacoes'
@@ -322,6 +346,45 @@ export class Funcionario {
   sair(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  private carregarDashboard(): void {
+    this.carregandoDashboard.set(true);
+    this.erroDashboard.set('');
+
+    const perfil = this.usuarioAtual()?.role;
+    const requisicao = perfil === 'ADMIN'
+      ? this.dashboardService.buscarResumoAdmin()
+      : this.dashboardService.buscarResumoFuncionario();
+
+    requisicao.subscribe({
+      next: (dashboard) => {
+        this.dashboard.set(dashboard);
+        this.carregandoDashboard.set(false);
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.carregandoDashboard.set(false);
+
+        if (erro.status === 401) {
+          this.erroDashboard.set(
+            'Sua sessão expirou. Entre novamente na sua conta.'
+          );
+          return;
+        }
+
+        if (erro.status === 403) {
+          this.erroDashboard.set(
+            'Você não possui permissão para visualizar o painel.'
+          );
+          return;
+        }
+
+        this.erroDashboard.set(
+          erro.error?.message ||
+          'Não foi possível carregar os indicadores do painel.'
+        );
+      }
+    });
   }
 
   private carregarUnidades(): void {
@@ -682,6 +745,133 @@ export class Funcionario {
     }
 
     return this.permissoesFuncionario().includes(permissao);
+  }
+
+  get lojasAtivasEquipe() {
+    return this.unidades().filter(loja => loja.ativa);
+  }
+
+  abrirModalNovoFuncionario(): void {
+    if (this.usuarioAtual()?.role !== 'ADMIN') {
+      return;
+    }
+
+    this.novoFuncionarioNome = '';
+    this.novoFuncionarioEmail = '';
+    this.novoFuncionarioSenha = '';
+    this.novoFuncionarioConfirmarSenha = '';
+    this.novoFuncionarioTelefone = '';
+    this.novoFuncionarioCpf = '';
+    this.novoFuncionarioMatricula = '';
+    this.novoFuncionarioCargo = '';
+    this.novoFuncionarioStoreId =
+      this.equipeStoreId() ??
+      this.lojasAtivasEquipe[0]?.id ??
+      null;
+    this.erroNovoFuncionario.set('');
+    this.modalNovoFuncionario.set(true);
+  }
+
+  fecharModalNovoFuncionario(): void {
+    if (this.salvandoNovoFuncionario()) {
+      return;
+    }
+
+    this.modalNovoFuncionario.set(false);
+    this.erroNovoFuncionario.set('');
+  }
+
+  formatarCpfFuncionario(valor: string): void {
+    this.novoFuncionarioCpf = (valor || '')
+      .replace(/\D/g, '')
+      .slice(0, 11);
+  }
+
+  formatarTelefoneFuncionario(valor: string): void {
+    this.novoFuncionarioTelefone = (valor || '')
+      .replace(/\D/g, '')
+      .slice(0, 11);
+  }
+
+  criarFuncionarioEquipe(): void {
+    this.erroNovoFuncionario.set('');
+
+    if (this.novoFuncionarioStoreId === null) {
+      this.erroNovoFuncionario.set('Selecione uma loja ativa.');
+      return;
+    }
+
+    if (!this.novoFuncionarioNome.trim()) {
+      this.erroNovoFuncionario.set('Informe o nome completo.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.novoFuncionarioEmail.trim())) {
+      this.erroNovoFuncionario.set('Informe um e-mail válido.');
+      return;
+    }
+
+    if (this.novoFuncionarioSenha.length < 8 || this.novoFuncionarioSenha.length > 72) {
+      this.erroNovoFuncionario.set('A senha deve ter entre 8 e 72 caracteres.');
+      return;
+    }
+
+    if (this.novoFuncionarioSenha !== this.novoFuncionarioConfirmarSenha) {
+      this.erroNovoFuncionario.set('As senhas não coincidem.');
+      return;
+    }
+
+    const telefone = this.novoFuncionarioTelefone.replace(/\D/g, '');
+    if (telefone.length !== 10 && telefone.length !== 11) {
+      this.erroNovoFuncionario.set('Informe um telefone com 10 ou 11 dígitos.');
+      return;
+    }
+
+    const cpf = this.novoFuncionarioCpf.replace(/\D/g, '');
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
+      this.erroNovoFuncionario.set('Informe um CPF válido.');
+      return;
+    }
+
+    if (!this.novoFuncionarioMatricula.trim()) {
+      this.erroNovoFuncionario.set('Informe a matrícula.');
+      return;
+    }
+
+    if (!this.novoFuncionarioCargo.trim()) {
+      this.erroNovoFuncionario.set('Informe o cargo.');
+      return;
+    }
+
+    this.salvandoNovoFuncionario.set(true);
+    const storeId = this.novoFuncionarioStoreId;
+
+    this.funcionarioEquipeService.criarFuncionarioAdmin(
+      storeId,
+      {
+        name: this.novoFuncionarioNome.trim(),
+        email: this.novoFuncionarioEmail.trim().toLowerCase(),
+        password: this.novoFuncionarioSenha,
+        phone: telefone,
+        cpf,
+        registry: this.novoFuncionarioMatricula.trim(),
+        position: this.novoFuncionarioCargo.trim()
+      }
+    ).subscribe({
+      next: () => {
+        this.salvandoNovoFuncionario.set(false);
+        this.modalNovoFuncionario.set(false);
+        this.sucessoEquipe.set('Funcionário criado e vinculado à unidade com sucesso!');
+        this.selecionarUnidadeEquipe(storeId);
+      },
+      error: (erro: HttpErrorResponse) => {
+        this.salvandoNovoFuncionario.set(false);
+        this.erroNovoFuncionario.set(
+          erro.error?.message ||
+          'Não foi possível cadastrar o funcionário.'
+        );
+      }
+    });
   }
 
   iniciarEdicaoCargo(funcionario: FuncionarioEquipe): void {

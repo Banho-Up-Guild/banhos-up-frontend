@@ -14,3 +14,13 @@ export interface FuncionarioEquipe {
 export interface AlterarCargoRequest {
   position: string;
 }
+
+export interface CriarFuncionarioRequest {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  cpf: string;
+  registry: string;
+  position: string;
+}

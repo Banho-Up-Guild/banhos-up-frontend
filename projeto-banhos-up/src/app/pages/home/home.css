@@ -83,6 +83,23 @@
   object-position: center;
 }
 
+.hero__video-replay {
+  position: absolute;
+  inset: auto auto 18px 18px;
+  z-index: 1;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #013e73;
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hero__video-replay:hover {
+  background: #2595e4;
+}
+
 /* RECOMENDAÇÃO */
 .recomendacao {
   padding: 54px 0;
