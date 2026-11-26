@@ -15,7 +15,7 @@ import {
   selector: 'app-meus-dados',
   imports: [FormsModule, DatePipe],
   templateUrl: './meus-dados.html',
-  styleUrl: './meus-dados.css',
+  styleUrl: './meus-dados.css'
 })
 export class MeusDados implements OnInit {
 

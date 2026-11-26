@@ -1,4 +1,3 @@
-
 import {
   Component,
   OnInit,
@@ -8,6 +7,8 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { LucideTriangleExclamationPoint } from '@lucide/angular';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
@@ -24,12 +25,15 @@ import { Loja } from '../../models/loja.model';
 
 import { LojaService } from '../../services/loja.service';
 import { AgendamentoApiService } from '../../services/agendamento-api.service';
+import { PetService } from '../../services/pet.service';
+import { ServicoService } from '../../services/servico.service';
+import { AuthService } from '../../services/auth.service';
 import { DisponibilidadeCalendarioResponse } from '../../models/disponibilidade.model';
 
 @Component({
   selector: 'app-agendamento',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, LucideTriangleExclamationPoint],
   templateUrl: './agendamento.html',
   styleUrl: './agendamento.css',
 })
@@ -41,6 +45,14 @@ export class Agendamento implements OnInit {
 
   private readonly agendamentoApi = inject(AgendamentoApiService);
 
+  private readonly petService = inject(PetService);
+
+  private readonly servicoService = inject(ServicoService);
+
+  private readonly authService = inject(AuthService);
+
+  readonly usuarioAtual = this.authService.usuarioAtual;
+
   // Atualiza a interface após as respostas assíncronas.
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -48,25 +60,17 @@ export class Agendamento implements OnInit {
 
   // =========================================
   // PETS
-  // Dados locais provisórios.
   // =========================================
 
-  pets: Pet[] = [
-    {
-      id: 1,
-      nome: 'Pet 1',
-      especie: 'Cachorro',
-      porte: 'Médio'
-    },
-    {
-      id: 2,
-      nome: 'Pet 2',
-      especie: 'Gato',
-      porte: 'Pequeno'
-    }
-  ];
+  pets: Pet[] = [];
 
-  petsSelecionados: number[] = [1];
+  petsSelecionados: number[] = [];
+
+  carregandoPets = false;
+
+  salvandoPet = false;
+
+  erroPets: string | null = null;
 
   // Limite de pets por agendamento.
   readonly limitePetsPorAgendamento = 3;
@@ -84,6 +88,10 @@ export class Agendamento implements OnInit {
   };
 
   mostrarNovoPet = false;
+
+  mostrarAvisoLimitePets = false;
+
+  readonly limitePetsPorAgendamento = 3;
 
   // =========================================
   // LOJAS
@@ -112,77 +120,16 @@ export class Agendamento implements OnInit {
 
   // =========================================
   // SERVIÇOS
-  // Dados locais provisórios.
   // =========================================
 
-  servicos: Servico[] = [
-    {
-      id: 'banho',
-      nome: 'Banho',
-      preco: 170,
-      duracao: 90,
-      obrigatorio: true,
-      grupo: 'Principal'
-    },
-    {
-      id: 'tosa-tesoura',
-      nome: 'Tosa com tesoura',
-      preco: 60,
-      duracao: 90,
-      descricao: 'Indicado para cortes personalizados',
-      grupo: 'Tosas'
-    },
-    {
-      id: 'tosa-higienica',
-      nome: 'Tosa higiênica',
-      preco: 30,
-      duracao: 120,
-      grupo: 'Tosas'
-    },
-    {
-      id: 'escovacao',
-      nome: 'Escovação dental',
-      preco: 11,
-      duracao: 15,
-      descricao: 'Indicado para prevenção de tártaro e mau hálito',
-      grupo: 'Cuidados adicionais'
-    },
-    {
-      id: 'argan',
-      nome: 'Manutenção argan',
-      preco: 30,
-      duracao: 20,
-      descricao: 'Para pelo sem brilho, ressecado ou áspero',
-      grupo: 'Tratamento de pelagem e pele'
-    },
-    {
-      id: 'nutricao',
-      nome: 'Nutrição ouro',
-      preco: 35,
-      duracao: 25,
-      descricao: 'Para pelo frágil, com queda ou elástico',
-      grupo: 'Tratamento de pelagem e pele'
-    },
-    {
-      id: 'liso',
-      nome: 'Liso perfeito',
-      preco: 30,
-      duracao: 25,
-      descricao: 'Para pelo poroso, desalinhado ou com frizz',
-      grupo: 'Tratamento de pelagem e pele'
-    }
-  ];
+  servicos: Servico[] = [];
+
+  carregandoServicos = false;
+
+  erroServicos: string | null = null;
 
   // Cada pet possui sua própria lista de serviços.
-  servicosPorPet: Record<number, (string | number)[]> = {
-    1: ['banho'],
-    2: ['banho']
-  };
-
-  // =========================================
-  // PROFISSIONAIS
-  // Dados locais provisórios.
-  // =========================================
+  servicosPorPet: Record<number, number[]> = {};
 
   observacoes: Record<number, string> = {};
 
@@ -211,17 +158,38 @@ export class Agendamento implements OnInit {
       ?.hours.map(hora => this.normalizarHora(hora)) || [];
   }
 
-  // Horários provisórios.
-  // O backend atual informa somente os horários ocupados.
-  horarios: string[] = [];
+  get horariosIndisponiveisDoDia(): string[] {
+    if (!this.dataSelecionada) {
+      return [];
+    }
+
+    return this.disponibilidadeCalendario
+      .find(item => item.date === this.dataSelecionada)
+      ?.unavailableHours.map(hora => this.normalizarHora(hora)) || [];
+  }
 
   disponibilidadeCalendario: DisponibilidadeCalendarioResponse[] = [];
-
-  calendarioAgendamentos: CalendarioAgendamentoResponse[] = [];
 
   carregandoCalendario = false;
 
   erroCalendario: string | null = null;
+
+  erroRecomendacao: string | null = null;
+
+  carregandoRecomendacao = false;
+
+  profissionalRecomendado: ProfissionalDisponivelResponse | null = null;
+
+  salvandoAgendamento = false;
+
+  erroConfirmacao: string | null = null;
+
+  agendamentoCriado: {
+    profissional: string;
+    dataHora: string;
+  } | null = null;
+
+  private calendarioRequestId = 0;
 
   termosAceitos = false;
 
@@ -234,6 +202,146 @@ export class Agendamento implements OnInit {
   ngOnInit(): void {
 
     this.carregarLojas();
+    this.carregarServicos();
+
+    const usuario = this.authService.usuarioAtual();
+
+    if (usuario?.role === 'CUSTOMER') {
+      this.carregarPets(usuario.id);
+    } else {
+      this.erroPets = 'Entre na sua conta de cliente para carregar seus pets e agendar.';
+    }
+
+  }
+
+  private carregarPets(donoId: number): void {
+    this.carregandoPets = true;
+    this.erroPets = null;
+
+    this.petService.listarPorDono(donoId)
+      .pipe(finalize(() => {
+        this.carregandoPets = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (dados) => {
+          this.pets = dados.map(pet => this.mapearPet(pet));
+
+          if (this.pets.length > 0) {
+            this.petsSelecionados = [this.pets[0].id];
+            this.inicializarServicosDosPets();
+          }
+
+          if (this.lojaSelecionada !== null) {
+            this.carregarCalendario();
+          }
+
+          this.cdr.markForCheck();
+        },
+        error: (erro: HttpErrorResponse) => {
+          this.erroPets = this.mensagemErro(
+            erro,
+            'Não foi possível carregar os pets da sua conta.'
+          );
+        }
+      });
+
+  }
+
+  carregarServicos(): void {
+    this.carregandoServicos = true;
+    this.erroServicos = null;
+
+    this.servicoService.listarAtivos()
+      .pipe(finalize(() => {
+        this.carregandoServicos = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (dados) => {
+          this.servicos = dados.map(servico => this.mapearServico(servico));
+          this.inicializarServicosDosPets();
+
+          if (this.servicos.length === 0) {
+            this.erroServicos = 'Nenhum serviço ativo está disponível.';
+          } else if (!this.servicoObrigatorio) {
+            this.erroServicos = 'O catálogo não contém o serviço obrigatório Banho.';
+          }
+
+          if (this.lojaSelecionada !== null) {
+            this.carregarCalendario();
+          }
+
+          this.cdr.markForCheck();
+        },
+        error: (erro: HttpErrorResponse) => {
+          this.erroServicos = this.mensagemErro(
+            erro,
+            'Não foi possível carregar os serviços.'
+          );
+        }
+      });
+
+  }
+
+  recarregarPets(): void {
+    const usuario = this.authService.usuarioAtual();
+    if (usuario?.role === 'CUSTOMER') {
+      this.carregarPets(usuario.id);
+    }
+  }
+
+  private mapearPet(pet: PetResponse): Pet {
+    const portes: Record<NonNullable<PetResponse['porte']>, string> = {
+      PEQUENO: 'Pequeno',
+      MEDIO: 'Médio',
+      GRANDE: 'Grande'
+    };
+
+    return {
+      id: pet.id,
+      nome: pet.nome,
+      especie: pet.especie,
+      porte: pet.porte ? portes[pet.porte] : 'Médio'
+    };
+  }
+
+  private mapearServico(servico: ServicoResponse): Servico {
+    return {
+      id: servico.id,
+      nome: servico.nome,
+      preco: servico.preco,
+      duracao: servico.duracaoMinutos,
+      descricao: servico.descricao || undefined,
+      obrigatorio: servico.nome.trim().toLocaleLowerCase('pt-BR') === 'banho',
+      grupo: 'Serviços disponíveis'
+    };
+  }
+
+  private inicializarServicosDosPets(): void {
+    const servicoObrigatorio = this.servicoObrigatorio;
+
+    for (const pet of this.pets) {
+      if (!this.servicosPorPet[pet.id]) {
+        this.servicosPorPet[pet.id] = servicoObrigatorio
+          ? [servicoObrigatorio.id]
+          : [];
+      }
+    }
+  }
+
+  private mensagemErro(erro: HttpErrorResponse, fallback: string): string {
+    const mensagem = erro.error?.message;
+
+    if (typeof mensagem === 'string' && mensagem.trim()) {
+      return mensagem;
+    }
+
+    if (erro.status === 0) {
+      return 'Não foi possível conectar ao servidor.';
+    }
+
+    return `${fallback} HTTP ${erro.status}.`;
 
   }
 
@@ -338,7 +446,17 @@ export class Agendamento implements OnInit {
     this.horarioSelecionado = '';
 
     this.carregarProfissionais();
+    this.carregarCalendario();
 
+  }
+
+  selecionarProfissional(employeeId: number): void {
+    this.profissionalSelecionadoId = employeeId;
+    this.dataSelecionada = '';
+    this.horarioSelecionado = '';
+    this.profissionalRecomendado = null;
+    this.erroRecomendacao = null;
+    this.carregarCalendario();
   }
 
   carregarProfissionais(): void {
@@ -367,29 +485,7 @@ export class Agendamento implements OnInit {
       .subscribe({
         next: (dados) => {
 
-          const profissionais = (dados || []).map((item) => {
-
-            if (typeof item === 'string') {
-              return {
-                id: 0,
-                nome: item
-              };
-            }
-
-            return {
-              id: item.id ?? item.employeeId ?? 0,
-              nome: item.nome ?? item.name ?? '',
-              fotoUrl: item.fotoUrl ??
-                item.avatarUrl ??
-                item.profileImageUrl ??
-                item.imageUrl
-            };
-
-          }).filter(profissional =>
-            profissional.nome.trim().length > 0
-          );
-
-          this.profissionais = profissionais;
+          this.profissionais = dados;
 
           this.cdr.markForCheck();
 
@@ -417,7 +513,8 @@ export class Agendamento implements OnInit {
   nomeProfissional(profissionalId: number): string {
 
     if (profissionalId === 0) {
-      return 'Sem preferência';
+      return this.profissionalRecomendado?.employeeName ||
+        'Sem preferência profissional';
     }
 
     return this.profissionais.find(
@@ -446,16 +543,16 @@ export class Agendamento implements OnInit {
   carregarCalendario(): void {
 
     if (this.lojaSelecionada === null) {
-
-      this.erroCalendario = 'Selecione uma unidade.';
+      this.disponibilidadeCalendario = [];
+      this.erroCalendario = null;
+      this.carregandoCalendario = false;
       return;
-
     }
 
+    const requestId = ++this.calendarioRequestId;
     this.carregandoCalendario = true;
-
     this.erroCalendario = null;
-
+    this.erroRecomendacao = null;
     this.cdr.markForCheck();
 
     const yearMonth =
@@ -463,89 +560,64 @@ export class Agendamento implements OnInit {
         this.mesAtual.getMonth() + 1
       ).padStart(2, '0')}`;
 
-    const employeeId =
-      this.profissionalSelecionadoId > 0
-        ? this.profissionalSelecionadoId
-        : null;
-
     this.agendamentoApi.listarDisponibilidade(
       yearMonth,
       this.lojaSelecionada,
       this.duracaoTotal,
-      employeeId
+      this.profissionalSelecionadoId
     )
-
-      .pipe(
-
-        finalize(() => {
-
+      .pipe(finalize(() => {
+        if (requestId === this.calendarioRequestId) {
           this.carregandoCalendario = false;
-
           this.cdr.markForCheck();
-
-        })
-
-      )
-
+        }
+      }))
       .subscribe({
-
         next: (dados) => {
-
-          this.disponibilidadeCalendario = dados || [];
+          if (requestId !== this.calendarioRequestId) {
+            return;
+          }
+          this.disponibilidadeCalendario = dados;
 
           // Limpa a data caso ela deixe de possuir horários.
           if (this.dataSelecionada) {
-
             const possuiHorarios =
               this.disponibilidadeCalendario.some(
                 item => item.date === this.dataSelecionada &&
-                  item.hours.length > 0
+                  (item.hours.length > 0 || item.unavailableHours.length > 0)
               );
-
             if (!possuiHorarios) {
-
               this.dataSelecionada = '';
               this.horarioSelecionado = '';
-
             }
-
           }
 
           // Verifica se o horário selecionado ainda é válido.
           if (
             this.horarioSelecionado &&
-            this.horarioIndisponivel(this.horarioSelecionado)
+            !this.horariosDoDia.includes(this.normalizarHora(this.horarioSelecionado))
           ) {
-
             this.horarioSelecionado = '';
-
           }
-
           this.cdr.markForCheck();
-
         },
-
         error: (erro: HttpErrorResponse) => {
-
+          if (requestId !== this.calendarioRequestId) {
+            return;
+          }
           console.error(
             'Erro ao consultar disponibilidade:',
             erro
           );
-
           this.disponibilidadeCalendario = [];
-
           this.horarioSelecionado = '';
-
-          this.erroCalendario = erro.status === 0
-            ? 'Não foi possível conectar ao servidor.'
-            : `Erro ao carregar disponibilidade. HTTP ${erro.status}.`;
-
+          this.erroCalendario = this.mensagemErro(
+            erro,
+            'Não foi possível carregar a disponibilidade.'
+          );
           this.cdr.markForCheck();
-
         }
-
       });
-
   }
 
   // =========================================
@@ -572,29 +644,6 @@ export class Agendamento implements OnInit {
     const diaFormatado = String(dia).padStart(2, '0');
 
     return `${ano}-${mes}-${diaFormatado}`;
-
-  }
-
-  // Verifica se determinado horário está ocupado em uma data.
-  private horarioOcupadoNaData(
-    data: string,
-    hora: string
-  ): boolean {
-
-    const agendamentosDoDia =
-      this.calendarioAgendamentos.filter(
-        item => item.date === data
-      );
-
-    const horariosOcupados = agendamentosDoDia.flatMap(
-      item => item.hours || []
-    );
-
-    return horariosOcupados.some(
-      horaBackend =>
-        this.normalizarHora(horaBackend) ===
-        this.normalizarHora(hora)
-    );
 
   }
 
@@ -644,7 +693,8 @@ export class Agendamento implements OnInit {
       );
 
     return !disponibilidade ||
-      disponibilidade.hours.length === 0;
+      (disponibilidade.hours.length === 0 &&
+        disponibilidade.unavailableHours.length === 0);
 
   }
 
@@ -662,14 +712,6 @@ export class Agendamento implements OnInit {
     hoje.setHours(0, 0, 0, 0);
 
     return data < hoje;
-
-  }
-
-  // Verifica se o horário está ocupado na data selecionada.
-  horarioOcupado(hora: string): boolean {
-
-    // A API já retorna somente os horários livres.
-    return false;
 
   }
 
@@ -713,11 +755,6 @@ export class Agendamento implements OnInit {
   }
 
   textoSituacaoHorario(hora: string): string {
-
-    if (this.horarioOcupado(hora)) {
-      return 'Horário ocupado';
-    }
-
     if (this.horarioPassado(hora)) {
       return 'Horário indisponível';
     }
@@ -733,6 +770,8 @@ export class Agendamento implements OnInit {
     }
 
     this.horarioSelecionado = hora;
+    this.erroRecomendacao = null;
+    this.profissionalRecomendado = null;
 
   }
 
@@ -774,6 +813,14 @@ export class Agendamento implements OnInit {
       )
     );
 
+  }
+
+  private limparSelecaoDeHorario(): void {
+    this.dataSelecionada = '';
+    this.horarioSelecionado = '';
+    this.profissionalRecomendado = null;
+    this.erroRecomendacao = null;
+    this.erroConfirmacao = null;
   }
 
   get diasMes(): (number | null)[] {
@@ -842,7 +889,9 @@ export class Agendamento implements OnInit {
 
       case 0:
 
-        return this.petsSelecionados.length > 0;
+        return !this.carregandoPets &&
+          !this.erroPets &&
+          this.petsSelecionados.length > 0;
 
       case 1:
 
@@ -854,9 +903,12 @@ export class Agendamento implements OnInit {
 
       case 2:
 
-        return this.petsAtivos.length > 0 &&
+        return !this.carregandoServicos &&
+          !this.erroServicos &&
+          !!this.servicoObrigatorio &&
+          this.petsAtivos.length > 0 &&
           this.petsAtivos.every(pet =>
-            this.servicosPet(pet.id).includes('banho')
+            this.servicosPet(pet.id).includes(this.servicoObrigatorio!.id)
           );
 
       case 3:
@@ -899,15 +951,84 @@ export class Agendamento implements OnInit {
     }
 
     if (this.etapa === 3) {
-
+      this.limparSelecaoDeHorario();
       this.carregarCalendario();
+    }
 
+    if (this.etapa === 4) {
+      this.recomendarProfissional();
+      return;
     }
 
     if (this.etapa < 5) {
       this.etapa++;
     }
 
+  }
+
+  private recomendarProfissional(): void {
+    if (
+      this.lojaSelecionada === null ||
+      !this.dataSelecionada ||
+      !this.horarioSelecionado
+    ) {
+      return;
+    }
+
+    this.carregandoRecomendacao = true;
+    this.erroRecomendacao = null;
+
+    const [year, month, day] = this.dataSelecionada.split('-');
+    const dateTime = `${day}-${month}-${year} ${this.normalizarHora(this.horarioSelecionado)}`;
+
+    this.agendamentoApi
+      .recomendarProfissional(
+        this.lojaSelecionada,
+        dateTime,
+        this.duracaoTotal,
+        this.profissionalSelecionadoId
+      )
+      .pipe(finalize(() => {
+        this.carregandoRecomendacao = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (profissional) => {
+          this.profissionalRecomendado = profissional;
+          this.erroConfirmacao = null;
+          this.etapa = 5;
+          this.cdr.markForCheck();
+        },
+        error: (erro: HttpErrorResponse) => {
+          const mensagem = this.mensagemErro(
+            erro,
+            'Não foi possível verificar a disponibilidade do profissional.'
+          );
+          const mensagemNormalizada = mensagem.toLocaleLowerCase('pt-BR');
+          const semProfissionais =
+            mensagemNormalizada.includes('profissionais ativos');
+          const indisponivel =
+            mensagemNormalizada.includes('profissional disponível nesse horário') ||
+            mensagemNormalizada.includes('indisponível nesse horário') ||
+            mensagemNormalizada.includes('não possui horário de funcionamento');
+
+          if (indisponivel) {
+            this.limparSelecaoDeHorario();
+            this.carregarCalendario();
+            this.erroRecomendacao =
+              'Esse horário não está mais disponível. Escolha outro dia e horário.';
+          } else if (semProfissionais) {
+            this.erroRecomendacao =
+              'Não há profissionais ativos nesta unidade para atender.';
+          } else if (erro.status === 400) {
+            this.erroRecomendacao = `Verifique os dados do agendamento: ${mensagem}`;
+          } else {
+            this.erroRecomendacao = mensagem;
+          }
+
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   voltar(): void {
@@ -928,7 +1049,7 @@ export class Agendamento implements OnInit {
 
   alternarPet(id: number): void {
 
-    this.garantirBanho(id);
+    if (this.petsSelecionados.includes(id)) {
 
     // Se já estiver selecionado, permite desmarcar.
     if (this.petsSelecionados.includes(id)) {
@@ -953,9 +1074,6 @@ export class Agendamento implements OnInit {
     ];
   }
 
-  adicionarPet(): void {
-
-    if (!this.novoPet.nome.trim()) {
       return;
     }
 
@@ -971,25 +1089,91 @@ export class Agendamento implements OnInit {
       ...this.pets.map(pet => pet.id)
     ) + 1;
 
-    this.pets.push({
-      id,
-      ...this.novoPet
-    });
+      this.mostrarAvisoLimitePets = true;
 
-    this.servicosPorPet[id] = ['banho'];
+      return;
+    }
+
+    this.garantirBanho(id);
 
     this.petsSelecionados = [
       ...this.petsSelecionados,
       id
     ];
 
-    this.novoPet = {
-      nome: '',
-      especie: 'Cachorro',
-      porte: 'Médio'
+    this.mostrarAvisoLimitePets = false;
+    this.limparSelecaoDeHorario();
+    this.carregarCalendario();
+
+  }
+
+  adicionarPet(): void {
+
+    if (this.petsSelecionados.length >= this.limitePetsPorAgendamento) {
+      this.mostrarAvisoLimitePets = true;
+      return;
+    }
+
+    if (!this.novoPet.nome.trim()) {
+      return;
+    }
+
+    const usuario = this.authService.usuarioAtual();
+
+    if (usuario?.role !== 'CUSTOMER') {
+      this.erroPets = 'Entre na sua conta de cliente para cadastrar um pet.';
+      return;
+    }
+
+    const porte: Record<string, PetCadastroRequest['porte']> = {
+      Pequeno: 'PEQUENO',
+      'Médio': 'MEDIO',
+      Grande: 'GRANDE'
     };
 
-    this.mostrarNovoPet = false;
+    const dados: PetCadastroRequest = {
+      nome: this.novoPet.nome.trim(),
+      especie: this.novoPet.especie,
+      raca: null,
+      dataNascimento: null,
+      porte: porte[this.novoPet.porte],
+      observacoes: null,
+      donoId: usuario.id
+    };
+
+    this.salvandoPet = true;
+    this.erroPets = null;
+
+    this.petService.criar(dados)
+      .pipe(finalize(() => {
+        this.salvandoPet = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (resposta) => {
+          const pet = this.mapearPet(resposta);
+          this.pets = [...this.pets, pet];
+          this.erroPets = null;
+          this.servicosPorPet[pet.id] = this.servicoObrigatorio
+            ? [this.servicoObrigatorio.id]
+            : [];
+          this.petsSelecionados = [...this.petsSelecionados, pet.id];
+          this.novoPet = {
+            nome: '',
+            especie: 'Cachorro',
+            porte: 'Médio'
+          };
+          this.mostrarNovoPet = false;
+          this.limparSelecaoDeHorario();
+          this.carregarCalendario();
+        },
+        error: (erro: HttpErrorResponse) => {
+          this.erroPets = this.mensagemErro(
+            erro,
+            'Não foi possível cadastrar o pet.'
+          );
+        }
+      });
 
   }
 
@@ -997,27 +1181,22 @@ export class Agendamento implements OnInit {
   // SERVIÇOS
   // =========================================
 
-  private garantirBanho(petId: number): void {
-
-    const atuais = this.servicosPorPet[petId] || [];
-
-    if (!atuais.includes('banho')) {
-
-      this.servicosPorPet[petId] = [
-        'banho',
-        ...atuais
-      ];
-
-    }
-
+  get servicoObrigatorio(): Servico | undefined {
+    return this.servicos.find(servico => servico.obrigatorio);
   }
 
-  servicosPet(id: number): (string | number)[] {
+  private garantirBanho(petId: number): void {
+    const atuais = this.servicosPorPet[petId] || [];
+    const banho = this.servicoObrigatorio;
 
+    if (banho && !atuais.includes(banho.id)) {
+      this.servicosPorPet[petId] = [banho.id, ...atuais];
+    }
+  }
+
+  servicosPet(id: number): number[] {
     this.garantirBanho(id);
-
-    return this.servicosPorPet[id];
-
+    return this.servicosPorPet[id] || [];
   }
 
   alternarServico(
@@ -1032,22 +1211,18 @@ export class Agendamento implements OnInit {
     ];
 
     // O Banho é obrigatório e nunca pode ser removido.
-    if (
-      servico.id === 'banho' ||
-      servico.obrigatorio
-    ) {
-
+    if (servico.obrigatorio) {
       this.garantirBanho(petId);
-
       return;
-
     }
 
-    // Serviços opcionais podem ser adicionados ou removidos.
     this.servicosPorPet[petId] =
       atuais.includes(servico.id)
         ? atuais.filter(id => id !== servico.id)
         : [...atuais, servico.id];
+
+    this.limparSelecaoDeHorario();
+    this.carregarCalendario();
 
   }
 
@@ -1077,7 +1252,7 @@ export class Agendamento implements OnInit {
 
   }
 
-  precoServico(id: string | number): number {
+  precoServico(id: number): number {
 
     return this.servicos.find(
       servico => servico.id === id
@@ -1085,7 +1260,7 @@ export class Agendamento implements OnInit {
 
   }
 
-  nomeServico(id: string | number): string {
+  nomeServico(id: number): string {
 
     return this.servicos.find(
       servico => servico.id === id
@@ -1127,6 +1302,8 @@ export class Agendamento implements OnInit {
     this.dataSelecionada = '';
 
     this.horarioSelecionado = '';
+    this.profissionalRecomendado = null;
+    this.erroRecomendacao = null;
 
     // Consulta a disponibilidade do novo mês.
     this.carregarCalendario();
@@ -1148,6 +1325,8 @@ export class Agendamento implements OnInit {
     this.dataSelecionada = this.montarDataISO(dia);
 
     this.horarioSelecionado = '';
+    this.erroRecomendacao = null;
+    this.profissionalRecomendado = null;
 
   }
 
@@ -1159,16 +1338,64 @@ export class Agendamento implements OnInit {
 
   // =========================================
   // CONFIRMAÇÃO
-  // Ainda é demonstrativa.
-  // O POST não é chamado até o backend
-  // aceitar os dados completos do agendamento.
   // =========================================
 
   confirmar(): void {
 
-    if (this.termosAceitos) {
-      this.confirmado = true;
+    if (
+      !this.termosAceitos ||
+      this.salvandoAgendamento ||
+      !this.profissionalRecomendado ||
+      !this.dataSelecionada ||
+      !this.horarioSelecionado
+    ) {
+      return;
     }
+
+    const observacao = this.petsAtivos
+      .map(pet => {
+        const texto = this.observacoes[pet.id]?.trim();
+        return texto ? `${pet.nome}: ${texto}` : '';
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    const dados: CriarAgendamentoRequest = {
+      dateTimeAppointment: `${this.dataSelecionada}T${this.horarioSelecionado}:00`,
+      status: 'AWAITING_CONFIRMATION',
+      observation: observacao,
+      employeeId: this.profissionalRecomendado.employeeId,
+      petOffering: this.petsAtivos.map(pet => ({
+        petId: pet.id,
+        offeringIds: this.servicosPet(pet.id)
+      }))
+    };
+
+    this.salvandoAgendamento = true;
+    this.erroConfirmacao = null;
+
+    this.agendamentoApi.criarAgendamento(dados)
+      .pipe(finalize(() => {
+        this.salvandoAgendamento = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (resposta) => {
+          this.agendamentoCriado = {
+            profissional: resposta.nameEmployee,
+            dataHora: resposta.dateTimeAppointment
+          };
+          this.confirmado = true;
+          this.cdr.markForCheck();
+        },
+        error: (erro: HttpErrorResponse) => {
+          this.erroConfirmacao = this.mensagemErro(
+            erro,
+            'Não foi possível cadastrar o agendamento.'
+          );
+          this.cdr.markForCheck();
+        }
+      });
 
   }
 

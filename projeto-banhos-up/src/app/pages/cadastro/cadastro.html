@@ -11,7 +11,6 @@
       (ngSubmit)="cadastrar()"
     >
 
-      <!-- Nome -->
       <div class="cadastro_campo">
 
         <label for="nome">Nome e sobrenome</label>
@@ -29,7 +28,6 @@
 
       </div>
 
-      <!-- CPF -->
       <div class="cadastro_campo">
 
         <label for="cpf">CPF</label>
@@ -48,13 +46,12 @@
 
       </div>
 
-      <!-- E-mail -->
       <div class="cadastro_campo">
 
         <label for="email">E-mail</label>
 
         <input
-          type="email"
+          type="text"
           id="email"
           name="email"
           [(ngModel)]="email"
@@ -66,7 +63,6 @@
 
       </div>
 
-      <!-- Celular -->
       <div class="cadastro_campo">
 
         <label for="celular">Celular</label>
@@ -133,8 +129,7 @@
         </select>
 
       </div>
-
-      <!-- Data de nascimento -->
+  
       <div class="cadastro_campo">
 
         <label for="nascimento">
@@ -147,11 +142,14 @@
           name="nascimento"
           [(ngModel)]="nascimento"
           autocomplete="bday"
+          required
+          [(ngModel)]="nascimento"
+          [class.campo-erro]="tentouCadastrar && !nascimentoValido"
+          [attr.aria-invalid]="tentouCadastrar && !nascimentoValido"
         />
 
       </div>
 
-      <!-- Senhas -->
       <div class="cadastro_senhas">
 
         <div class="cadastro_campo">
@@ -232,22 +230,37 @@
 
       </div>
 
-      <!-- Padrão de senha -->
       <div class="cadastro_requisitos">
 
         <strong>Padrão de senha</strong>
 
         <ul>
-          <li>Mínimo 8 caracteres</li>
-          <li>Letra maiúscula</li>
-          <li>Letra minúscula</li>
-          <li>Caractere especial</li>
-          <li>Número</li>
+          <li [class.requisito-valido]="senhaMinima">
+            Mínimo 8 caracteres
+          </li>
+          <li [class.requisito-valido]="senhaMaiuscula">
+            Letra maiúscula
+          </li>
+          <li [class.requisito-valido]="senhaMinuscula">
+            Letra minúscula
+          </li>
+          <li [class.requisito-valido]="senhaEspecial">
+            Caractere especial
+          </li>
+          <li [class.requisito-valido]="senhaNumero">
+            Número
+          </li>
         </ul>
 
       </div>
 
-      <!-- Foto de perfil -->
+      @if (tentouCadastrar && !senhaValida) {
+        <small class="cadastro_mensagem-erro">
+          <svg lucideCircleExclamationPoint></svg>
+          A senha não atende a todos os requisitos.
+        </small>
+      }
+
       <section class="cadastro_foto">
 
         <h2>Foto de Perfil <span>(opcional)</span></h2>
@@ -256,7 +269,6 @@
 
       </section>
 
-      <!-- Termos -->
       <div class="cadastro_termos">
 
         <input
@@ -322,7 +334,6 @@
 
   </section>
 
-  <!-- Copyright -->
   <footer class="cadastro_footer">
 
     <p>Copyright© 2026 Banhos UP S/A</p>

@@ -14,7 +14,7 @@ import {
   selector: 'app-meus-pets',
   imports: [FormsModule],
   templateUrl: './meus-pets.html',
-  styleUrl: './meus-pets.css',
+  styleUrl: './meus-pets.css'
 })
 export class MeusPets implements OnInit {
 
