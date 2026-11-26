@@ -1,0 +1,138 @@
+.termos-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 50px 40px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.termos-header {
+  margin-bottom: 40px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.termos-header h1 {
+  margin: 0 0 15px;
+  font-size: 32px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.termos-header p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #666;
+}
+
+.termos-section {
+  margin-bottom: 35px;
+}
+
+.termos-section h2 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #292929;
+}
+
+.termos-section p {
+  margin-bottom: 14px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #555;
+  text-align: justify;
+}
+
+.integrantes-list {
+  padding-left: 25px;
+  margin: 15px 0;
+}
+
+.integrantes-list li {
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: #555;
+}
+
+.marcas-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.marcas-list span {
+  padding: 12px 18px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background-color: #fafafa;
+  font-size: 13px;
+  color: #555;
+}
+
+.termos-footer {
+  margin-top: 45px;
+  padding-top: 25px;
+  border-top: 1px solid #e5e5e5;
+  text-align: center;
+}
+
+.termos-footer p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #777;
+}
+
+@media (max-width: 768px) {
+  .termos-container {
+    padding: 35px 20px;
+  }
+
+  .termos-header h1 {
+    font-size: 26px;
+  }
+
+  .termos-section h2 {
+    font-size: 18px;
+  }
+
+  .termos-section p {
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .marcas-list {
+    flex-direction: column;
+  }
+
+  .marcas-list span {
+    text-align: center;
+  }
+}
+
+.btn-voltar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 25px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-voltar:hover {
+  background-color: #f2f2f2;
+}
+
+.btn-voltar span {
+  font-size: 20px;
+}

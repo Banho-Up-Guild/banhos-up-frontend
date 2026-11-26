@@ -84,6 +84,13 @@ export const routes: Routes = [
         .then((m) => m.Funcionario),
   },
   {
+    path: 'termos',
+    title: 'BanhosUp! | Termos e Condições',
+    loadComponent: () =>
+      import('./pages/termos/termos')
+        .then((m) => m.TermosCondicoesComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
