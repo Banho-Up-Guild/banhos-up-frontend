@@ -17,7 +17,7 @@ type FiltroStatus = 'TODOS' | StatusAgendamentoCliente;
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe],
   templateUrl: './meus-agendamentos.html',
-  styleUrl: './meus-agendamentos.css',
+  styleUrl: './meus-agendamentos.css'
 })
 export class MeusAgendamentos implements OnInit {
 

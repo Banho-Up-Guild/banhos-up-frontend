@@ -89,6 +89,53 @@
     <router-outlet></router-outlet>
   </section>
 
+	@if (modalSairAberto()) {
+		<div
+			class="perfil_modal-overlay"
+			(click)="fecharModalSair()"
+		>
+			<section
+				class="perfil_modal"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="titulo-modal-sair"
+				(click)="$event.stopPropagation()"
+			>
+				<div class="perfil_modal-icone">
+					<svg lucideSquareArrowRightExit></svg>
+				</div>
+
+				<h2 id="titulo-modal-sair">
+					Sair da conta
+				</h2>
+
+				<p>
+					Tem certeza de que deseja sair da sua conta?
+				</p>
+
+				<div class="perfil_modal-acoes">
+
+					<button
+						type="button"
+						class="perfil_modal-cancelar"
+						(click)="fecharModalSair()"
+					>
+						Cancelar
+					</button>
+
+					<button
+						type="button"
+						class="perfil_modal-confirmar"
+						(click)="confirmarSaida()"
+					>
+						Sair da conta
+					</button>
+
+				</div>
+			</section>
+		</div>
+	}
+
 </main>
 
 @if (modalSairAberto()) {
