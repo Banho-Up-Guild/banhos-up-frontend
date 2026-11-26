@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { Loja } from '../models/loja.model';
+import { Profissional } from '../models/agendamento.model';
 
 @Injectable({
   providedIn: 'root'
@@ -41,30 +42,12 @@ export class LojaService {
   }
 
   // LISTAR FUNCIONÁRIOS DE UMA LOJA
-  listarFuncionariosPorLoja(idStore: number): Observable<(string | {
-    id?: number;
-    employeeId?: number;
-    nome?: string;
-    name?: string;
-    fotoUrl?: string;
-    avatarUrl?: string;
-    profileImageUrl?: string;
-    imageUrl?: string;
-  })[]> {
+  listarFuncionariosPorLoja(idStore: number): Observable<Profissional[]> {
 
     const params = new HttpParams()
       .set('idStore', String(idStore));
 
-    return this.http.get<(string | {
-      id?: number;
-      employeeId?: number;
-      nome?: string;
-      name?: string;
-      fotoUrl?: string;
-      avatarUrl?: string;
-      profileImageUrl?: string;
-      imageUrl?: string;
-    })[]>(
+    return this.http.get<Profissional[]>(
       `${environment.apiUrl}/users/store_employee`,
       { params }
     );

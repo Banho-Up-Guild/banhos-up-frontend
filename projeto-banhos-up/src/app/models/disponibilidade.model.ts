@@ -11,4 +11,5 @@ export interface DiaDisponibilidade {
 export interface DisponibilidadeCalendarioResponse {
   date: string;
   hours: string[];
+  unavailableHours: string[];
 }

@@ -4,12 +4,12 @@ export type EspeciePet = 'Cachorro' | 'Gato' | 'Outro';
 export interface Pet {
   id: number;
   nome: string;
-  especie: EspeciePet;
+  especie: string;
   porte: string;
 }
 
 export interface Servico {
-  id: string | number;
+  id: number;
   nome: string;
   preco: number;
   duracao: number;
@@ -18,21 +18,39 @@ export interface Servico {
   grupo: string;
 }
 
+export interface PetCadastroRequest {
+  nome: string;
+  especie: string;
+  raca: string | null;
+  dataNascimento: string | null;
+  porte: 'PEQUENO' | 'MEDIO' | 'GRANDE';
+  observacoes: string | null;
+  donoId: number;
+}
+
+export interface PetResponse extends Omit<PetCadastroRequest, 'porte'> {
+  id: number;
+  porte: PetCadastroRequest['porte'] | null;
+}
+
+export interface ServicoResponse {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  preco: number;
+  duracaoMinutos: number;
+  ativo: boolean;
+}
+
 export interface Profissional {
   id: number;
   nome: string;
   fotoUrl?: string;
 }
 
-export interface Disponibilidade {
-  data: string;
-  horarios: string[];
-}
-
-// Resposta real do GET /appointments/calendar.
-export interface CalendarioAgendamentoResponse {
-  date: string;
-  hours: string[];
+export interface ProfissionalDisponivelResponse {
+  employeeId: number;
+  employeeName: string;
 }
 
 // Enum existente em StatusAppointments.java.
@@ -41,33 +59,24 @@ export type StatusAgendamento =
   | 'CANCELED'
   | 'AWAITING_CONFIRMATION';
 
-// Request real aceito pelo AppointmentsRequestDTO.java.
+export interface PetOfferingRequest {
+  petId: number;
+  offeringIds: number[];
+}
+
 export interface CriarAgendamentoRequest {
   dateTimeAppointment: string;
   status: StatusAgendamento;
   observation: string;
+  employeeId: number;
+  petOffering: PetOfferingRequest[];
 }
 
-// Resposta da entidade Appointments.
 export interface AgendamentoResponse {
-  id: number;
   dateTimeAppointment: string;
   status: StatusAgendamento;
   observation: string;
-}
-
-// Estrutura planejada para quando o backend
-// aceitar o agendamento completo.
-export interface PetAgendamentoRequest {
-  petId: number;
-  servicoIds: (string | number)[];
-  profissionalId?: number | null;
-  observacoes?: string;
-}
-
-export interface AgendamentoCompletoRequest {
-  lojaId: number;
-  data: string;
-  horario: string;
-  pets: PetAgendamentoRequest[];
+  totalPrice: number;
+  idEmployee: number;
+  nameEmployee: string;
 }

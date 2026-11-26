@@ -4,6 +4,16 @@ import { of } from 'rxjs';
 import { Agendamento } from './agendamento';
 import { LojaService } from '../../services/loja.service';
 import { AgendamentoApiService } from '../../services/agendamento-api.service';
+import { PetService } from '../../services/pet.service';
+import { ServicoService } from '../../services/servico.service';
+import { AuthService } from '../../services/auth.service';
+
+const petsDeTeste = [
+  { id: 1, nome: 'Pet 1', especie: 'Cachorro', porte: 'MEDIO', donoId: 42, raca: null, dataNascimento: null, observacoes: null },
+  { id: 2, nome: 'Pet 2', especie: 'Gato', porte: 'PEQUENO', donoId: 42, raca: null, dataNascimento: null, observacoes: null },
+  { id: 3, nome: 'Pet 3', especie: 'Outro', porte: 'PEQUENO', donoId: 42, raca: null, dataNascimento: null, observacoes: null },
+  { id: 4, nome: 'Pet 4', especie: 'Cachorro', porte: 'GRANDE', donoId: 42, raca: null, dataNascimento: null, observacoes: null }
+];
 
 describe('Agendamento', () => {
   let component: Agendamento;
@@ -16,13 +26,62 @@ describe('Agendamento', () => {
         {
           provide: LojaService,
           useValue: {
-            listarLojas: () => of([])
+            listarLojas: () => of([]),
+            listarFuncionariosPorLoja: () => of([
+              { id: 1, nome: 'Ana' },
+              { id: 2, nome: 'Bruna' },
+              { id: 3, nome: 'Carla' },
+              { id: 4, nome: 'Daniela' }
+            ])
           }
         },
         {
           provide: AgendamentoApiService,
           useValue: {
-            listarCalendario: () => of([])
+            listarDisponibilidade: () => of([]),
+            recomendarProfissional: () => of({
+              employeeId: 8,
+              employeeName: 'Ana'
+            }),
+            criarAgendamento: () => of({
+              dateTimeAppointment: '2026-12-15T10:30:00',
+              status: 'AWAITING_CONFIRMATION',
+              observation: '',
+              totalPrice: 170,
+              idEmployee: 8,
+              nameEmployee: 'Ana'
+            })
+          }
+        },
+        {
+          provide: PetService,
+          useValue: {
+            listarPorDono: () => of(petsDeTeste),
+            criar: (dados: Record<string, unknown>) => of({
+              id: 5,
+              ...dados
+            })
+          }
+        },
+        {
+          provide: ServicoService,
+          useValue: {
+            listarAtivos: () => of([
+              {
+                id: 1,
+                nome: 'Banho',
+                descricao: null,
+                preco: 170,
+                duracaoMinutos: 90,
+                ativo: true
+              }
+            ])
+          }
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            usuarioAtual: () => ({ id: 42, role: 'CUSTOMER' })
           }
         }
       ]
@@ -39,7 +98,7 @@ describe('Agendamento', () => {
     expect(component).toBeTruthy();
   });
 
-  it('deve apresentar quatro pets de exemplo', () => {
+  it('deve carregar os pets da conta do cliente', () => {
     expect(component.pets.length).toBe(4);
   });
 
@@ -52,6 +111,20 @@ describe('Agendamento', () => {
 
   it('deve iniciar com o Pet 1 selecionado', () => {
     expect(component.petsSelecionados).toEqual([1]);
+  });
+
+  it('deve listar todos os profissionais retornados pela API', () => {
+    component.etapa = 3;
+    component.selecionarLoja(1);
+    fixture.detectChanges();
+
+    const opcoes = fixture.nativeElement.querySelectorAll(
+      '.profissional-pet input[name="profissional"]'
+    );
+
+    expect(component.profissionais).toHaveLength(4);
+    expect(opcoes).toHaveLength(5);
+    expect(fixture.nativeElement.textContent).toContain('Daniela');
   });
 
   it('deve permitir selecionar até três pets', () => {
