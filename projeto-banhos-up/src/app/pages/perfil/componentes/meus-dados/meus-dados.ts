@@ -31,9 +31,20 @@ export class MeusDados implements OnInit {
   dataNascimento = '';
   endereco = '';
 
+  private dadosOriginais = {
+    nome: '',
+    dddCelular: '',
+    celularLocal: '',
+    genero: '',
+    dataNascimento: '',
+    endereco: ''
+  };
+
   constructor(private readonly clienteService: ClienteService) {}
 
-  ngOnInit(): void { this.carregarPerfil(); }
+  ngOnInit(): void {
+    this.carregarPerfil();
+  }
 
   carregarPerfil(): void {
     this.erro.set('');
@@ -53,10 +64,22 @@ export class MeusDados implements OnInit {
       });
   }
 
+  temAlteracoes(): boolean {
+    return (
+      this.nome !== this.dadosOriginais.nome ||
+      this.dddCelular !== this.dadosOriginais.dddCelular ||
+      this.celularLocal !== this.dadosOriginais.celularLocal ||
+      this.genero !== this.dadosOriginais.genero ||
+      this.dataNascimento !== this.dadosOriginais.dataNascimento ||
+      this.endereco !== this.dadosOriginais.endereco
+    );
+  }
+
   salvar(): void {
     this.erro.set('');
     this.sucesso.set('');
     if (this.salvando()) return;
+    if (!this.temAlteracoes()) return;
 
     const nome = this.nome.trim();
     const celular = `${this.dddCelular.replace(/\D/g, '')}${this.celularLocal.replace(/\D/g, '')}`;
@@ -92,7 +115,9 @@ export class MeusDados implements OnInit {
 
   restaurarDados(): void {
     const perfilAtual = this.perfil();
-    if (!perfilAtual) return;
+
+    if (!perfilAtual || !this.temAlteracoes()) return;
+
     this.preencherFormulario(perfilAtual);
     this.erro.set('');
     this.sucesso.set('Alterações descartadas.');
@@ -106,6 +131,15 @@ export class MeusDados implements OnInit {
     this.genero = perfil.gender ?? '';
     this.dataNascimento = perfil.dateOfBirth ?? '';
     this.endereco = perfil.address ?? '';
+
+    this.dadosOriginais = {
+      nome: this.nome,
+      dddCelular: this.dddCelular,
+      celularLocal: this.celularLocal,
+      genero: this.genero,
+      dataNascimento: this.dataNascimento,
+      endereco: this.endereco
+    };
   }
 
   private mensagemErro(erro: HttpErrorResponse, padrao: string): string {
